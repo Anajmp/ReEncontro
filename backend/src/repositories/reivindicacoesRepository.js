@@ -1,0 +1,9 @@
+// =====================================================================
+// reivindicacoesRepository — única camada com SQL do módulo reivindicacoes.
+// TODO: implementar. Use itensRepository.js como molde.
+// Lembre: sempre db.execute() com placeholders (?), nunca concatenação.
+// =====================================================================
+import { db } from '../config/database.js';
+
+export const reivindicacoesRepository = {
+};
