@@ -4,6 +4,7 @@
 // =====================================================================
 import { Router } from 'express';
 import itensRoutes from './itensRoutes.js';
+import setupRoute from './setupRoute.js';
 // import authRoutes from './authRoutes.js';
 // import reivindicacoesRoutes from './reivindicacoesRoutes.js';
 // import usuariosRoutes from './usuariosRoutes.js';
@@ -12,6 +13,7 @@ import itensRoutes from './itensRoutes.js';
 const router = Router();
 
 router.use('/itens', itensRoutes);
+router.use('/', setupRoute);
 // router.use('/auth', authRoutes);
 // router.use('/reivindicacoes', reivindicacoesRoutes);
 // router.use('/usuarios', usuariosRoutes);
