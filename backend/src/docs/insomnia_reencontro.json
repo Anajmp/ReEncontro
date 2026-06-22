@@ -1,0 +1,1159 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: ReEncontro API
+meta:
+  id: wrk_02d807a4b7c14b28bc83ed105ece5a45
+  created: 1781808032366
+  modified: 1781808032366
+  description: ""
+collection:
+  - name: Auth
+    meta:
+      id: fld_8fd668a0cfd14dd7a7696617a38c5194
+      created: 1781808402424
+      modified: 1781808402424
+      sortKey: -1781808402424
+      description: ""
+    children:
+      - url: "{{ _[''].base_url }}/api/auth/login"
+        name: Login
+        meta:
+          id: req_07c643f7c3534df28ff251585065302f
+          created: 1781808420925
+          modified: 1781808555153
+          isPrivate: false
+          description: ""
+          sortKey: -1781808420925
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "email": "funcionaria@sesi.br",
+              "senha": "123456"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/auth/register"
+        name: Registro de Responsável
+        meta:
+          id: req_8b28a84422d748e0a9fc2328f8d9d396
+          created: 1781808527741
+          modified: 1781808569572
+          isPrivate: false
+          description: ""
+          sortKey: -1781808527741
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "nome": "Maria Silva",
+              "email": "maria@email.com",
+              "senha": "123456",
+              "telefone": "19999999999",
+              "alunos": [
+                {
+                  "nome": "João Silva",
+                  "sala": "5B",
+                  "periodo": "manha",
+                  "ano_letivo": 2026
+                }
+              ]
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/auth/forgot-password"
+        name: Esqueci minha senha
+        meta:
+          id: req_a214b9a1499d4f34a757aefaf0f1fd13
+          created: 1781808579692
+          modified: 1781808630102
+          isPrivate: false
+          description: ""
+          sortKey: -1781808579692
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "email": "maria@email.com"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: " {{ _[''].base_url }}/api/auth/reset-password"
+        name: Redefinir senha
+        meta:
+          id: req_63615f3ee5aa4f42aa39802668de914f
+          created: 1781808635524
+          modified: 1781808664524
+          isPrivate: false
+          description: ""
+          sortKey: -1781808635524
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "token": "token-recebido-por-email",
+              "nova_senha": "nova123456"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/auth/refresh"
+        name: Refresh token
+        meta:
+          id: req_10ad9374b66c4c07b9bbf3d2041abbdf
+          created: 1782138040283
+          modified: 1782138092956
+          isPrivate: false
+          description: ""
+          sortKey: -1782138040283
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            { 
+            	"refresh_token": "token-aqui" 
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/auth/logout"
+        name: Logout
+        meta:
+          id: req_4b0d698cc80d4d768dc86440e626a2dd
+          created: 1782138104637
+          modified: 1782138141119
+          isPrivate: false
+          description: ""
+          sortKey: -1782138104637
+        method: POST
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Itens
+    meta:
+      id: fld_75c9d36306424b2aac5e46d0d89d055a
+      created: 1781808686600
+      modified: 1781808686600
+      sortKey: -1781808686600
+      description: ""
+    children:
+      - url: "{{ _[''].base_url }}/api/itens"
+        name: Listar itens disponíveis
+        meta:
+          id: req_e9f2f9a5834546d2a8ca02b50bb11f91
+          created: 1781808693875
+          modified: 1781808731659
+          isPrivate: false
+          description: ""
+          sortKey: -1781808693875
+        method: GET
+        body:
+          mimeType: multipart/form-data
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/itens?categoriaId=1&dataInicio=2026-01-01"
+        name: Listar itens com filtros
+        meta:
+          id: req_e2d144b862244ba3a754b473081ee86c
+          created: 1781808736684
+          modified: 1781808754820
+          isPrivate: false
+          description: ""
+          sortKey: -1781808736684
+        method: GET
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/itens/1"
+        name: Detalhe do item
+        meta:
+          id: req_ce66dee89b1040eb99798941c592886e
+          created: 1781808757342
+          modified: 1781808778307
+          isPrivate: false
+          description: ""
+          sortKey: -1781808757342
+        method: GET
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/itens"
+        name: Cadastrar item
+        meta:
+          id: req_176f277718fc497c962542817baad241
+          created: 1781808786400
+          modified: 1781808978210
+          isPrivate: false
+          description: ""
+          sortKey: -1781808786400
+        method: GET
+        body:
+          mimeType: multipart/form-data
+          params:
+            - name: descricao
+              value: Mochila azul Nike
+              description: ""
+              disabled: false
+            - name: categoriaId
+              value: "2"
+              description: ""
+              disabled: false
+            - name: localEncontrado
+              value: Pátio Principal
+              description: ""
+              disabled: false
+            - name: pontoColetaId
+              value: "1"
+              description: ""
+              disabled: false
+            - name: dataEncontrado
+              value: 2026-06-15
+              description: ""
+              disabled: false
+            - name: fotos
+              value: ""
+              description: ""
+              disabled: false
+              type: file
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+          prefix: ""
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/itens/1/descartar"
+        name: Descartar item
+        meta:
+          id: req_7d799fedc7ff4fb89dc46bd7ae5d9568
+          created: 1781808983786
+          modified: 1781809045552
+          isPrivate: false
+          description: ""
+          sortKey: -1781808983786
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "motivo": "Item deteriorado após 90 dias sem dono"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: " {{ _[''].base_url }}/api/itens/1/reverter-entrega"
+        name: Reverter Entrega
+        meta:
+          id: req_b71f1355d1b3486fbe0ac1d09a74c931
+          created: 1781809063729
+          modified: 1781809104915
+          isPrivate: false
+          description: ""
+          sortKey: -1781809063729
+        method: PATCH
+        authentication:
+          type: bearer
+          token: "{{ _[''].base_url }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/itens/1"
+        name: Editar item
+        meta:
+          id: req_a59ca08aa5f343f48a2cc03c3a7cf8d2
+          created: 1782136995142
+          modified: 1782138201404
+          isPrivate: false
+          description: ""
+          sortKey: -1782136995142
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            { 
+            	"descricao": "Mochila azul Nike (corrigido)", 
+            	"categoriaId": 2 
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/itens/admin?status=em_processo"
+        name: Listar status
+        meta:
+          id: req_7995ea2478644630b6340975f5902112
+          created: 1782138152595
+          modified: 1782138244687
+          isPrivate: false
+          description: ""
+          sortKey: -1782138152595
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Reivindicações
+    meta:
+      id: fld_7870beb4ab06477e802a574924bac0a6
+      created: 1782135021899
+      modified: 1782135353531
+      sortKey: -1782135021899
+      description: ""
+    children:
+      - url: "{{ _[''].base_url }}/api/reivindicacoes"
+        name: Criar reinvidicação
+        meta:
+          id: req_9174b929f00d4ceb9b67644213e432bc
+          created: 1782135029308
+          modified: 1782135088553
+          isPrivate: false
+          description: ""
+          sortKey: -1782135029308
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "item_id": 1,
+              "nome_requerente": "Maria Silva",
+              "email_requerente": "maria@email.com",
+              "telefone_requerente": "19999999999",
+              "nome_aluno": "João Silva",
+              "sala_aluno": "5B",
+              "periodo_aluno": "manha"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/reivindicacoes/pendentes"
+        name: Listar pendentes
+        meta:
+          id: req_d78c3f5c6a794c15a77a18d33f427f54
+          created: 1782135097929
+          modified: 1782135141377
+          isPrivate: false
+          description: ""
+          sortKey: -1782135097929
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/reivindicacoes/1/aprovar"
+        name: Aprovar reinvidicação
+        meta:
+          id: req_3df8d89da9fc454ebe9e47c2ca11279a
+          created: 1782135148801
+          modified: 1782135213116
+          isPrivate: false
+          description: ""
+          sortKey: -1782135148801
+        method: PATCH
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/reivindicacoes/1/rejeitar"
+        name: Rejeitar reivindicação
+        meta:
+          id: req_91b7586d7aaf49379047ace46e503471
+          created: 1782135221833
+          modified: 1782135280718
+          isPrivate: false
+          description: ""
+          sortKey: -1782135221833
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: >-
+            {
+              "motivo_rejeicao": "Dados informados não conferem com a ficha física"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/reivindicacoes/1/cancelar"
+        name: Cancelar reivindicação
+        meta:
+          id: req_0d6c27593a2d48d2a3458b3edf60b8b7
+          created: 1782135290458
+          modified: 1782135375400
+          isPrivate: false
+          description: ""
+          sortKey: -1782135290458
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "motivo": "Responsável não compareceu no prazo de 7 dias"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/itens/1/entregar"
+        name: Confirmar entrega
+        meta:
+          id: req_53ca48b14bd543bd86afcbfee22e2cd9
+          created: 1782135355257
+          modified: 1782135399875
+          isPrivate: false
+          description: ""
+          sortKey: -1782135355257
+        method: PATCH
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/usuarios/me/reivindicacoes"
+        name: Minhas reivindicações
+        meta:
+          id: req_397a127645e847249c30c48cbe91398d
+          created: 1782138521988
+          modified: 1782138568015
+          isPrivate: false
+          description: ""
+          sortKey: -1782138521988
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _[''].base_url }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Usuários
+    meta:
+      id: fld_06486146cb5744c6a19898b153ae88ff
+      created: 1782135428493
+      modified: 1782135428493
+      sortKey: -1782135428493
+      description: ""
+    children:
+      - url: "{{ _[''].base_url }}/api/usuarios/funcionarias"
+        name: Listar funcionárias
+        meta:
+          id: req_d97c9c7313b140f3b4bba4a417497698
+          created: 1782135436594
+          modified: 1782135686605
+          isPrivate: false
+          description: ""
+          sortKey: -1782135436594
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/usuarios/funcionarias"
+        name: Criar funcionária
+        meta:
+          id: req_b739e24c4d8b4b388d53b4e7fa5cb980
+          created: 1782135447163
+          modified: 1782135826354
+          isPrivate: false
+          description: ""
+          sortKey: -1782135447163
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "nome": "Ana Paula",
+              "email": "ana.paula@sesi.br",
+              "senha": "senha123"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/usuarios/funcionarias/1"
+        name: Editar funcionária
+        meta:
+          id: req_6fe958d400ba488faae25e9364176133
+          created: 1782135448752
+          modified: 1782135841444
+          isPrivate: false
+          description: ""
+          sortKey: -1782135448752
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "nome": "Ana Paula Silva",
+              "email": "ana.paula.silva@sesi.br"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/usuarios/funcionarias/1/desativar"
+        name: Desativar funcionária
+        meta:
+          id: req_9b79bd22140440f4826879a6d027f9b9
+          created: 1782135450153
+          modified: 1782135851840
+          isPrivate: false
+          description: ""
+          sortKey: -1782135450153
+        method: PATCH
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/usuarios/1/anonimizar"
+        name: Anonimizar usuário (LGPD)
+        meta:
+          id: req_b11e4ece181c4ceaa395adf281f6769c
+          created: 1782135451453
+          modified: 1782135862286
+          isPrivate: false
+          description: ""
+          sortKey: -1782135451453
+        method: DELETE
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/usuarios/me"
+        name: Meu perfil
+        meta:
+          id: req_4639107cb18149ca9af57f3e83307bf4
+          created: 1782135452803
+          modified: 1782135873752
+          isPrivate: false
+          description: ""
+          sortKey: -1782135452803
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/usuarios/me/alunos"
+        name: Meus alunos
+        meta:
+          id: req_332ea9a9e5944424a034aea287391570
+          created: 1782135455540
+          modified: 1782138322969
+          isPrivate: false
+          description: ""
+          sortKey: -1782135455540
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            { 
+            	"nome": "Pedro Silva",
+            	"sala": "3A", 
+            	"periodo": "tarde", 
+            	"ano_letivo": 2026 
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/usuarios/me/alunos/1"
+        name: Editar aluno
+        meta:
+          id: req_e565a20f73344d2c851b4c556c2131fc
+          created: 1782138351267
+          modified: 1782138415358
+          isPrivate: false
+          description: ""
+          sortKey: -1782138351267
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            { 
+            	"sala": "4A" 
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/usuarios/me/alunos/1"
+        name: Remover aluno
+        meta:
+          id: req_b4bccc27dab34203bfda908c202f38d0
+          created: 1782138421476
+          modified: 1782138466366
+          isPrivate: false
+          description: ""
+          sortKey: -1782138421476
+        method: DELETE
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Relatórios
+    meta:
+      id: fld_7a18105f5f824ef8a03cbaae40a30845
+      created: 1782135910776
+      modified: 1782135910776
+      sortKey: -1782135910776
+      description: ""
+    children:
+      - url: "{{ _[''].base_url
+          }}/api/relatorios?dataInicio=2026-01-01&dataFim=2026-12-31"
+        name: Relatório geral
+        meta:
+          id: req_c69b318cf5704ec3acb63cbaacaeccf2
+          created: 1782135915195
+          modified: 1782136281708
+          isPrivate: false
+          description: ""
+          sortKey: -1782135915195
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url
+          }}/api/relatorios/categorias?dataInicio=2026-01-01&dataFim=2026-12-31"
+        name: Itens por categoria
+        meta:
+          id: req_2cdc8f8a872e4ed08be2a4fe780652e2
+          created: 1782135920611
+          modified: 1782136345460
+          isPrivate: false
+          description: ""
+          sortKey: -1782135920611
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url
+          }}/api/relatorios/periodo?dataInicio=2026-01-01&dataFim=2026-12-31"
+        name: Itens por período
+        meta:
+          id: req_0396a45803744137bafec35bbef47da1
+          created: 1782135921940
+          modified: 1782136340285
+          isPrivate: false
+          description: ""
+          sortKey: -1782135921940
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url
+          }}/api/relatorios/taxa-devolucao?dataInicio=2026-01-01&dataFim=2026-1\
+          2-31"
+        name: Taxa de devolução
+        meta:
+          id: req_c4367ed35b504a08a3e68d704a7d8219
+          created: 1782135923463
+          modified: 1782136356715
+          isPrivate: false
+          description: ""
+          sortKey: -1782135923463
+        method: GET
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Categorias e Pontos de Coleta
+    meta:
+      id: fld_e1da1672992744bdaa509434a06d2ef7
+      created: 1782136475150
+      modified: 1782136475150
+      sortKey: -1782136475150
+      description: ""
+    children:
+      - url: "{{ _[''].base_url }}/api/categorias"
+        name: Listar categorias
+        meta:
+          id: req_fcaf6cfd3af54fbc9f405d600d358cd3
+          created: 1782136480292
+          modified: 1782136525111
+          isPrivate: false
+          description: ""
+          sortKey: -1782136480292
+        method: GET
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/categorias"
+        name: Criar categoria
+        meta:
+          id: req_22cd8b927f7046a69d009de9f5565602
+          created: 1782136491708
+          modified: 1782136616861
+          isPrivate: false
+          description: ""
+          sortKey: -1782136491708
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "nome": "Esporte",
+              "icone": "trophy",
+              "ordem": 7
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/categorias/1"
+        name: Editar categoria
+        meta:
+          id: req_59ac28d5f740483cbf7435c650e519bf
+          created: 1782136493286
+          modified: 1782136713273
+          isPrivate: false
+          description: ""
+          sortKey: -1782136493286
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "nome": "Eletrônicos",
+              "icone": "smartphone",
+              "ordem": 1
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/categorias/1/desativar"
+        name: Desativar categoria
+        meta:
+          id: req_9290ea3bd69c4a2aab30c558f2974dad
+          created: 1782136494955
+          modified: 1782136748136
+          isPrivate: false
+          description: ""
+          sortKey: -1782136494955
+        method: PATCH
+        authentication:
+          type: bearer
+          token: " {{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/pontos-coleta"
+        name: Listar pontos de coleta
+        meta:
+          id: req_134eefbebcfe425da4d69fc857a386c8
+          created: 1782136496248
+          modified: 1782136765207
+          isPrivate: false
+          description: ""
+          sortKey: -1782136496248
+        method: GET
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/pontos-coleta"
+        name: Criar pontos de coleta
+        meta:
+          id: req_43b7b651364d4cbfa3aba2ad8fc96dff
+          created: 1782136497989
+          modified: 1782136801343
+          isPrivate: false
+          description: ""
+          sortKey: -1782136497989
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "nome": "Sala dos Professores",
+              "descricao": "Para itens encontrados na área dos professores"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/pontos-coleta/1"
+        name: Editar ponto de coleta
+        meta:
+          id: req_f9c98871df74496ca52c8d6c945bdf3a
+          created: 1782136500203
+          modified: 1782136842349
+          isPrivate: false
+          description: ""
+          sortKey: -1782136500203
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "nome": "Mesa das Inspetoras",
+              "descricao": "Recepção / inspetoria principal"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _[''].base_url }}/api/pontos-coleta/1/desativar"
+        name: Desativar ponto de coleta
+        meta:
+          id: req_3fac40b6aee64a74a7af883615b5e7e5
+          created: 1782136501600
+          modified: 1782136871362
+          isPrivate: false
+          description: ""
+          sortKey: -1782136501600
+        method: PATCH
+        authentication:
+          type: bearer
+          token: "{{ _[''].token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_37bb6868217d4342ca6e4a1e3c74c858b256b2fb
+    created: 1781808032372
+    modified: 1781808032372
+environments:
+  name: Base Environment
+  meta:
+    id: env_37bb6868217d4342ca6e4a1e3c74c858b256b2fb
+    created: 1781808032369
+    modified: 1781808504170
+    isPrivate: false
+  data:
+    "":
+      base_url: http://localhost:3000
+      token: ""
