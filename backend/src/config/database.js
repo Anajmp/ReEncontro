@@ -3,8 +3,8 @@
 // IMPORTANTE: use sempre db.execute() com placeholders (?) nas queries.
 // Nunca concatene strings — isso previne SQL injection.
 // =====================================================================
-import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
+import mysql from "mysql2/promise";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -17,16 +17,19 @@ export const db = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  charset: 'utf8mb4',
+  charset: "utf8mb4",
+  // SSL só quando necessário (Aiven exige; MySQL local não usa)
+  ssl:
+    process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : undefined,
 });
 
 export async function testConnection() {
   try {
     const conn = await db.getConnection();
-    console.log('Conectado ao MySQL');
+    console.log("Conectado ao MySQL");
     conn.release();
   } catch (err) {
-    console.error('Erro ao conectar no MySQL:', err.message);
+    console.error("Erro ao conectar no MySQL:", err.message);
     process.exit(1);
   }
 }

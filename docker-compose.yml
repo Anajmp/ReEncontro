@@ -1,0 +1,52 @@
+# =====================================================================
+# docker-compose do ReEncontro
+# Sobe DOIS serviços juntos: o banco MySQL e o backend.
+# Rode com: docker compose up
+# =====================================================================
+services:
+  # ----- Banco de dados MySQL -----
+  mysql:
+    image: mysql:8.0
+    container_name: reencontro-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_DATABASE: reencontro
+    ports:
+      - "3307:3306"   # host:container — usamos 3307 no PC pra não conflitar com MySQL local
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # roda o schema automaticamente na primeira vez que o banco sobe
+      - ./backend/migrations/schema_reencontro.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot1234"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ----- Backend (API Express) -----
+  backend:
+    build: ./backend
+    container_name: reencontro-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy   # só sobe o backend quando o MySQL estiver pronto
+    environment:
+      PORT: 3000
+      NODE_ENV: development
+      FRONTEND_URL: "*"
+      DB_HOST: mysql          # nome do serviço do banco (Docker resolve isso)
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root1234
+      DB_NAME: reencontro
+      JWT_SECRET: chave_secreta_local_docker_2026
+      JWT_EXPIRES_IN: 15m
+      REFRESH_TOKEN_EXPIRES_IN: 30d
+    ports:
+      - "3000:3000"
+
+# volume nomeado — mantém os dados do banco mesmo se o container for recriado
+volumes:
+  mysql_data:
