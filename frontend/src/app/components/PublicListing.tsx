@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import { Search, MapPin, Calendar, LogIn, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -6,9 +6,10 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { StatusBadge } from './shared/StatusBadge';
-import { items } from './shared/data';
+import { itensApi } from '../../lib/api';
 import type { Item } from './shared/data';
 import type { Screen } from '../App';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -102,6 +103,16 @@ export function PublicListing({ navigate }: Props) {
   const [claimOpen, setClaimOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+  const routerNavigate = useNavigate();
+
+  useEffect(() => {
+    itensApi.listar()
+      .then(setItems)
+      .catch(err => console.error('Erro ao carregar itens:', err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = items.filter(item => {
     const q = search.toLowerCase();
@@ -175,7 +186,7 @@ export function PublicListing({ navigate }: Props) {
               >
                 <div
                   className="relative h-44 bg-gray-100 overflow-hidden cursor-pointer"
-                  onClick={() => navigate('item-detail')}
+                  onClick={() => routerNavigate(`/item/${item.id}`)}
                 >
                   <img
                     src={item.image}
@@ -189,7 +200,7 @@ export function PublicListing({ navigate }: Props) {
                 <div className="p-3.5">
                   <h3
                     className="font-semibold text-gray-900 truncate cursor-pointer hover:text-[#C8102E] transition-colors"
-                    onClick={() => navigate('item-detail')}
+                    onClick={() => routerNavigate(`/item/${item.id}`)}
                   >
                     {item.name}
                   </h3>

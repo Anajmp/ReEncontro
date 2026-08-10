@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import type { Screen } from '../App';
+import { authApi } from '../../lib/api';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -22,6 +23,59 @@ export function Register({ navigate }: Props) {
   const [students, setStudents] = useState<StudentEntry[]>([
     { id: 1, name: '', room: '', period: '' },
   ]);
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [senha, setSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [erro, setErro] = useState('');
+  const [carregando, setCarregando] = useState(false);
+
+  // Mapa de período do frontend pro formato do backend
+  const periodoMap: Record<string, string> = {
+    'Manhã': 'manha', 'manha': 'manha',
+    'Tarde': 'tarde', 'tarde': 'tarde',
+    'Noite': 'noite', 'noite': 'noite',
+  };
+
+  async function fazerCadastro() {
+    setErro('');
+
+    // Validações básicas
+    if (senha !== confirmarSenha) {
+      setErro('As senhas não conferem');
+      return;
+    }
+    if (students.some(s => !s.name || !s.room || !s.period)) {
+      setErro('Preencha todos os dados dos alunos');
+      return;
+    }
+
+    setCarregando(true);
+    try {
+      const dados = {
+        nome,
+        email,
+        senha,
+        telefone,
+        alunos: students.map(s => ({
+          nome: s.name,
+          sala: s.room,
+          periodo: periodoMap[s.period] || s.period,
+          ano_letivo: 2026,
+        })),
+      };
+      const resultado = await authApi.register(dados);
+      // Já vem logado (backend devolve token)
+      localStorage.setItem('token', resultado.token);
+      localStorage.setItem('usuario', JSON.stringify(resultado.usuario));
+      navigate('parent-dashboard');
+    } catch (err: any) {
+      setErro(err.message || 'Erro ao criar conta');
+    } finally {
+      setCarregando(false);
+    }
+  }
 
   const addStudent = () => {
     setStudents(prev => [...prev, { id: Date.now(), name: '', room: '', period: '' }]);
@@ -90,16 +144,16 @@ export function Register({ navigate }: Props) {
             <div className="space-y-4">
               <div className="space-y-1.5">
                 <Label>Nome completo *</Label>
-                <Input placeholder="Maria Santos" />
+                <Input placeholder="Maria Santos" value={nome} onChange={(e) => setNome(e.target.value)} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>E-mail *</Label>
-                  <Input type="email" placeholder="maria@email.com" />
+                  <Input type="email" placeholder="maria@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Telefone *</Label>
-                  <Input placeholder="(11) 99999-9999" />
+                  <Input placeholder="(11) 99999-9999" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -110,6 +164,8 @@ export function Register({ navigate }: Props) {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Mínimo 8 caracteres"
                       className="pr-10"
+                      value={senha}
+                      onChange={(e) => setSenha(e.target.value)}
                     />
                     <button
                       type="button"
@@ -122,7 +178,7 @@ export function Register({ navigate }: Props) {
                 </div>
                 <div className="space-y-1.5">
                   <Label>Confirmar senha *</Label>
-                  <Input type="password" placeholder="Repita a senha" />
+                  <Input type="password" placeholder="Repita a senha" value={confirmarSenha} onChange={(e) => setConfirmarSenha(e.target.value)} />
                 </div>
               </div>
             </div>
@@ -187,11 +243,16 @@ export function Register({ navigate }: Props) {
             </div>
           </div>
 
+          {erro && (
+            <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2 mb-3">{erro}</p>
+          )}
+
           <Button
             className="w-full bg-[#C8102E] hover:bg-[#A00D24]"
-            onClick={() => navigate('parent-dashboard')}
+            onClick={fazerCadastro}
+            disabled={carregando}
           >
-            Criar conta
+            {carregando ? 'Criando conta...' : 'Criar conta'}
           </Button>
 
           <p className="text-center text-sm text-gray-500 mt-4">

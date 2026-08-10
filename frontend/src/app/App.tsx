@@ -75,7 +75,7 @@ export default function App() {
     <div className="size-full relative min-h-screen">
       <Routes>
         <Route path="/" element={<PublicListing navigate={navigate} />} />
-        <Route path="/item" element={<ItemDetail navigate={navigate} />} />
+        <Route path="/item/:id" element={<ItemDetail navigate={navigate} />} />
         <Route path="/login" element={<Login navigate={navigate} />} />
         <Route path="/cadastro" element={<Register navigate={navigate} />} />
         <Route path="/redefinir-senha" element={<ResetPassword navigate={navigate} />} />

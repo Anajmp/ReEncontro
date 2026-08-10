@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { itensApi } from '../../lib/api';
 import { ArrowLeft, MapPin, Calendar, Package, Building2, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -6,7 +8,6 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { StatusBadge } from './shared/StatusBadge';
-import { items } from './shared/data';
 import type { Screen } from '../App';
 
 interface Props {
@@ -89,12 +90,42 @@ function ClaimModal({ open, onClose, itemName }: { open: boolean; onClose: () =>
 }
 
 export function ItemDetail({ navigate }: Props) {
+  const { id } = useParams();
   const [claimOpen, setClaimOpen] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
-  const item = items[0];
+  const [item, setItem] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const photos = [item.image, items[4].image, items[5].image];
+  useEffect(() => {
+    if (id) {
+      itensApi.detalhe(Number(id))
+        .then(setItem)
+        .catch(err => console.error('Erro ao carregar item:', err))
+        .finally(() => setLoading(false));
+    }
+  }, [id]);
 
+  // Enquanto carrega
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Carregando item...</p>
+      </div>
+    );
+  }
+
+  // Se não encontrou o item
+  if (!item) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
+        <p className="text-gray-500">Item não encontrado.</p>
+        <Button onClick={() => navigate('public-listing')}>Voltar para a listagem</Button>
+      </div>
+    );
+  }
+
+  const photos = [item.image];
+  
   const infoRows = [
     { icon: Package, label: 'Categoria', value: item.category },
     { icon: MapPin, label: 'Local encontrado', value: item.location },

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { authApi } from '../../lib/api';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -11,6 +12,32 @@ interface Props {
 
 export function Login({ navigate }: Props) {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [erro, setErro] = useState('');
+  const [carregando, setCarregando] = useState(false);
+
+  async function fazerLogin() {
+    setErro('');
+    setCarregando(true);
+    try {
+      const resultado = await authApi.login(email, senha);
+      // Guarda o token e os dados do usuário
+      localStorage.setItem('token', resultado.token);
+      localStorage.setItem('usuario', JSON.stringify(resultado.usuario));
+
+      // Redireciona conforme o perfil
+      if (resultado.usuario.role === 'funcionaria') {
+        navigate('admin-dashboard');
+      } else {
+        navigate('parent-dashboard');
+      }
+    } catch (err: any) {
+      setErro(err.message || 'Erro ao fazer login');
+    } finally {
+      setCarregando(false);
+    }
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -66,7 +93,7 @@ export function Login({ navigate }: Props) {
           <div className="space-y-5">
             <div className="space-y-1.5">
               <Label htmlFor="email">E-mail</Label>
-              <Input id="email" type="email" placeholder="seu@email.com" defaultValue="ana.paula@escola.edu.br" />
+              <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
 
             <div className="space-y-1.5">
@@ -85,7 +112,8 @@ export function Login({ navigate }: Props) {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   className="pr-10"
-                  defaultValue="senha123"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
                 />
                 <button
                   type="button"
@@ -97,11 +125,16 @@ export function Login({ navigate }: Props) {
               </div>
             </div>
 
+            {erro && (
+              <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{erro}</p>
+            )}
+
             <Button
               className="w-full bg-[#C8102E] hover:bg-[#A00D24]"
-              onClick={() => navigate('admin-dashboard')}
+              onClick={fazerLogin}
+              disabled={carregando}
             >
-              Entrar
+              {carregando ? 'Entrando...' : 'Entrar'}
             </Button>
           </div>
 
