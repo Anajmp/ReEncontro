@@ -1,5 +1,6 @@
 import { FileText, Users, LogOut, Search } from 'lucide-react';
 import type { Screen } from '../../App';
+import { useAuth, iniciais } from '../../../contexts/AuthContext';
 
 interface Props {
   children: React.ReactNode;
@@ -8,6 +9,13 @@ interface Props {
 }
 
 export function ParentLayout({ children, current, navigate }: Props) {
+  const { usuario, logout } = useAuth();
+
+  function sair() {
+    logout();          // limpa token e usuário (memória + localStorage)
+    navigate('login'); // volta pra tela de login
+  }
+
   const navItems: { id: Screen; icon: React.ElementType; label: string }[] = [
     { id: 'parent-dashboard', icon: FileText, label: 'Minhas Reivindicações' },
     { id: 'my-students', icon: Users, label: 'Meus Alunos' },
@@ -59,13 +67,17 @@ export function ParentLayout({ children, current, navigate }: Props) {
         <div className="p-4 border-t border-gray-100">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-[#C8102E]/10 rounded-full flex items-center justify-center text-xs font-semibold text-[#C8102E] shrink-0">
-              MS
+              {iniciais(usuario?.nome)}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900 truncate">Maria Santos</div>
-              <div className="text-[11px] text-gray-400">Responsável</div>
+              <div className="text-sm font-medium text-gray-900 truncate">{usuario?.nome ?? '—'}</div>
+              <div className="text-[11px] text-gray-400 truncate">{usuario?.email ?? ''}</div>
             </div>
-            <button className="text-gray-300 hover:text-gray-600 transition-colors" title="Sair">
+            <button
+              onClick={sair}
+              className="text-gray-300 hover:text-[#C8102E] transition-colors"
+              title="Sair"
+            >
               <LogOut className="size-4" />
             </button>
           </div>

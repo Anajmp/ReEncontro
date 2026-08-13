@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import type { Screen } from '../App';
-import { authApi } from '../../lib/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -19,6 +19,7 @@ interface StudentEntry {
 }
 
 export function Register({ navigate }: Props) {
+  const { registrar } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [students, setStudents] = useState<StudentEntry[]>([
     { id: 1, name: '', room: '', period: '' },
@@ -65,10 +66,8 @@ export function Register({ navigate }: Props) {
           ano_letivo: 2026,
         })),
       };
-      const resultado = await authApi.register(dados);
-      // Já vem logado (backend devolve token)
-      localStorage.setItem('token', resultado.token);
-      localStorage.setItem('usuario', JSON.stringify(resultado.usuario));
+      // Já vem logado (backend devolve token) — o contexto guarda a sessão
+      await registrar(dados);
       navigate('parent-dashboard');
     } catch (err: any) {
       setErro(err.message || 'Erro ao criar conta');

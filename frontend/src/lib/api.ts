@@ -10,20 +10,39 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 async function request(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem('token');
 
-  const res = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      // Se tiver token, manda no cabeçalho (pras rotas protegidas)
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  });
+  let res: Response;
+
+  try {
+    res = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        // Se tiver token, manda no cabeçalho (pras rotas protegidas)
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    });
+  } catch {
+    // Servidor fora do ar, sem internet, CORS bloqueado, cold start do Render...
+    throw new Error(
+      'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.'
+    );
+  }
+
+  // Token expirado ou inválido numa rota protegida: derruba a sessão.
+  // O AuthContext escuta esse evento e limpa o usuário logado.
+  if (res.status === 401 && token) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    window.dispatchEvent(new Event('auth:expirado'));
+  }
 
   // Se a resposta não for OK, lança erro com a mensagem do backend
   if (!res.ok) {
-    const erro = await res.json().catch(() => ({ erro: 'Erro na requisição' }));
-    throw new Error(erro.erro || erro.mensagem || 'Erro na requisição');
+    const erro = await res.json().catch(() => ({}));
+    throw new Error(
+      erro.erro || erro.mensagem || `Erro ${res.status} ao comunicar com o servidor`
+    );
   }
 
   return res.json();

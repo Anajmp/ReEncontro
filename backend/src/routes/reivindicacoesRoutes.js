@@ -1,10 +1,23 @@
 // =====================================================================
-// Rotas do módulo reivindicacoes.
-// TODO: implementar. Use itensRoutes.js como molde.
-// Depois de implementar, descomente o import em routes/index.js.
+// Rotas de reivindicações.
+// Criar é público (permite anônimo), mas aproveita o token se houver.
 // =====================================================================
-import { Router } from 'express';
+import { Router } from "express";
+import { reivindicacoesController } from "../controllers/reivindicacoesController.js";
+import { authOpcional } from "../middlewares/authOpcionalMiddleware.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { apenasFuncionaria } from "../middlewares/roleMiddleware.js";
 
 const router = Router();
+
+// POST /api/reivindicacoes — público, com auth opcional
+router.post("/", authOpcional, reivindicacoesController.criar);
+// GET /api/reivindicacoes/pendentes — só funcionária
+router.get(
+  "/pendentes",
+  authMiddleware,
+  apenasFuncionaria,
+  reivindicacoesController.listarPendentes,
+);
 
 export default router;

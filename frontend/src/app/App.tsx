@@ -14,6 +14,7 @@ import { Finalized } from './components/Finalized';
 import { Reports } from './components/Reports';
 import { StaffManagement } from './components/StaffManagement';
 import { DemoNav } from './components/shared/DemoNav';
+import { RotaProtegida } from './components/RotaProtegida';
 
 export type Screen =
   | 'public-listing'
@@ -79,16 +80,16 @@ export default function App() {
         <Route path="/login" element={<Login navigate={navigate} />} />
         <Route path="/cadastro" element={<Register navigate={navigate} />} />
         <Route path="/redefinir-senha" element={<ResetPassword navigate={navigate} />} />
-        <Route path="/responsavel/reivindicacoes" element={<ParentDashboard navigate={navigate} activeTab="claims" />} />
-        <Route path="/responsavel/alunos" element={<ParentDashboard navigate={navigate} activeTab="students" />} />
-        <Route path="/admin" element={<AdminDashboard navigate={navigate} />} />
-        <Route path="/admin/cadastrar-item" element={<RegisterItem navigate={navigate} />} />
-        <Route path="/admin/itens" element={<AvailableItems navigate={navigate} />} />
-        <Route path="/admin/pendentes" element={<PendingClaims navigate={navigate} />} />
-        <Route path="/admin/em-processo" element={<InProcess navigate={navigate} />} />
-        <Route path="/admin/finalizados" element={<Finalized navigate={navigate} />} />
-        <Route path="/admin/relatorios" element={<Reports navigate={navigate} />} />
-        <Route path="/admin/funcionarias" element={<StaffManagement navigate={navigate} />} />
+        <Route path="/responsavel/reivindicacoes" element={<RotaProtegida role="responsavel"><ParentDashboard navigate={navigate} activeTab="claims" /></RotaProtegida>} />
+        <Route path="/responsavel/alunos" element={<RotaProtegida role="responsavel"><ParentDashboard navigate={navigate} activeTab="students" /></RotaProtegida>} />
+        <Route path="/admin" element={<RotaProtegida role="funcionaria"><AdminDashboard navigate={navigate} /></RotaProtegida>} />
+        <Route path="/admin/cadastrar-item" element={<RotaProtegida role="funcionaria"><RegisterItem navigate={navigate} /></RotaProtegida>} />
+        <Route path="/admin/itens" element={<RotaProtegida role="funcionaria"><AvailableItems navigate={navigate} /></RotaProtegida>} />
+        <Route path="/admin/pendentes" element={<RotaProtegida role="funcionaria"><PendingClaims navigate={navigate} /></RotaProtegida>} />
+        <Route path="/admin/em-processo" element={<RotaProtegida role="funcionaria"><InProcess navigate={navigate} /></RotaProtegida>} />
+        <Route path="/admin/finalizados" element={<RotaProtegida role="funcionaria"><Finalized navigate={navigate} /></RotaProtegida>} />
+        <Route path="/admin/relatorios" element={<RotaProtegida role="funcionaria"><Reports navigate={navigate} /></RotaProtegida>} />
+        <Route path="/admin/funcionarias" element={<RotaProtegida role="funcionaria"><StaffManagement navigate={navigate} /></RotaProtegida>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 

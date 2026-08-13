@@ -1,5 +1,6 @@
 import { LayoutDashboard, Package, Clock, AlertCircle, CheckCircle2, BarChart2, Users, PlusCircle, LogOut, ChevronRight } from 'lucide-react';
 import type { Screen } from '../../App';
+import { useAuth, iniciais } from '../../../contexts/AuthContext';
 
 const navItems: { id: Screen; icon: React.ElementType; label: string }[] = [
   { id: 'admin-dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -19,6 +20,13 @@ interface Props {
 }
 
 export function AdminLayout({ children, current, navigate }: Props) {
+  const { usuario, logout } = useAuth();
+
+  function sair() {
+    logout();          // limpa token e usuário (memória + localStorage)
+    navigate('login'); // volta pra tela de login
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-[#F4F5F7]">
       <aside className="w-[220px] shrink-0 bg-white border-r border-gray-200 flex flex-col">
@@ -59,13 +67,17 @@ export function AdminLayout({ children, current, navigate }: Props) {
         <div className="p-4 border-t border-gray-100">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-[#C8102E]/10 rounded-full flex items-center justify-center text-xs font-semibold text-[#C8102E] shrink-0">
-              AP
+              {iniciais(usuario?.nome)}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900 truncate">Ana Paula</div>
-              <div className="text-[11px] text-gray-400">Diretora</div>
+              <div className="text-sm font-medium text-gray-900 truncate">{usuario?.nome ?? '—'}</div>
+              <div className="text-[11px] text-gray-400 truncate">{usuario?.email ?? ''}</div>
             </div>
-            <button className="text-gray-300 hover:text-gray-600 transition-colors" title="Sair">
+            <button
+              onClick={sair}
+              className="text-gray-300 hover:text-[#C8102E] transition-colors"
+              title="Sair"
+            >
               <LogOut className="size-4" />
             </button>
           </div>

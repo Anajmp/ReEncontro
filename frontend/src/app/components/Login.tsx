@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { authApi } from '../../lib/api';
+import { useAuth } from '../../contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -11,6 +11,7 @@ interface Props {
 }
 
 export function Login({ navigate }: Props) {
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -21,13 +22,11 @@ export function Login({ navigate }: Props) {
     setErro('');
     setCarregando(true);
     try {
-      const resultado = await authApi.login(email, senha);
-      // Guarda o token e os dados do usuário
-      localStorage.setItem('token', resultado.token);
-      localStorage.setItem('usuario', JSON.stringify(resultado.usuario));
+      // O contexto salva o token e o usuário (memória + localStorage)
+      const usuario = await login(email, senha);
 
       // Redireciona conforme o perfil
-      if (resultado.usuario.role === 'funcionaria') {
+      if (usuario.role === 'funcionaria') {
         navigate('admin-dashboard');
       } else {
         navigate('parent-dashboard');
@@ -152,3 +151,4 @@ export function Login({ navigate }: Props) {
     </div>
   );
 }
+
