@@ -1,5 +1,5 @@
 import { useState, useEffect} from 'react';
-import { Search, MapPin, Calendar, LogIn, Check } from 'lucide-react';
+import { Search, MapPin, Calendar, LogIn, Check, User, LogOut  } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -10,6 +10,8 @@ import { itensApi } from '../../lib/api';
 import type { Item } from './shared/data';
 import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
+import { getUsuario, logout } from '../../lib/auth';
+import Logo from "../../assets/LogoInicial.png";
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -106,6 +108,7 @@ export function PublicListing({ navigate }: Props) {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const routerNavigate = useNavigate();
+  const usuario = getUsuario();
 
   useEffect(() => {
     itensApi.listar()
@@ -125,18 +128,36 @@ export function PublicListing({ navigate }: Props) {
     <div className="min-h-screen bg-gray-50 pb-24">
       <header className="bg-white border-b border-gray-200 px-6 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#C8102E] rounded-lg flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-sm">R</span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-bold text-gray-900">ReEncontro</span>
-            <span className="text-gray-400 text-sm hidden sm:inline">Escola Estadual São Paulo</span>
-          </div>
+          <img src={Logo} alt="ReEncontro" className="h-12 w-auto object-contain shrink-0" />
+          <span className="text-gray-400 text-m hidden sm:inline">SESI Nova Odessa</span>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate('login')} className="gap-2">
-          <LogIn className="size-4" />
-          Entrar
-        </Button>
+        {usuario ? (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(usuario.role === 'funcionaria' ? 'admin-dashboard' : 'parent-dashboard')}
+              className="gap-2"
+            >
+              <User className="size-4" />
+              <span className="hidden sm:inline">{usuario.nome.split(' ')[0]}</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { logout(); window.location.reload(); }}
+              className="gap-2 text-gray-500"
+            >
+              <LogOut className="size-4" />
+              <span className="hidden sm:inline">Sair</span>
+            </Button>
+          </div>
+        ) : (
+          <Button variant="outline" size="sm" onClick={() => navigate('login')} className="gap-2">
+            <LogIn className="size-4" />
+            Entrar
+          </Button>
+        )}
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
