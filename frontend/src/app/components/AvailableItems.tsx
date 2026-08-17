@@ -5,7 +5,8 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { StatusBadge } from './shared/StatusBadge';
 import { AdminLayout } from './shared/AdminLayout';
-import { items } from './shared/data';
+import { useEffect } from 'react';
+import { itensApi, reivindicacoesApi } from '../../lib/api';
 import type { Screen } from '../App';
 
 interface Props {
@@ -15,6 +16,28 @@ interface Props {
 export function AvailableItems({ navigate }: Props) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
+  const [items, setItems] = useState<any[]>([]);
+
+  async function carregar() {
+    try {
+      const dados = await itensApi.listar();
+      setItems(dados);
+    } catch (err) {
+      console.error('Erro ao carregar itens:', err);
+    }
+  }
+
+  useEffect(() => { carregar(); }, []);
+
+  async function descartar(id: number, nome: string) {
+    if (!confirm(`Descartar o item "${nome}"? Ele sairá da listagem.`)) return;
+    try {
+      await itensApi.descartar(id);
+      carregar();
+    } catch (err: any) {
+      alert(err.message || 'Erro ao descartar');
+    }
+  }
 
   const filtered = items.filter(item => {
     const q = search.toLowerCase();
@@ -139,7 +162,10 @@ export function AvailableItems({ navigate }: Props) {
                         <button className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
                           <Pencil className="size-3.5" />
                         </button>
-                        <button className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
+                        <button
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                          onClick={() => descartar(item.id, item.name)}
+                        >
                           <Trash2 className="size-3.5" />
                         </button>
                       </div>

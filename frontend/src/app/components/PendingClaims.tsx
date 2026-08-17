@@ -1,13 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, X, Mail, Phone, User, GraduationCap } from 'lucide-react';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Label } from './ui/label';
 import { StatusBadge } from './shared/StatusBadge';
 import { AdminLayout } from './shared/AdminLayout';
-import { claims } from './shared/data';
-import type { Claim } from './shared/data';
-import type { Screen } from '../App';
+import { reivindicacoesApi } from '../../lib/api';
+import type { Screen } from '../App'
+import type { Status } from './shared/data';;
+
+
+interface Claim {
+  id: number;
+  itemId: number;
+  itemName: string;
+  itemImage: string;
+  claimantName: string;
+  claimantEmail: string;
+  claimantPhone: string;
+  studentName: string;
+  studentRoom: string;
+  studentPeriod: string;
+  date: string;
+  status: Status;
+}
+
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -81,14 +98,35 @@ function RejectionModal({
 }
 
 export function PendingClaims({ navigate }: Props) {
-  const pendingClaims = claims.filter(c => c.status === 'Pendente');
   const [rejecting, setRejecting] = useState<Claim | null>(null);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [approved, setApproved] = useState<number[]>([]);
   const [rejected, setRejected] = useState<number[]>([]);
+  const [pendingClaims, setPendingClaims] = useState<Claim[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleApprove = (id: number) => {
-    setApproved(prev => [...prev, id]);
+  // Busca os pendentes reais do backend
+  async function carregar() {
+    setLoading(true);
+    try {
+      const dados = await reivindicacoesApi.listarPendentes();
+      setPendingClaims(dados);
+    } catch (err) {
+      console.error('Erro ao carregar pendentes:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { carregar(); }, []);
+
+ const handleApprove = async (id: number) => {
+    try {
+      await reivindicacoesApi.aprovar(id);
+      carregar();  // recarrega a lista (o item aprovado sai dos pendentes)
+    } catch (err: any) {
+      alert(err.message || 'Erro ao aprovar');
+    }
   };
 
   const handleReject = (claim: Claim) => {
@@ -96,13 +134,19 @@ export function PendingClaims({ navigate }: Props) {
     setRejectOpen(true);
   };
 
-  const confirmReject = (_reason: string) => {
-    if (rejecting) setRejected(prev => [...prev, rejecting.id]);
-    setRejectOpen(false);
-    setRejecting(null);
+  const confirmReject = async (reason: string) => {
+    if (!rejecting) return;
+    try {
+      await reivindicacoesApi.rejeitar(rejecting.id, reason);
+      setRejectOpen(false);
+      setRejecting(null);
+      carregar();  // recarrega
+    } catch (err: any) {
+      alert(err.message || 'Erro ao rejeitar');
+    }
   };
 
-  const visibleClaims = pendingClaims.filter(c => !approved.includes(c.id) && !rejected.includes(c.id));
+  const visibleClaims = pendingClaims;
 
   return (
     <AdminLayout current="pending-claims" navigate={navigate}>
@@ -143,7 +187,6 @@ export function PendingClaims({ navigate }: Props) {
                     </div>
                     <StatusBadge status={claim.status} />
                   </div>
-
                   <div className="space-y-1.5 mb-3">
                     <div className="flex items-center gap-2 text-xs text-gray-600">
                       <User className="size-3.5 text-gray-400 shrink-0" />
@@ -165,7 +208,7 @@ export function PendingClaims({ navigate }: Props) {
                     <div className="flex items-center gap-2 text-xs text-gray-600">
                       <GraduationCap className="size-3.5 text-gray-400 shrink-0" />
                       <span>
-                        <strong>{claim.studentName}</strong> · {claim.room} · {claim.period}
+                        <strong>{claim.studentName}</strong> · {claim.studentRoom} · {claim.studentPeriod}
                       </span>
                     </div>
                   </div>

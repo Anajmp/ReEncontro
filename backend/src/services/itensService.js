@@ -3,7 +3,7 @@
 // Não conhece req/res (isso é do controller) nem escreve SQL (isso é
 // do repository). Aqui ficam as regras e a orquestração.
 // =====================================================================
-import { itensRepository } from '../repositories/itensRepository.js';
+import { itensRepository } from "../repositories/itensRepository.js";
 
 export const itensService = {
   // Lista itens disponíveis aplicando os filtros recebidos
@@ -15,7 +15,7 @@ export const itensService = {
   async buscarPorId(id) {
     const item = await itensRepository.findById(id);
     if (!item) {
-      throw { status: 404, mensagem: 'Item não encontrado' };
+      throw { status: 404, mensagem: "Item não encontrado" };
     }
     return item;
   },
@@ -24,7 +24,7 @@ export const itensService = {
   // RN-006: pelo menos uma foto é obrigatória.
   async criar(dados, fotos, cadastradoPorUserId) {
     if (!fotos || fotos.length === 0) {
-      throw { status: 400, mensagem: 'Pelo menos uma foto é obrigatória' };
+      throw { status: 400, mensagem: "Pelo menos uma foto é obrigatória" };
     }
 
     const itemId = await itensRepository.create({
@@ -36,7 +36,7 @@ export const itensService = {
     for (let i = 0; i < fotos.length; i++) {
       await itensRepository.addFoto({
         itemId,
-        url: fotos[i].path,             // URL devolvida pelo Cloudinary
+        url: fotos[i].path, // URL devolvida pelo Cloudinary
         cloudinaryPublicId: fotos[i].filename,
         isCapa: i === 0,
         ordem: i,
@@ -44,5 +44,17 @@ export const itensService = {
     }
 
     return itensRepository.findById(itemId);
+  },
+
+  async descartar(id, funcionariaId, motivo) {
+    const ok = await itensRepository.descartar(id, funcionariaId, motivo);
+    if (!ok) {
+      throw {
+        status: 409,
+        mensagem:
+          "Item não pode ser descartado (não existe ou já está em processo/entregue)",
+      };
+    }
+    return { id };
   },
 };

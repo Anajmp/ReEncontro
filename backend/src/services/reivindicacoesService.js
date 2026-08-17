@@ -32,4 +32,50 @@ export const reivindicacoesService = {
   async listarPendentes() {
     return reivindicacoesRepository.listarPendentes();
   },
+
+  async aprovar(reivindicacaoId, funcionariaId) {
+    return reivindicacoesRepository.aprovar(reivindicacaoId, funcionariaId);
+  },
+
+  async rejeitar(reivindicacaoId, funcionariaId, motivo) {
+    // Regra: motivo é obrigatório (RN-014)
+    if (!motivo || motivo.trim().length < 3) {
+      throw { status: 400, mensagem: "Informe o motivo da rejeição" };
+    }
+    return reivindicacoesRepository.rejeitar(
+      reivindicacaoId,
+      funcionariaId,
+      motivo.trim(),
+    );
+  },
+
+  async confirmarEntrega(reivindicacaoId, funcionariaId) {
+    return reivindicacoesRepository.confirmarEntrega(
+      reivindicacaoId,
+      funcionariaId,
+    );
+  },
+
+  async cancelar(reivindicacaoId, funcionariaId, motivo) {
+    if (!motivo || motivo.trim().length < 3) {
+      throw { status: 400, mensagem: "Informe o motivo do cancelamento" };
+    }
+    return reivindicacoesRepository.cancelar(
+      reivindicacaoId,
+      funcionariaId,
+      motivo.trim(),
+    );
+  },
+
+  async reverterEntrega(itemId, funcionariaId) {
+    return reivindicacoesRepository.reverterEntrega(itemId, funcionariaId);
+  },
+
+  async listarEmProcesso() {
+    return reivindicacoesRepository.listarEmProcesso();
+  },
+
+  async listarMinhas(userId) {
+    return reivindicacoesRepository.listarPorUsuario(userId);
+  },
 };

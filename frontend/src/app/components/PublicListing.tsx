@@ -6,25 +6,78 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { StatusBadge } from './shared/StatusBadge';
-import { itensApi } from '../../lib/api';
+import { itensApi, reivindicacoesApi } from '../../lib/api';
 import type { Item } from './shared/data';
 import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { getUsuario, logout } from '../../lib/auth';
 import Logo from "../../assets/LogoInicial.png";
 
+
 interface Props {
   navigate: (s: Screen) => void;
 }
 
 function ClaimModal({ item, open, onClose }: { item: Item | null; open: boolean; onClose: () => void }) {
+  const usuario = getUsuario();
   const [submitted, setSubmitted] = useState(false);
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [nomeAluno, setNomeAluno] = useState('');
+  const [sala, setSala] = useState('');
+  const [periodo, setPeriodo] = useState('');
+  const [erro, setErro] = useState('');
+  const [enviando, setEnviando] = useState(false);
+
+  // Pré-preenche nome e email se estiver logado
+  useEffect(() => {
+    if (usuario) {
+      setNome(usuario.nome || '');
+      setEmail(usuario.email || '');
+    }
+  }, [open]);
 
   if (!item) return null;
 
+  async function enviar() {
+    setErro('');
+    if (!item) return;   // ← garante que item existe (satisfaz o TypeScript)
+    // Validação básica
+    if (!nome || !email || !nomeAluno || !sala || !periodo) {
+      setErro('Preencha todos os campos obrigatórios (*)');
+      return;
+    }
+    setEnviando(true);
+    try {
+      await reivindicacoesApi.criar({
+        item_id: item.id,
+        nome_requerente: nome,
+        email_requerente: email,
+        telefone_requerente: telefone || undefined,
+        nome_aluno: nomeAluno,
+        sala_aluno: sala,
+        periodo_aluno: periodo,
+      });
+      setSubmitted(true);
+    } catch (err: any) {
+      setErro(err.message || 'Erro ao enviar reivindicação');
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  function fechar() {
+    onClose();
+    setSubmitted(false);
+    // limpa os campos (menos os pré-preenchidos)
+    setNomeAluno(''); setSala(''); setPeriodo(''); setTelefone(''); setErro('');
+    if (!usuario) { setNome(''); setEmail(''); }
+  }
+
   if (submitted) {
     return (
-      <Dialog open={open} onOpenChange={() => { onClose(); setSubmitted(false); }}>
+      <Dialog open={open} onOpenChange={fechar}>
         <DialogContent className="max-w-md">
           <div className="text-center py-6">
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -32,7 +85,7 @@ function ClaimModal({ item, open, onClose }: { item: Item | null; open: boolean;
             </div>
             <h3 className="font-semibold text-gray-900 mb-1">Reivindicação enviada!</h3>
             <p className="text-sm text-gray-500">Você receberá um e-mail em breve. Nossa equipe entrará em contato para confirmar a retirada.</p>
-            <Button className="mt-4 bg-[#C8102E] hover:bg-[#A00D24]" onClick={() => { onClose(); setSubmitted(false); }}>Fechar</Button>
+            <Button className="mt-4 bg-[#C8102E] hover:bg-[#A00D24]" onClick={fechar}>Fechar</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -48,51 +101,63 @@ function ClaimModal({ item, open, onClose }: { item: Item | null; open: boolean;
             Reivindicando: <strong className="text-gray-700">{item.name}</strong>
           </p>
         </DialogHeader>
+
+        {/* Aviso para quem não está logado */}
+        {!usuario && (
+          <div className="bg-amber-50 border border-amber-200 rounded-md px-3 py-2.5 text-sm text-amber-800">
+            💡 Quer acompanhar o status pelo site? <strong>Cadastre-se</strong> antes de reivindicar!
+          </div>
+        )}
+
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="claim-name">Nome completo *</Label>
-              <Input id="claim-name" placeholder="Seu nome completo" />
+              <Input id="claim-name" placeholder="Seu nome completo" value={nome} onChange={e => setNome(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="claim-email">E-mail *</Label>
-              <Input id="claim-email" type="email" placeholder="seu@email.com" />
+              <Input id="claim-email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} />
             </div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="claim-phone">
               Telefone <span className="text-gray-400 font-normal">(opcional)</span>
             </Label>
-            <Input id="claim-phone" placeholder="(11) 99999-9999" />
+            <Input id="claim-phone" placeholder="(11) 99999-9999" value={telefone} onChange={e => setTelefone(e.target.value)} />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2 space-y-1.5">
               <Label htmlFor="claim-student">Nome do aluno *</Label>
-              <Input id="claim-student" placeholder="Nome completo do aluno" />
+              <Input id="claim-student" placeholder="Nome completo do aluno" value={nomeAluno} onChange={e => setNomeAluno(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="claim-room">Sala *</Label>
-              <Input id="claim-room" placeholder="Ex: 5º A" />
+              <Input id="claim-room" placeholder="Ex: 5A" value={sala} onChange={e => setSala(e.target.value)} />
             </div>
           </div>
           <div className="space-y-1.5">
             <Label>Período *</Label>
-            <Select>
+            <Select value={periodo} onValueChange={setPeriodo}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o período" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="manha">Manhã</SelectItem>
                 <SelectItem value="tarde">Tarde</SelectItem>
-                <SelectItem value="noite">Noite</SelectItem>
+                <SelectItem value="integral">Integral</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          {erro && (
+            <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{erro}</p>
+          )}
         </div>
         <div className="flex gap-3 pt-2 border-t border-gray-100 mt-2">
-          <Button variant="outline" className="flex-1" onClick={onClose}>Cancelar</Button>
-          <Button className="flex-1 bg-[#C8102E] hover:bg-[#A00D24]" onClick={() => setSubmitted(true)}>
-            Enviar reivindicação
+          <Button variant="outline" className="flex-1" onClick={onClose} disabled={enviando}>Cancelar</Button>
+          <Button className="flex-1 bg-[#C8102E] hover:bg-[#A00D24]" onClick={enviar} disabled={enviando}>
+            {enviando ? 'Enviando...' : 'Enviar reivindicação'}
           </Button>
         </div>
       </DialogContent>

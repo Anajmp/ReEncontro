@@ -8,7 +8,9 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { StatusBadge } from './shared/StatusBadge';
 import { ParentLayout } from './shared/ParentLayout';
-import { claims, myStudents } from './shared/data';
+import { useEffect } from 'react';
+import { myStudents } from './shared/data';
+import { reivindicacoesApi } from '../../lib/api';
 import type { Student } from './shared/data';
 import type { Screen } from '../App';
 
@@ -71,9 +73,16 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
   const [editingStudent, setEditingStudent] = useState<Student | undefined>();
   const [tab, setTab] = useState(activeTab === 'students' ? 'students' : 'claims');
 
-  const currentClaims = claims.filter(c => c.status === 'Pendente' || c.status === 'Em Processo');
-  const historyClaims = claims.filter(c => c.status === 'Entregue' || c.status === 'Descartado');
+  const [minhasClaims, setMinhasClaims] = useState<any[]>([]);
 
+  useEffect(() => {
+    reivindicacoesApi.listarMinhas()
+      .then(setMinhasClaims)
+      .catch(err => console.error('Erro ao carregar reivindicações:', err));
+  }, []);
+
+  const currentClaims = minhasClaims.filter(c => c.status === 'Pendente' || c.status === 'Em Processo');
+  const historyClaims = minhasClaims.filter(c => c.status === 'Entregue' || c.status === 'Descartado');
   const current = activeTab === 'students' ? 'my-students' : 'parent-dashboard';
 
   return (
@@ -118,7 +127,7 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-gray-900">{claim.itemName}</div>
                           <div className="text-xs text-gray-500 mt-0.5">
-                            Aluno: {claim.studentName} · {claim.room} · {claim.period}
+                            Aluno: {claim.studentName} · {claim.studentRoom} · {claim.studentPeriod}
                           </div>
                           <div className="text-xs text-gray-400 mt-0.5">Enviado em {claim.date}</div>
                         </div>
@@ -146,7 +155,7 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-gray-900">{claim.itemName}</div>
                           <div className="text-xs text-gray-500 mt-0.5">
-                            Aluno: {claim.studentName} · {claim.room} · {claim.period}
+                            Aluno: {claim.studentName} · {claim.studentRoom} · {claim.studentPeriod}
                           </div>
                           <div className="text-xs text-gray-400 mt-0.5">{claim.date}</div>
                         </div>

@@ -98,4 +98,93 @@ export const itensApi = {
     const dado = await request(`/api/itens/${id}`);
     return traduzirItem(dado);
   },
+  descartar: (id: number) =>
+    request(`/api/itens/${id}/descartar`, { method: 'PATCH' }),
+};
+
+// ===== REIVINDICAÇÕES =====
+
+// Traduz uma reivindicação do backend pro formato da tela
+function traduzirReivindicacao(r: any) {
+  const periodoMap: Record<string, string> = {
+    manha: 'Manhã', tarde: 'Tarde', integral: 'Integral',
+  };
+  return {
+    id: r.id,
+    itemId: r.item_id,
+    itemName: r.item_descricao,
+    itemImage: r.item_foto || 'https://via.placeholder.com/200?text=Sem+foto',
+    claimantName: r.nome_requerente,
+    claimantEmail: r.email_requerente,
+    claimantPhone: r.telefone_requerente || '',
+    studentName: r.nome_aluno,
+    studentRoom: r.sala_aluno,
+    studentPeriod: periodoMap[r.periodo_aluno] || r.periodo_aluno,
+    date: r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '',
+    status: 'Pendente',
+  };
+}
+
+// Tradução para o painel do cliente (inclui status variável)
+function traduzirReivindicacaoCliente(r: any) {
+  const statusMap: Record<string, string> = {
+    pendente: 'Pendente', aprovada: 'Em Processo', rejeitada: 'Descartado',
+    cancelada: 'Descartado', entregue: 'Entregue',
+  };
+  const periodoMap: Record<string, string> = {
+    manha: 'Manhã', tarde: 'Tarde', integral: 'Integral',
+  };
+  return {
+    id: r.id,
+    itemId: r.item_id,
+    itemName: r.item_descricao,
+    itemImage: r.item_foto || 'https://via.placeholder.com/200?text=Sem+foto',
+    studentName: r.nome_aluno,
+    studentRoom: r.sala_aluno,
+    studentPeriod: periodoMap[r.periodo_aluno] || r.periodo_aluno,
+    date: r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '',
+    status: statusMap[r.status] || r.status,
+    motivoRejeicao: r.motivo_rejeicao || '',
+  };
+}
+
+export const reivindicacoesApi = {
+  criar: (dados: any) =>
+    request('/api/reivindicacoes', {
+      method: 'POST',
+      body: JSON.stringify(dados),
+    }),
+
+  async listarPendentes() {
+    const dados = await request('/api/reivindicacoes/pendentes');
+    return dados.map(traduzirReivindicacao);
+  },
+
+  aprovar: (id: number) =>
+    request(`/api/reivindicacoes/${id}/aprovar`, { method: 'PATCH' }),
+
+  rejeitar: (id: number, motivo: string) =>
+    request(`/api/reivindicacoes/${id}/rejeitar`, {
+      method: 'PATCH',
+      body: JSON.stringify({ motivo_rejeicao: motivo }),
+    }),
+
+    async listarEmProcesso() {
+    const dados = await request('/api/reivindicacoes/em-processo');
+    return dados.map(traduzirReivindicacao);
+  },
+
+  confirmarEntrega: (id: number) =>
+    request(`/api/reivindicacoes/${id}/entregar`, { method: 'PATCH' }),
+
+  cancelar: (id: number, motivo: string) =>
+    request(`/api/reivindicacoes/${id}/cancelar`, {
+      method: 'PATCH',
+      body: JSON.stringify({ motivo }),
+    }),
+
+    async listarMinhas() {
+    const dados = await request('/api/reivindicacoes/minhas');
+    return dados.map(traduzirReivindicacaoCliente);
+  },
 };

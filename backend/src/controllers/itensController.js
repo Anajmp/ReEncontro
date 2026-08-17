@@ -3,8 +3,8 @@
 // Lê a requisição, valida com o schema, chama o service e devolve a
 // resposta. Erros são repassados ao errorMiddleware via next(err).
 // =====================================================================
-import { itensService } from '../services/itensService.js';
-import { criarItemSchema, listarItensSchema } from '../models/itemSchema.js';
+import { itensService } from "../services/itensService.js";
+import { criarItemSchema, listarItensSchema } from "../models/itemSchema.js";
 
 export const itensController = {
   // GET /api/itens
@@ -34,6 +34,21 @@ export const itensController = {
       const dados = criarItemSchema.parse(req.body);
       const item = await itensService.criar(dados, req.files, req.usuario.id);
       res.status(201).json(item);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  // PATCH /api/itens/:id/descartar
+  async descartar(req, res, next) {
+    try {
+      const { motivo } = req.body;
+      const resultado = await itensService.descartar(
+        Number(req.params.id),
+        req.usuario.id,
+        motivo,
+      );
+      res.json({ mensagem: "Item descartado", ...resultado });
     } catch (err) {
       next(err);
     }
