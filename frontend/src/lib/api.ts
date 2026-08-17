@@ -100,6 +100,11 @@ export const itensApi = {
   },
   descartar: (id: number) =>
     request(`/api/itens/${id}/descartar`, { method: 'PATCH' }),
+  editar: (id: number, dados: any) =>
+    request(`/api/itens/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(dados),
+    }),
 };
 
 // ===== REIVINDICAÇÕES =====
@@ -188,3 +193,4 @@ export const reivindicacoesApi = {
     return dados.map(traduzirReivindicacaoCliente);
   },
 };
+

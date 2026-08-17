@@ -1,22 +1,126 @@
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import { Search, Pencil, Trash2, AlertTriangle, Plus } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { StatusBadge } from './shared/StatusBadge';
 import { AdminLayout } from './shared/AdminLayout';
-import { useEffect } from 'react';
 import { itensApi, reivindicacoesApi } from '../../lib/api';
 import type { Screen } from '../App';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Label } from './ui/label';
 
 interface Props {
   navigate: (s: Screen) => void;
+}
+
+function EditItemModal({ item, open, onClose, onSaved }: {
+  item: any | null; open: boolean; onClose: () => void; onSaved: () => void;
+}) {
+  const [descricao, setDescricao] = useState('');
+  const [categoriaId, setCategoriaId] = useState('');
+  const [local, setLocal] = useState('');
+  const [pontoColetaId, setPontoColetaId] = useState('');
+  const [erro, setErro] = useState('');
+  const [salvando, setSalvando] = useState(false);
+
+  // Preenche com os dados atuais quando abre
+  useEffect(() => {
+    if (item) {
+      setDescricao(item.name || '');
+      setLocal(item.location || '');
+      // categoria e ponto: o item traduzido tem nome, mas o backend quer ID.
+      // Por simplicidade, o usuário reescolhe (começa vazio).
+      setCategoriaId('');
+      setPontoColetaId('');
+    }
+  }, [item, open]);
+
+  if (!item) return null;
+
+  async function salvar() {
+    setErro('');
+    if (!descricao || !categoriaId || !local || !pontoColetaId) {
+      setErro('Preencha todos os campos');
+      return;
+    }
+    setSalvando(true);
+    try {
+      await itensApi.editar(item.id, {
+        descricao,
+        categoria_id: Number(categoriaId),
+        local_encontrado: local,
+        ponto_coleta_id: Number(pontoColetaId),
+      });
+      onSaved();
+      onClose();
+    } catch (err: any) {
+      setErro(err.message || 'Erro ao salvar');
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Editar item</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <Label>Descrição *</Label>
+            <Input value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Descrição do item" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Categoria *</Label>
+            <Select value={categoriaId} onValueChange={setCategoriaId}>
+              <SelectTrigger><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Vestuário</SelectItem>
+                <SelectItem value="2">Acessórios</SelectItem>
+                <SelectItem value="3">Material Escolar</SelectItem>
+                <SelectItem value="4">Eletrônicos</SelectItem>
+                <SelectItem value="5">Calçados</SelectItem>
+                <SelectItem value="6">Outros</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Local encontrado *</Label>
+            <Input value={local} onChange={e => setLocal(e.target.value)} placeholder="Onde foi encontrado" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Ponto de coleta *</Label>
+            <Select value={pontoColetaId} onValueChange={setPontoColetaId}>
+              <SelectTrigger><SelectValue placeholder="Selecione o ponto" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Secretaria</SelectItem>
+                <SelectItem value="2">Sala das Inspetoras</SelectItem>
+                <SelectItem value="3">Portaria</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {erro && <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{erro}</p>}
+        </div>
+        <div className="flex gap-3 pt-2 border-t border-gray-100">
+          <Button variant="outline" className="flex-1" onClick={onClose} disabled={salvando}>Cancelar</Button>
+          <Button className="flex-1 bg-[#C8102E] hover:bg-[#A00D24]" onClick={salvar} disabled={salvando}>
+            {salvando ? 'Salvando...' : 'Salvar'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export function AvailableItems({ navigate }: Props) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [items, setItems] = useState<any[]>([]);
+  const [editing, setEditing] = useState<any | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  
 
   async function carregar() {
     try {
@@ -159,7 +263,10 @@ export function AvailableItems({ navigate }: Props) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
-                        <button className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                        <button
+                          className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                          onClick={() => { setEditing(item); setEditOpen(true); }}
+                        >
                           <Pencil className="size-3.5" />
                         </button>
                         <button
@@ -191,6 +298,13 @@ export function AvailableItems({ navigate }: Props) {
           </div>
         )}
       </div>
+
+      <EditItemModal
+        item={editing}
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        onSaved={carregar}
+      />
     </AdminLayout>
   );
 }

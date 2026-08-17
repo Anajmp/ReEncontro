@@ -106,4 +106,15 @@ export const itensRepository = {
     );
     return result.affectedRows > 0;
   },
+
+  // Atualiza os dados de texto de um item
+  async update(id, { descricao, categoriaId, localEncontrado, pontoColetaId }) {
+    const [result] = await db.execute(
+      `UPDATE itens
+       SET descricao = ?, categoria_id = ?, local_encontrado = ?, ponto_coleta_id = ?
+       WHERE id = ? AND status IN ('disponivel', 'pendente')`,
+      [descricao, categoriaId, localEncontrado, pontoColetaId, id],
+    );
+    return result.affectedRows > 0;
+  },
 };

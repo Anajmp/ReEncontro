@@ -30,4 +30,7 @@ router.post(
   itensController.criar,
 );
 
+// PATCH /api/itens/:id — editar (só funcionária)
+router.patch("/:id", authMiddleware, apenasFuncionaria, itensController.editar);
+
 export default router;

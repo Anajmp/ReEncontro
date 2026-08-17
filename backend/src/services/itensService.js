@@ -57,4 +57,20 @@ export const itensService = {
     }
     return { id };
   },
+
+  async editar(id, dados) {
+    const ok = await itensRepository.update(id, {
+      descricao: dados.descricao,
+      categoriaId: dados.categoria_id,
+      localEncontrado: dados.local_encontrado,
+      pontoColetaId: dados.ponto_coleta_id,
+    });
+    if (!ok) {
+      throw {
+        status: 409,
+        mensagem: "Item não pode ser editado (não existe ou já foi finalizado)",
+      };
+    }
+    return { id };
+  },
 };

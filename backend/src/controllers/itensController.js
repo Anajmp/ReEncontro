@@ -4,7 +4,11 @@
 // resposta. Erros são repassados ao errorMiddleware via next(err).
 // =====================================================================
 import { itensService } from "../services/itensService.js";
-import { criarItemSchema, listarItensSchema } from "../models/itemSchema.js";
+import {
+  criarItemSchema,
+  listarItensSchema,
+  editarItemSchema,
+} from "../models/itemSchema.js";
 
 export const itensController = {
   // GET /api/itens
@@ -49,6 +53,17 @@ export const itensController = {
         motivo,
       );
       res.json({ mensagem: "Item descartado", ...resultado });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  // PATCH /api/itens/:id
+  async editar(req, res, next) {
+    try {
+      const dados = editarItemSchema.parse(req.body);
+      const resultado = await itensService.editar(Number(req.params.id), dados);
+      res.json({ mensagem: "Item atualizado", ...resultado });
     } catch (err) {
       next(err);
     }
