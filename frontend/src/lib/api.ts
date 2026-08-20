@@ -65,6 +65,15 @@ export const authApi = {
 
 // ===== ITENS =====
 
+// Calcula quantos dias se passaram desde uma data
+function calcularDias(data: string): number {
+  if (!data) return 0;
+  const inicio = new Date(data);
+  const hoje = new Date();
+  const diff = hoje.getTime() - inicio.getTime();
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
+
 // Traduz um item do formato do backend pro formato que as telas usam
 function traduzirItem(itemBackend: any) {
   const statusMap: Record<string, string> = {
@@ -85,7 +94,7 @@ function traduzirItem(itemBackend: any) {
     image: itemBackend.foto_capa || 'https://via.placeholder.com/400x300?text=Sem+foto',
     description: itemBackend.descricao,
     collectionPoint: itemBackend.ponto_coleta || '',
-    daysFound: 0,
+    daysFound: calcularDias(itemBackend.data_disponibilizacao || itemBackend.data_encontrado),
   };
 }
 

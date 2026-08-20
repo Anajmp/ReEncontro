@@ -10,7 +10,7 @@ export const itensRepository = {
   async findDisponiveis({ categoriaId, dataInicio, dataFim } = {}) {
     let sql = `
       SELECT
-        i.id, i.descricao, i.local_encontrado, i.data_encontrado, i.status,
+        i.id, i.descricao, i.local_encontrado, i.data_encontrado, i.data_disponibilizacao, i.status,
         c.nome AS categoria,
         pc.nome AS ponto_coleta,
         (SELECT url FROM item_fotos

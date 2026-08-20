@@ -1,11 +1,21 @@
 import { useState } from 'react';
-import { Plus, Trash2, Eye, EyeOff } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+import {
+  Plus, Trash2, Eye, EyeOff, User, Mail, Phone, Lock, GraduationCap, Clock,
+} from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import type { Screen } from '../App';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLoginSplash } from './LoginSplash';
+import {
+  AuthCard,
+  AuthEmblem,
+  AuthError,
+  AuthField,
+  AuthPage,
+  AuthSubmitButton,
+  SectionDivider,
+  authSelectTriggerClass,
+} from './shared/AuthChrome';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -20,7 +30,9 @@ interface StudentEntry {
 
 export function Register({ navigate }: Props) {
   const { registrar } = useAuth();
+  const { playLoginTransition } = useLoginSplash();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmarSenha, setShowConfirmarSenha] = useState(false);
   const [students, setStudents] = useState<StudentEntry[]>([
     { id: 1, name: '', room: '', period: '' },
   ]);
@@ -89,144 +101,161 @@ export function Register({ navigate }: Props) {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left panel */}
-      <div className="hidden lg:flex w-[380px] shrink-0 bg-[#C8102E] flex-col justify-between p-12">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold">R</span>
+    <AuthPage navigate={navigate} center={false}>
+      <AuthCard className="max-w-lg">
+        <AuthEmblem>
+          <User size={22} strokeWidth={1.7} color="#C8102E" />
+        </AuthEmblem>
+
+        <h1 className="mb-1.5 text-2xl font-extrabold text-[#1C1917]">Criar conta</h1>
+        <p className="mb-2 text-sm leading-relaxed text-[#78716C]">
+          Cadastre-se para reivindicar itens encontrados no SESI Nova Odessa.
+        </p>
+
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            if (!carregando) void fazerCadastro();
+          }}
+        >
+          <SectionDivider label="Seus dados" />
+
+          <div className="space-y-4">
+            <AuthField
+              label="Nome completo"
+              leftIcon={<User size={15} strokeWidth={1.6} />}
+              type="text"
+              placeholder="Seu nome completo"
+              value={nome}
+              onChange={e => setNome(e.target.value)}
+              autoComplete="name"
+            />
+
+            <AuthField
+              label="E-mail"
+              leftIcon={<Mail size={15} strokeWidth={1.6} />}
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              autoComplete="email"
+            />
+
+            <AuthField
+              label="Telefone"
+              leftIcon={<Phone size={15} strokeWidth={1.6} />}
+              type="tel"
+              placeholder="(19) 9 0000-0000"
+              value={telefone}
+              onChange={e => setTelefone(e.target.value)}
+              autoComplete="tel"
+            />
+
+            <AuthField
+              label="Senha"
+              leftIcon={<Lock size={15} strokeWidth={1.6} />}
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Mínimo 8 caracteres"
+              value={senha}
+              onChange={e => setSenha(e.target.value)}
+              autoComplete="new-password"
+              rightElement={
+                <button
+                  type="button"
+                  className="text-[#A8A29E] transition-colors hover:text-[#78716C]"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                >
+                  {showPassword ? <EyeOff size={15} strokeWidth={1.6} /> : <Eye size={15} strokeWidth={1.6} />}
+                </button>
+              }
+            />
+
+            <AuthField
+              label="Confirmar senha"
+              leftIcon={<Lock size={15} strokeWidth={1.6} />}
+              type={showConfirmarSenha ? 'text' : 'password'}
+              placeholder="Repita a senha"
+              value={confirmarSenha}
+              onChange={e => setConfirmarSenha(e.target.value)}
+              autoComplete="new-password"
+              rightElement={
+                <button
+                  type="button"
+                  className="text-[#A8A29E] transition-colors hover:text-[#78716C]"
+                  onClick={() => setShowConfirmarSenha(!showConfirmarSenha)}
+                  aria-label={showConfirmarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                >
+                  {showConfirmarSenha ? <EyeOff size={15} strokeWidth={1.6} /> : <Eye size={15} strokeWidth={1.6} />}
+                </button>
+              }
+            />
           </div>
-          <span className="text-white font-bold text-xl">ReEncontro</span>
-        </div>
 
-        <div>
-          <h2 className="text-white/90 leading-tight mb-4">
-            Crie sua conta e<br />acompanhe seus filhos
-          </h2>
-          <p className="text-white/60 text-sm leading-relaxed">
-            Cadastre-se como responsável e receba notificações quando um item de seus alunos for encontrado.
-          </p>
+          <SectionDivider label="Dados do aluno" />
 
-          <div className="mt-8 space-y-3">
-            {['Reivindicação online em minutos', 'Notificações por e-mail', 'Acompanhe o status em tempo real'].map(text => (
-              <div key={text} className="flex items-center gap-3">
-                <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center shrink-0">
-                  <span className="text-white text-[10px]">✓</span>
-                </div>
-                <span className="text-white/70 text-sm">{text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <p className="text-white/30 text-xs">Escola Estadual São Paulo © 2024</p>
-      </div>
-
-      {/* Right panel */}
-      <div className="flex-1 overflow-auto bg-gray-50 flex items-start justify-center py-8 px-6">
-        <div className="w-full max-w-lg">
-          <div className="lg:hidden flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 bg-[#C8102E] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">R</span>
-            </div>
-            <span className="font-bold text-gray-900">ReEncontro</span>
+          <div className="mb-5 flex items-center justify-between">
+            <p className="-mt-1 text-xs leading-relaxed text-[#A8A29E]">
+              Vincule o aluno da sua família para gerenciar reivindicações.
+            </p>
+            <button
+              type="button"
+              onClick={addStudent}
+              className="ml-3 inline-flex shrink-0 items-center gap-1 text-xs font-bold text-[#C8102E] hover:underline hover:underline-offset-2"
+            >
+              <Plus size={13} strokeWidth={2.2} />
+              Adicionar
+            </button>
           </div>
 
-          <div className="mb-6">
-            <h1 className="text-gray-900">Criar conta</h1>
-            <p className="text-gray-500 text-sm mt-1">Preencha seus dados para se cadastrar como responsável.</p>
-          </div>
-
-          {/* Section: Personal data */}
-          <div className="bg-white rounded-lg border border-gray-200 p-5 mb-4">
-            <h3 className="text-gray-900 mb-4">Dados pessoais</h3>
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label>Nome completo *</Label>
-                <Input placeholder="Maria Santos" value={nome} onChange={(e) => setNome(e.target.value)} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>E-mail *</Label>
-                  <Input type="email" placeholder="maria@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Telefone *</Label>
-                  <Input placeholder="(11) 99999-9999" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Senha *</Label>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Mínimo 8 caracteres"
-                      className="pr-10"
-                      value={senha}
-                      onChange={(e) => setSenha(e.target.value)}
-                    />
+          <div className="space-y-4">
+            {students.map((student, index) => (
+              <div key={student.id} className="space-y-4 rounded-2xl border border-[#E7E5E4] bg-[#FAFAF8] p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold tracking-widest text-[#78716C] uppercase">
+                    Aluno {index + 1}
+                  </span>
+                  {students.length > 1 && (
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => removeStudent(student.id)}
+                      className="text-[#A8A29E] transition-colors hover:text-[#C8102E]"
+                      aria-label={`Remover aluno ${index + 1}`}
                     >
-                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      <Trash2 size={14} strokeWidth={1.8} />
                     </button>
-                  </div>
+                  )}
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Confirmar senha *</Label>
-                  <Input type="password" placeholder="Repita a senha" value={confirmarSenha} onChange={(e) => setConfirmarSenha(e.target.value)} />
-                </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Section: Students */}
-          <div className="bg-white rounded-lg border border-gray-200 p-5 mb-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-900">Alunos</h3>
-              <Button variant="outline" size="sm" onClick={addStudent} className="gap-1.5">
-                <Plus className="size-3.5" />
-                Adicionar aluno
-              </Button>
-            </div>
-            <div className="space-y-4">
-              {students.map((student, index) => (
-                <div key={student.id} className="space-y-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Aluno {index + 1}</span>
-                    {students.length > 1 && (
-                      <button
-                        onClick={() => removeStudent(student.id)}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
+                <AuthField
+                  label="Nome do aluno"
+                  leftIcon={<GraduationCap size={15} strokeWidth={1.6} />}
+                  type="text"
+                  placeholder="Nome completo do aluno"
+                  value={student.name}
+                  onChange={e => updateStudent(student.id, 'name', e.target.value)}
+                />
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <AuthField
+                    label="Sala"
+                    leftIcon={<GraduationCap size={15} strokeWidth={1.6} />}
+                    type="text"
+                    placeholder="Ex: 5º A"
+                    value={student.room}
+                    onChange={e => updateStudent(student.id, 'room', e.target.value)}
+                  />
+                  <div>
+                    <label className="mb-1.5 block text-sm font-semibold text-[#1C1917]">Período</label>
+                    <div className="relative">
+                      <div className="pointer-events-none absolute top-1/2 left-3.5 z-10 -translate-y-1/2 text-[#A8A29E]">
+                        <Clock size={15} strokeWidth={1.6} />
+                      </div>
+                      <Select
+                        value={student.period || undefined}
+                        onValueChange={v => updateStudent(student.id, 'period', v)}
                       >
-                        <Trash2 className="size-3.5" />
-                      </button>
-                    )}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Nome do aluno *</Label>
-                    <Input
-                      placeholder="Lucas Santos"
-                      value={student.name}
-                      onChange={e => updateStudent(student.id, 'name', e.target.value)}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label>Sala *</Label>
-                      <Input
-                        placeholder="Ex: 5º A"
-                        value={student.room}
-                        onChange={e => updateStudent(student.id, 'room', e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label>Período *</Label>
-                      <Select onValueChange={v => updateStudent(student.id, 'period', v)}>
-                        <SelectTrigger>
+                        <SelectTrigger className={`${authSelectTriggerClass} pl-10`}>
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                         <SelectContent>
@@ -238,30 +267,28 @@ export function Register({ navigate }: Props) {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
 
-          {erro && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2 mb-3">{erro}</p>
-          )}
+          {erro && <AuthError message={erro} className="mt-5" />}
 
-          <Button
-            className="w-full bg-[#C8102E] hover:bg-[#A00D24]"
-            onClick={fazerCadastro}
-            disabled={carregando}
-          >
+          <AuthSubmitButton className="mt-7" disabled={carregando}>
             {carregando ? 'Criando conta...' : 'Criar conta'}
-          </Button>
+          </AuthSubmitButton>
+        </form>
 
-          <p className="text-center text-sm text-gray-500 mt-4">
-            Já tem conta?{' '}
-            <button className="text-[#C8102E] font-medium hover:underline" onClick={() => navigate('login')}>
-              Entrar
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
+        <p className="mt-6 text-center text-sm text-[#78716C]">
+          Já tem conta?{' '}
+          <button
+            type="button"
+            className="font-bold text-[#C8102E] underline-offset-2 transition-colors hover:underline"
+            onClick={playLoginTransition}
+          >
+            Entrar
+          </button>
+        </p>
+      </AuthCard>
+    </AuthPage>
   );
 }

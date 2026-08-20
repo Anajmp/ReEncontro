@@ -1,9 +1,13 @@
 import { useState } from 'react';
-import { ArrowLeft, Mail, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+import { Mail, Eye, EyeOff, Lock, Check } from 'lucide-react';
 import type { Screen } from '../App';
+import {
+  AuthCard,
+  AuthEmblem,
+  AuthField,
+  AuthPage,
+  AuthSubmitButton,
+} from './shared/AuthChrome';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -11,133 +15,149 @@ interface Props {
 
 type Step = 'email' | 'sent' | 'new-password' | 'done';
 
+function BackToLogin({ onClick }: { onClick: () => void }) {
+  return (
+    <div className="mt-7 flex justify-center">
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex items-center gap-1.5 text-sm font-semibold text-[#78716C] transition-colors hover:text-[#C8102E]"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+          <path d="M10 12 L6 8 L10 4" />
+        </svg>
+        Voltar para o login
+      </button>
+    </div>
+  );
+}
+
 export function ResetPassword({ navigate }: Props) {
   const [step, setStep] = useState<Step>('email');
   const [showPw, setShowPw] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="w-full max-w-sm">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 bg-[#C8102E] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">R</span>
-          </div>
-          <span className="font-bold text-gray-900">ReEncontro</span>
-        </div>
-
-        {/* Step: Email input */}
+    <AuthPage navigate={navigate}>
+      <AuthCard>
         {step === 'email' && (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
-            <div className="w-12 h-12 bg-[#C8102E]/10 rounded-xl flex items-center justify-center mx-auto mb-5">
-              <Mail className="size-6 text-[#C8102E]" />
-            </div>
-            <h1 className="text-center text-gray-900 mb-1">Redefinir senha</h1>
-            <p className="text-sm text-center text-gray-500 mb-6">
-              Informe seu e-mail e enviaremos um link de redefinição.
+          <>
+            <AuthEmblem>
+              <Lock size={22} strokeWidth={1.7} color="#C8102E" />
+            </AuthEmblem>
+            <h1 className="mb-1.5 text-2xl font-extrabold text-[#1C1917]">Esqueci minha senha</h1>
+            <p className="mb-7 text-sm leading-relaxed text-[#78716C]">
+              Digite seu e-mail cadastrado e enviaremos um link para redefinir sua senha.
             </p>
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="reset-email">E-mail cadastrado</Label>
-                <Input id="reset-email" type="email" placeholder="seu@email.com" defaultValue="maria.santos@email.com" />
-              </div>
-              <Button
-                className="w-full bg-[#C8102E] hover:bg-[#A00D24]"
-                onClick={() => setStep('sent')}
-              >
-                Enviar link de redefinição
-              </Button>
-            </div>
-            <button
-              onClick={() => navigate('login')}
-              className="flex items-center justify-center gap-1.5 w-full mt-4 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            <form
+              className="space-y-4"
+              onSubmit={e => {
+                e.preventDefault();
+                setStep('sent');
+              }}
             >
-              <ArrowLeft className="size-3.5" />
-              Voltar ao login
-            </button>
-          </div>
+              <AuthField
+                id="reset-email"
+                label="E-mail cadastrado"
+                leftIcon={<Mail size={15} strokeWidth={1.6} />}
+                type="email"
+                placeholder="seu@email.com"
+                defaultValue="maria.santos@email.com"
+                autoComplete="email"
+              />
+              <AuthSubmitButton>Enviar link de redefinição</AuthSubmitButton>
+            </form>
+            <BackToLogin onClick={() => navigate('login')} />
+          </>
         )}
 
-        {/* Step: Email sent */}
         {step === 'sent' && (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm text-center">
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-5">
-              <CheckCircle2 className="size-6 text-green-600" />
+          <>
+            <div className="py-4 text-center">
+              <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-[#DCFCE7]">
+                <Check size={28} color="#16A34A" strokeWidth={2.5} />
+              </div>
+              <h2 className="mb-2 text-xl font-extrabold text-[#1C1917]">E-mail enviado!</h2>
+              <p className="mb-1.5 text-sm leading-relaxed text-[#78716C]">
+                Enviamos um link de redefinição para:
+              </p>
+              <p className="mb-5 truncate text-sm font-bold text-[#1C1917]">maria.santos@email.com</p>
+              <div className="rounded-xl border border-[#E7E5E4] bg-[#FAFAF8] px-4 py-3 text-xs leading-relaxed text-[#A8A29E]">
+                Verifique também a pasta de spam. O link expira em{' '}
+                <span className="font-semibold text-[#78716C]">30 minutos</span>.
+              </div>
             </div>
-            <h1 className="text-gray-900 mb-1">E-mail enviado!</h1>
-            <p className="text-sm text-gray-500 mb-6">
-              Enviamos um link de redefinição para <strong>maria.santos@email.com</strong>. Verifique sua caixa de entrada.
-            </p>
-            <Button variant="outline" className="w-full mb-3" onClick={() => setStep('new-password')}>
-              Simular: abrir link recebido
-            </Button>
             <button
-              onClick={() => navigate('login')}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              type="button"
+              className="mt-5 w-full rounded-xl border border-[#E7E5E4] bg-white py-3 text-sm font-bold text-[#78716C] transition-all hover:border-[#C8102E]/30 hover:text-[#C8102E] active:scale-[0.98]"
+              onClick={() => setStep('new-password')}
             >
-              Voltar ao login
+              Simular: abrir link recebido
             </button>
-          </div>
+            <BackToLogin onClick={() => navigate('login')} />
+          </>
         )}
 
-        {/* Step: New password */}
         {step === 'new-password' && (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
-            <div className="w-12 h-12 bg-[#C8102E]/10 rounded-xl flex items-center justify-center mx-auto mb-5">
-              <svg className="size-6 text-[#C8102E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-              </svg>
-            </div>
-            <h1 className="text-center text-gray-900 mb-1">Nova senha</h1>
-            <p className="text-sm text-center text-gray-500 mb-6">Escolha uma nova senha segura para sua conta.</p>
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label>Nova senha</Label>
-                <div className="relative">
-                  <Input
-                    type={showPw ? 'text' : 'password'}
-                    placeholder="Mínimo 8 caracteres"
-                    className="pr-10"
-                  />
+          <>
+            <AuthEmblem>
+              <Lock size={22} strokeWidth={1.7} color="#C8102E" />
+            </AuthEmblem>
+            <h1 className="mb-1.5 text-2xl font-extrabold text-[#1C1917]">Nova senha</h1>
+            <p className="mb-7 text-sm leading-relaxed text-[#78716C]">
+              Escolha uma nova senha segura para sua conta.
+            </p>
+            <form
+              className="space-y-4"
+              onSubmit={e => {
+                e.preventDefault();
+                setStep('done');
+              }}
+            >
+              <AuthField
+                label="Nova senha"
+                leftIcon={<Lock size={15} strokeWidth={1.6} />}
+                type={showPw ? 'text' : 'password'}
+                placeholder="Mínimo 8 caracteres"
+                rightElement={
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="text-[#A8A29E] transition-colors hover:text-[#78716C]"
                     onClick={() => setShowPw(!showPw)}
+                    aria-label={showPw ? 'Ocultar senha' : 'Mostrar senha'}
                   >
-                    {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    {showPw ? <EyeOff size={15} strokeWidth={1.6} /> : <Eye size={15} strokeWidth={1.6} />}
                   </button>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Confirmar nova senha</Label>
-                <Input type="password" placeholder="Repita a nova senha" />
-              </div>
-              <Button
-                className="w-full bg-[#C8102E] hover:bg-[#A00D24]"
-                onClick={() => setStep('done')}
-              >
-                Redefinir senha
-              </Button>
-            </div>
-          </div>
+                }
+              />
+              <AuthField
+                label="Confirmar nova senha"
+                leftIcon={<Lock size={15} strokeWidth={1.6} />}
+                type="password"
+                placeholder="Repita a nova senha"
+              />
+              <AuthSubmitButton>Redefinir senha</AuthSubmitButton>
+            </form>
+            <BackToLogin onClick={() => navigate('login')} />
+          </>
         )}
 
-        {/* Step: Done */}
         {step === 'done' && (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm text-center">
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-5">
-              <CheckCircle2 className="size-6 text-green-600" />
+          <>
+            <div className="py-4 text-center">
+              <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-[#DCFCE7]">
+                <Check size={28} color="#16A34A" strokeWidth={2.5} />
+              </div>
+              <h2 className="mb-2 text-xl font-extrabold text-[#1C1917]">Senha redefinida!</h2>
+              <p className="mb-6 text-sm leading-relaxed text-[#78716C]">
+                Sua senha foi atualizada com sucesso. Faça login para continuar.
+              </p>
+              <AuthSubmitButton type="button" onClick={() => navigate('login')}>
+                Ir para o login
+              </AuthSubmitButton>
             </div>
-            <h1 className="text-gray-900 mb-1">Senha redefinida!</h1>
-            <p className="text-sm text-gray-500 mb-6">Sua senha foi atualizada com sucesso. Faça login para continuar.</p>
-            <Button
-              className="w-full bg-[#C8102E] hover:bg-[#A00D24]"
-              onClick={() => navigate('login')}
-            >
-              Ir para o login
-            </Button>
-          </div>
+          </>
         )}
-      </div>
-    </div>
+      </AuthCard>
+    </AuthPage>
   );
 }

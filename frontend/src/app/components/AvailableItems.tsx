@@ -227,7 +227,7 @@ export function AvailableItems({ navigate }: Props) {
                 {filtered.map(item => (
                   <tr
                     key={item.id}
-                    className={`hover:bg-gray-50 transition-colors ${item.daysFound > 90 ? 'bg-amber-50/60' : ''}`}
+                    className={`hover:bg-gray-50 transition-colors ${item.daysFound > 0 ? 'bg-amber-50/60' : ''}`}
                   >
                     <td className="px-4 py-3 text-xs text-gray-400">{item.id}</td>
                     <td className="px-4 py-3">
@@ -238,7 +238,14 @@ export function AvailableItems({ navigate }: Props) {
                           className="w-10 h-10 rounded-md object-cover bg-gray-100 shrink-0"
                         />
                         <div className="min-w-0">
-                          <div className="font-medium text-gray-900 truncate max-w-[160px]">{item.name}</div>
+                        <div className="flex items-center gap-2">
+  <span className="font-medium text-gray-900 truncate max-w-[160px]">{item.name}</span>
+  {item.daysFound > 0 && (
+    <span className="inline-flex items-center rounded-md bg-red-100 text-red-700 border border-red-200 px-1.5 py-0.5 text-[10px] font-semibold shrink-0">
+      +90 dias
+    </span>
+  )}
+</div>
                           <div className="text-xs text-gray-400 truncate max-w-[160px]">{item.description.slice(0, 40)}…</div>
                         </div>
                       </div>
@@ -252,7 +259,7 @@ export function AvailableItems({ navigate }: Props) {
                       <StatusBadge status={item.status} />
                     </td>
                     <td className="px-4 py-3">
-                      {item.daysFound > 90 ? (
+                      {item.daysFound > 0 ? (
                         <div className="flex items-center gap-1 text-amber-600">
                           <AlertTriangle className="size-3" />
                           <span className="text-xs font-medium">{item.daysFound}d</span>

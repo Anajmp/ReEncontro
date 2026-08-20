@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Eye, EyeOff } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import type { Screen } from '../App';
+import {
+  AuthCard,
+  AuthEmblem,
+  AuthError,
+  AuthField,
+  AuthPage,
+  AuthSubmitButton,
+} from './shared/AuthChrome';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -39,116 +44,90 @@ export function Login({ navigate }: Props) {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left panel */}
-      <div className="hidden lg:flex w-[420px] shrink-0 bg-[#C8102E] flex-col justify-between p-12">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold">R</span>
-          </div>
-          <span className="text-white font-bold text-xl">ReEncontro</span>
-        </div>
+    <AuthPage navigate={navigate}>
+      <AuthCard>
+        <AuthEmblem>
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#C8102E" strokeWidth="1.9" strokeLinecap="round" aria-hidden>
+            <circle cx="9.5" cy="9.5" r="7" />
+            <path d="M14.8 14.8 L20 20" />
+          </svg>
+        </AuthEmblem>
 
-        <div>
-          <h2 className="text-white/90 leading-tight mb-4">
-            Achados e perdidos<br />inteligente para escolas
-          </h2>
-          <p className="text-white/60 text-sm leading-relaxed">
-            Gerencie itens encontrados, acompanhe reivindicações e devolva objetos para seus donos com facilidade.
-          </p>
+        <h1 className="mb-1.5 text-2xl font-extrabold text-[#1C1917]">Bem-vindo de volta</h1>
+        <p className="mb-7 text-sm leading-relaxed text-[#78716C]">
+          Entre para acompanhar suas reivindicações.
+        </p>
 
-          <div className="mt-10 space-y-3">
-            {[
-              { n: '247', label: 'Itens devolvidos em 2024' },
-              { n: '94%', label: 'Taxa de devolução' },
-              { n: '3 dias', label: 'Tempo médio de resolução' },
-            ].map(({ n, label }) => (
-              <div key={label} className="flex items-center gap-4">
-                <div className="text-white font-bold">{n}</div>
-                <div className="text-white/50 text-sm">{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {erro && <AuthError message={erro} className="mb-5" />}
 
-        <p className="text-white/30 text-xs">Escola Estadual São Paulo © 2024</p>
-      </div>
+        <form
+          className="space-y-4"
+          onSubmit={e => {
+            e.preventDefault();
+            if (!carregando) void fazerLogin();
+          }}
+        >
+          <AuthField
+            id="email"
+            label="E-mail"
+            leftIcon={<Mail size={15} strokeWidth={1.6} />}
+            type="email"
+            placeholder="seu@email.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            autoComplete="email"
+          />
 
-      {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center bg-gray-50 p-6">
-        <div className="w-full max-w-sm">
-          <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 bg-[#C8102E] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">R</span>
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label htmlFor="password" className="text-sm font-semibold text-[#1C1917]">
+                Senha
+              </label>
+              <button
+                type="button"
+                className="text-xs font-semibold text-[#C8102E] underline-offset-2 transition-colors hover:underline"
+                onClick={() => navigate('reset-password')}
+              >
+                Esqueci a senha
+              </button>
             </div>
-            <span className="font-bold text-gray-900">ReEncontro</span>
-          </div>
-
-          <div className="mb-8">
-            <h1 className="text-gray-900">Bem-vindo de volta</h1>
-            <p className="text-gray-500 text-sm mt-1">Faça login para acessar o sistema.</p>
-          </div>
-
-          <div className="space-y-5">
-            <div className="space-y-1.5">
-              <Label htmlFor="email">E-mail</Label>
-              <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Senha</Label>
-                <button
-                  className="text-xs text-[#C8102E] hover:underline"
-                  onClick={() => navigate('reset-password')}
-                >
-                  Esqueci minha senha
-                </button>
-              </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  className="pr-10"
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                />
+            <AuthField
+              id="password"
+              leftIcon={<Lock size={15} strokeWidth={1.6} />}
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              value={senha}
+              onChange={e => setSenha(e.target.value)}
+              autoComplete="current-password"
+              rightElement={
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="text-[#A8A29E] transition-colors hover:text-[#78716C]"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                 >
-                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  {showPassword ? <EyeOff size={15} strokeWidth={1.6} /> : <Eye size={15} strokeWidth={1.6} />}
                 </button>
-              </div>
-            </div>
-
-            {erro && (
-              <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{erro}</p>
-            )}
-
-            <Button
-              className="w-full bg-[#C8102E] hover:bg-[#A00D24]"
-              onClick={fazerLogin}
-              disabled={carregando}
-            >
-              {carregando ? 'Entrando...' : 'Entrar'}
-            </Button>
+              }
+            />
           </div>
 
-          <div className="mt-6 text-center text-sm text-gray-500">
-            Responsável por aluno?{' '}
-            <button
-              className="text-[#C8102E] font-medium hover:underline"
-              onClick={() => navigate('register')}
-            >
-              Cadastre-se
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+          <AuthSubmitButton className="mt-2" disabled={carregando}>
+            {carregando ? 'Entrando...' : 'Entrar'}
+          </AuthSubmitButton>
+        </form>
+
+        <p className="mt-7 text-center text-sm text-[#78716C]">
+          Ainda não tem conta?{' '}
+          <button
+            type="button"
+            className="font-bold text-[#C8102E] underline-offset-2 transition-colors hover:underline"
+            onClick={() => navigate('register')}
+          >
+            Criar conta
+          </button>
+        </p>
+      </AuthCard>
+    </AuthPage>
   );
 }
-
