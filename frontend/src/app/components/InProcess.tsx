@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Label } from './ui/label';
 import { StatusBadge } from './shared/StatusBadge';
 import { AdminLayout } from './shared/AdminLayout';
+import { AdminPanel, adminBtnPrimary, adminBtnOutline } from './shared/AdminChrome';
 import type { Status } from './shared/data';
 import type { Screen } from '../App';
 import { reivindicacoesApi } from '../../lib/api';
@@ -45,28 +46,28 @@ function CancelModal({ claim, open, onClose, onConfirm }: {
 
   return (
     <Dialog open={open} onOpenChange={() => { onClose(); setMotivo(''); setError(false); }}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md rounded-2xl border-[#E7E5E4]">
         <DialogHeader>
-          <DialogTitle>Cancelar reivindicação</DialogTitle>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Item: <strong className="text-gray-700">{claim.itemName}</strong>
+          <DialogTitle className="text-[#1C1917]">Cancelar reivindicação</DialogTitle>
+          <p className="mt-0.5 text-sm text-[#78716C]">
+            Item: <strong className="text-[#1C1917]">{claim.itemName}</strong>
           </p>
         </DialogHeader>
         <div className="py-2">
-          <Label htmlFor="cancel-reason">Motivo <span className="text-[#C8102E]">*</span></Label>
+          <Label htmlFor="cancel-reason" className="text-sm font-semibold text-[#1C1917]">Motivo <span className="text-[#C8102E]">*</span></Label>
           <textarea
             id="cancel-reason"
             rows={4}
-            className={`w-full mt-1.5 px-3 py-2 text-sm border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-[#C8102E]/30 ${error ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'}`}
+            className={`mt-1.5 w-full resize-none rounded-xl border px-3 py-2 text-sm focus:border-[#C8102E] focus:outline-none focus:ring-2 focus:ring-[#C8102E]/20 ${error ? 'border-red-300 bg-[#FEE2E2]' : 'border-[#E7E5E4] bg-[#F5F3F0]'}`}
             placeholder="Ex: Responsável não compareceu no prazo."
             value={motivo}
             onChange={e => { setMotivo(e.target.value); setError(false); }}
           />
           {error && <p className="text-xs text-red-600 mt-1">A justificativa é obrigatória.</p>}
         </div>
-        <div className="flex gap-3 pt-2 border-t border-gray-100">
-          <Button variant="outline" className="flex-1" onClick={() => { onClose(); setMotivo(''); setError(false); }}>Voltar</Button>
-          <Button className="flex-1 bg-[#C8102E] hover:bg-[#A00D24]" onClick={confirmar}>Confirmar cancelamento</Button>
+        <div className="flex gap-3 border-t border-[#E7E5E4] pt-2">
+          <Button variant="outline" className={`flex-1 ${adminBtnOutline}`} onClick={() => { onClose(); setMotivo(''); setError(false); }}>Voltar</Button>
+          <Button className={`flex-1 ${adminBtnPrimary}`} onClick={confirmar}>Confirmar cancelamento</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -117,72 +118,67 @@ export function InProcess({ navigate }: Props) {
 
   return (
     <AdminLayout current="in-process" navigate={navigate}>
-      <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-gray-900">Em Processo</h1>
-          <p className="text-sm text-gray-500 mt-1">Reivindicações aprovadas aguardando retirada pelo responsável.</p>
-        </div>
-
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-5 text-sm text-amber-800 flex items-center gap-2">
+      <div className="space-y-5">
+        <div className="flex items-center gap-2 rounded-xl border border-[#FEF3C7] bg-[#FEF3C7]/50 px-4 py-3 text-sm text-[#92400E]">
           <GraduationCap className="size-4 shrink-0" />
           Confira a ficha física do aluno e um documento com foto antes de confirmar a entrega.
         </div>
 
         {loading ? (
-          <p className="text-gray-500 text-center py-16">Carregando...</p>
+          <p className="py-16 text-center text-[#78716C]">Carregando...</p>
         ) : claims.length === 0 ? (
-          <div className="bg-white rounded-lg border border-gray-200 py-16 text-center">
-            <CheckCircle2 className="size-10 text-green-400 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">Nenhum item aguardando retirada.</p>
-          </div>
+          <AdminPanel className="py-16 text-center">
+            <CheckCircle2 className="mx-auto mb-3 size-10 text-[#059669]" />
+            <p className="font-semibold text-[#1C1917]">Nenhum item aguardando retirada.</p>
+          </AdminPanel>
         ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             {claims.map(claim => (
-              <div key={claim.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <AdminPanel key={claim.id} className="overflow-hidden">
                 <div className="flex gap-0">
                   <div className="w-28 shrink-0">
-                    <img src={claim.itemImage} alt={claim.itemName} className="w-full h-full object-cover min-h-[160px]" style={{ maxHeight: 220 }} />
+                    <img src={claim.itemImage} alt={claim.itemName} className="min-h-[160px] w-full object-cover" style={{ maxHeight: 220 }} />
                   </div>
                   <div className="flex-1 p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="font-semibold text-gray-900">{claim.itemName}</div>
+                    <div className="mb-3 flex items-start justify-between">
+                      <div className="font-bold text-[#1C1917]">{claim.itemName}</div>
                       <StatusBadge status={claim.status} />
                     </div>
-                    <div className="space-y-1.5 mb-3">
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
-                        <User className="size-3.5 text-gray-400 shrink-0" />
-                        <span className="font-medium">{claim.claimantName}</span>
+                    <div className="mb-3 space-y-1.5">
+                      <div className="flex items-center gap-2 text-xs text-[#78716C]">
+                        <User className="size-3.5 shrink-0 text-[#A8A29E]" />
+                        <span className="font-semibold">{claim.claimantName}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <Mail className="size-3.5 text-gray-400 shrink-0" />
+                      <div className="flex items-center gap-2 text-xs text-[#78716C]">
+                        <Mail className="size-3.5 shrink-0 text-[#A8A29E]" />
                         {claim.claimantEmail}
                       </div>
                       {claim.claimantPhone && (
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <Phone className="size-3.5 text-gray-400 shrink-0" />
+                        <div className="flex items-center gap-2 text-xs text-[#78716C]">
+                          <Phone className="size-3.5 shrink-0 text-[#A8A29E]" />
                           {claim.claimantPhone}
                         </div>
                       )}
                     </div>
-                    <div className="bg-gray-50 rounded-md px-3 py-2 mb-3">
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
-                        <GraduationCap className="size-3.5 text-gray-400 shrink-0" />
-                        <span><strong>{claim.studentName}</strong> · {claim.studentRoom} · {claim.studentPeriod}</span>
+                    <div className="mb-3 rounded-xl bg-[#F5F3F0] px-3 py-2">
+                      <div className="flex items-center gap-2 text-xs text-[#78716C]">
+                        <GraduationCap className="size-3.5 shrink-0 text-[#A8A29E]" />
+                        <span><strong className="text-[#1C1917]">{claim.studentName}</strong> · {claim.studentRoom} · {claim.studentPeriod}</span>
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" className="flex-1 bg-[#C8102E] hover:bg-[#A00D24] gap-1.5" onClick={() => entregar(claim.id)}>
+                      <Button size="sm" className={`flex-1 gap-1.5 ${adminBtnPrimary}`} onClick={() => entregar(claim.id)}>
                         <CheckCircle2 className="size-3.5" />
                         Confirmar Entrega
                       </Button>
-                      <Button size="sm" variant="outline" className="text-gray-500 gap-1.5" onClick={() => abrirCancelar(claim)}>
+                      <Button size="sm" variant="outline" className={`flex-1 gap-1.5 ${adminBtnOutline}`} onClick={() => abrirCancelar(claim)}>
                         <X className="size-3.5" />
                         Cancelar
                       </Button>
                     </div>
                   </div>
                 </div>
-              </div>
+              </AdminPanel>
             ))}
           </div>
         )}

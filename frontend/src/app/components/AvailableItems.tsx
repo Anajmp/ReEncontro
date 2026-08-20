@@ -5,6 +5,9 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { StatusBadge } from './shared/StatusBadge';
 import { AdminLayout } from './shared/AdminLayout';
+import {
+  AdminPanel, CategoryBadge, adminBtnPrimary, adminInputClass, adminSelectClass,
+} from './shared/AdminChrome';
 import { itensApi, reivindicacoesApi } from '../../lib/api';
 import type { Screen } from '../App';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
@@ -63,19 +66,19 @@ function EditItemModal({ item, open, onClose, onSaved }: {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md rounded-2xl border-[#E7E5E4]">
         <DialogHeader>
-          <DialogTitle>Editar item</DialogTitle>
+          <DialogTitle className="text-[#1C1917]">Editar item</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label>Descrição *</Label>
-            <Input value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Descrição do item" />
+            <Label className="text-sm font-semibold text-[#1C1917]">Descrição *</Label>
+            <Input className={adminInputClass} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Descrição do item" />
           </div>
           <div className="space-y-1.5">
             <Label>Categoria *</Label>
             <Select value={categoriaId} onValueChange={setCategoriaId}>
-              <SelectTrigger><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+              <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">Vestuário</SelectItem>
                 <SelectItem value="2">Acessórios</SelectItem>
@@ -88,12 +91,12 @@ function EditItemModal({ item, open, onClose, onSaved }: {
           </div>
           <div className="space-y-1.5">
             <Label>Local encontrado *</Label>
-            <Input value={local} onChange={e => setLocal(e.target.value)} placeholder="Onde foi encontrado" />
+            <Input className={adminInputClass} value={local} onChange={e => setLocal(e.target.value)} placeholder="Onde foi encontrado" />
           </div>
           <div className="space-y-1.5">
             <Label>Ponto de coleta *</Label>
             <Select value={pontoColetaId} onValueChange={setPontoColetaId}>
-              <SelectTrigger><SelectValue placeholder="Selecione o ponto" /></SelectTrigger>
+              <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione o ponto" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">Secretaria</SelectItem>
                 <SelectItem value="2">Sala das Inspetoras</SelectItem>
@@ -101,11 +104,11 @@ function EditItemModal({ item, open, onClose, onSaved }: {
               </SelectContent>
             </Select>
           </div>
-          {erro && <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{erro}</p>}
+          {erro && <p className="rounded-xl bg-[#FEE2E2] px-3 py-2 text-sm text-[#C8102E]">{erro}</p>}
         </div>
-        <div className="flex gap-3 pt-2 border-t border-gray-100">
-          <Button variant="outline" className="flex-1" onClick={onClose} disabled={salvando}>Cancelar</Button>
-          <Button className="flex-1 bg-[#C8102E] hover:bg-[#A00D24]" onClick={salvar} disabled={salvando}>
+        <div className="flex gap-3 border-t border-[#E7E5E4] pt-2">
+          <Button variant="outline" className="flex-1 rounded-xl border-[#E7E5E4]" onClick={onClose} disabled={salvando}>Cancelar</Button>
+          <Button className={`flex-1 ${adminBtnPrimary}`} onClick={salvar} disabled={salvando}>
             {salvando ? 'Salvando...' : 'Salvar'}
           </Button>
         </div>
@@ -152,35 +155,26 @@ export function AvailableItems({ navigate }: Props) {
 
   return (
     <AdminLayout current="available-items" navigate={navigate}>
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-gray-900">Itens Disponíveis</h1>
-            <p className="text-sm text-gray-500 mt-1">{items.length} itens cadastrados no sistema</p>
-          </div>
-          <Button
-            size="sm"
-            className="bg-[#C8102E] hover:bg-[#A00D24] gap-2"
-            onClick={() => navigate('register-item')}
-          >
+      <div className="space-y-4">
+        <div className="flex items-center justify-end">
+          <Button size="sm" className={`gap-2 ${adminBtnPrimary}`} onClick={() => navigate('register-item')}>
             <Plus className="size-4" />
             Cadastrar item
           </Button>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-[160px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
+        <AdminPanel className="flex flex-wrap gap-3 p-4">
+          <div className="relative min-w-[160px] flex-1">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A8A29E]" />
             <Input
-              className="pl-9"
+              className={`pl-9 ${adminInputClass}`}
               placeholder="Buscar..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className={`w-48 ${adminSelectClass}`}>
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
             <SelectContent>
@@ -194,7 +188,7 @@ export function AvailableItems({ navigate }: Props) {
             </SelectContent>
           </Select>
           <Select defaultValue="all">
-            <SelectTrigger className="w-40">
+            <SelectTrigger className={`w-40 ${adminSelectClass}`}>
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -204,80 +198,81 @@ export function AvailableItems({ navigate }: Props) {
               <SelectItem value="processo">Em Processo</SelectItem>
             </SelectContent>
           </Select>
-          <Input type="date" className="w-44" />
-        </div>
+          <Input type="date" className={`w-44 ${adminInputClass}`} />
+        </AdminPanel>
 
-        {/* Table */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <AdminPanel className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-10">#</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Item</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Categoria</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Local</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Data</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Dias</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Ações</th>
+                <tr className="border-b border-[#E7E5E4] bg-[#F5F3F0]/60">
+                  <th className="w-10 px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">#</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Item</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Categoria</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Local</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Data</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Dias</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-[#E7E5E4]">
                 {filtered.map(item => (
                   <tr
                     key={item.id}
-                    className={`hover:bg-gray-50 transition-colors ${item.daysFound > 0 ? 'bg-amber-50/60' : ''}`}
+                    className={`transition-colors hover:bg-[#F5F3F0]/50 ${item.daysFound > 0 ? 'bg-[#FEF3C7]/30' : ''}`}
                   >
-                    <td className="px-4 py-3 text-xs text-gray-400">{item.id}</td>
+                    <td className="px-4 py-3 text-xs text-[#A8A29E]">{item.id}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-10 h-10 rounded-md object-cover bg-gray-100 shrink-0"
+                          className="size-10 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
                         />
                         <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-  <span className="font-medium text-gray-900 truncate max-w-[160px]">{item.name}</span>
-  {item.daysFound > 0 && (
-    <span className="inline-flex items-center rounded-md bg-red-100 text-red-700 border border-red-200 px-1.5 py-0.5 text-[10px] font-semibold shrink-0">
-      +90 dias
-    </span>
-  )}
-</div>
-                          <div className="text-xs text-gray-400 truncate max-w-[160px]">{item.description.slice(0, 40)}…</div>
+                          <div className="flex items-center gap-2">
+                            <span className="max-w-[160px] truncate font-semibold text-[#1C1917]">{item.name}</span>
+                            {item.daysFound > 0 && (
+                              <span className="inline-flex shrink-0 items-center rounded-full bg-[#FEF3C7] px-1.5 py-0.5 text-[10px] font-bold text-[#D97706]">
+                                +90 dias
+                              </span>
+                            )}
+                          </div>
+                          <div className="max-w-[160px] truncate text-xs text-[#A8A29E]">{item.description.slice(0, 40)}…</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-xs bg-gray-100 text-gray-600 rounded px-2 py-0.5">{item.category}</span>
+                      <CategoryBadge category={item.category} />
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-600">{item.location}</td>
-                    <td className="px-4 py-3 text-xs text-gray-600">{item.date}</td>
+                    <td className="px-4 py-3 text-xs text-[#78716C]">{item.location}</td>
+                    <td className="px-4 py-3 text-xs text-[#78716C]">{item.date}</td>
                     <td className="px-4 py-3">
                       <StatusBadge status={item.status} />
                     </td>
                     <td className="px-4 py-3">
                       {item.daysFound > 0 ? (
-                        <div className="flex items-center gap-1 text-amber-600">
+                        <div className="flex items-center gap-1 text-[#D97706]">
                           <AlertTriangle className="size-3" />
-                          <span className="text-xs font-medium">{item.daysFound}d</span>
+                          <span className="text-xs font-semibold">{item.daysFound}d</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-500">{item.daysFound}d</span>
+                        <span className="text-xs text-[#A8A29E]">{item.daysFound}d</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                          type="button"
+                          className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#F5F3F0] hover:text-[#1C1917]"
                           onClick={() => { setEditing(item); setEditOpen(true); }}
                         >
                           <Pencil className="size-3.5" />
                         </button>
                         <button
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                          type="button"
+                          className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
                           onClick={() => descartar(item.id, item.name)}
                         >
                           <Trash2 className="size-3.5" />
@@ -291,15 +286,14 @@ export function AvailableItems({ navigate }: Props) {
           </div>
 
           {filtered.length === 0 && (
-            <div className="text-center py-10 text-gray-400 text-sm">
+            <div className="py-10 text-center text-sm text-[#A8A29E]">
               Nenhum item encontrado.
             </div>
           )}
-        </div>
+        </AdminPanel>
 
-        {/* Legend */}
         {items.some(i => i.daysFound > 90) && (
-          <div className="mt-3 flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5">
+          <div className="flex items-center gap-2 rounded-xl border border-[#FEF3C7] bg-[#FEF3C7]/50 px-4 py-2.5 text-xs text-[#92400E]">
             <AlertTriangle className="size-3.5 shrink-0" />
             Itens destacados em amarelo estão há mais de 90 dias sem dono. Considere descartá-los conforme política escolar.
           </div>

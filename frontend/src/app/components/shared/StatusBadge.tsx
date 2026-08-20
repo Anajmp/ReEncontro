@@ -1,21 +1,24 @@
-import { cn } from "../ui/utils";
-import type { Status } from "./data";
+import { cn } from '../ui/utils';
+import type { Status } from './data';
 
-const styles: Record<Status, string> = {
-  'Disponível': 'bg-green-100 text-green-700 border-green-200',
-  'Pendente': 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  'Em Processo': 'bg-blue-100 text-blue-700 border-blue-200',
-  'Entregue': 'bg-gray-100 text-gray-600 border-gray-200',
-  'Descartado': 'bg-red-100 text-red-700 border-red-200',
+const styles: Record<Status, { color: string; bg: string }> = {
+  'Disponível': { color: '#059669', bg: '#D1FAE5' },
+  'Pendente': { color: '#D97706', bg: '#FEF3C7' },
+  'Em Processo': { color: '#2563EB', bg: '#DBEAFE' },
+  'Entregue': { color: '#6B7280', bg: '#F3F4F6' },
+  'Descartado': { color: '#C8102E', bg: '#FEE2E2' },
 };
 
 export function StatusBadge({ status, className }: { status: Status; className?: string }) {
+  const cfg = styles[status] ?? { color: '#78716C', bg: '#F5F5F4' };
   return (
-    <span className={cn(
-      'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
-      styles[status] ?? 'bg-gray-100 text-gray-600 border-gray-200',
-      className
-    )}>
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap',
+        className,
+      )}
+      style={{ backgroundColor: cfg.bg, color: cfg.color }}
+    >
       {status}
     </span>
   );

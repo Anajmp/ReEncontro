@@ -1,22 +1,30 @@
 import { useEffect, useState, type ElementType, type ReactNode } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
-import { LayoutDashboard, Package, Clock, AlertCircle, CheckCircle2, BarChart2, Users, PlusCircle, LogOut, ChevronRight } from 'lucide-react';
+import {
+  LayoutDashboard, PlusCircle, Archive, Clock, RefreshCw,
+  CheckCircle2, BarChart2, Users, LogOut, Menu, X,
+} from 'lucide-react';
 import type { Screen } from '../../App';
 import { useAuth, iniciais } from '../../../contexts/AuthContext';
-import Logo from '../../../assets/LogoInicial.png';
+import { LupaMarca } from './LupaMarca';
+import {
+  ADMIN_FONT, AdminAvatar, PAGE_INFO,
+} from './AdminChrome';
 
-const navItems: { id: Screen; icon: ElementType; label: string }[] = [
-  { id: 'admin-dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { id: 'register-item', icon: PlusCircle, label: 'Cadastrar Item' },
-  { id: 'available-items', icon: Package, label: 'Itens Disponíveis' },
-  { id: 'pending-claims', icon: AlertCircle, label: 'Pendentes' },
-  { id: 'in-process', icon: Clock, label: 'Em Processo' },
-  { id: 'finalized', icon: CheckCircle2, label: 'Finalizados' },
-  { id: 'reports', icon: BarChart2, label: 'Relatórios' },
-  { id: 'staff-management', icon: Users, label: 'Gestão de Funcionárias' },
+const NAV_ITEMS: {
+  id: Screen;
+  label: string;
+  Icon: ElementType;
+  adminOnly?: boolean;
+}[] = [
+  { id: 'admin-dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+  { id: 'register-item', label: 'Cadastrar Item', Icon: PlusCircle },
+  { id: 'available-items', label: 'Itens Disponíveis', Icon: Archive },
+  { id: 'pending-claims', label: 'Pendentes', Icon: Clock },
+  { id: 'in-process', label: 'Em Processo', Icon: RefreshCw },
+  { id: 'finalized', label: 'Finalizados', Icon: CheckCircle2 },
+  { id: 'reports', label: 'Relatórios', Icon: BarChart2 },
+  { id: 'staff-management', label: 'Gestão de Funcionárias', Icon: Users, adminOnly: true },
 ];
-
-const easeOut = [0.22, 1, 0.36, 1] as const;
 
 interface Props {
   children: ReactNode;
@@ -24,33 +32,70 @@ interface Props {
   navigate: (s: Screen) => void;
 }
 
-function Hamburger({ aberto }: { aberto: boolean }) {
-  const bar = 'absolute left-1/2 top-1/2 h-[1.75px] w-[18px] -translate-x-1/2 rounded-full bg-gray-800';
-
+function AdminLogo() {
   return (
-    <span className="relative block size-5" aria-hidden>
-      <span
-        className={`${bar} transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
-        style={{ transform: aberto ? 'translate(-50%, -50%) rotate(45deg)' : 'translate(-50%, calc(-50% - 6px))' }}
-      />
-      <span
-        className={`${bar} transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]`}
-        style={{ opacity: aberto ? 0 : 1, transform: 'translate(-50%, -50%)', width: aberto ? 0 : 18 }}
-      />
-      <span
-        className={`${bar} transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
-        style={{ transform: aberto ? 'translate(-50%, -50%) rotate(-45deg)' : 'translate(-50%, calc(-50% + 6px))' }}
-      />
-    </span>
+    <div className="flex items-center gap-2.5">
+      <LupaMarca size={32} />
+      <div>
+        <p className="text-[1rem] font-bold leading-tight tracking-tight text-[#1C1917]">
+          Re<span className="text-[#C8102E]">Encontro</span>
+        </p>
+        <p className="-mt-0.5 text-[10px] font-medium leading-none text-[#78716C]">Painel Administrativo</p>
+      </div>
+    </div>
+  );
+}
+
+function AdminHeader({
+  current,
+  onMenuClick,
+  nome,
+  email,
+  initials,
+}: {
+  current: Screen;
+  onMenuClick: () => void;
+  nome: string;
+  email: string;
+  initials: string;
+}) {
+  const info = PAGE_INFO[current] ?? { title: 'Admin', subtitle: '' };
+  return (
+    <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-[#E7E5E4] bg-white px-6 py-4">
+      <div className="flex min-w-0 items-center gap-4">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="flex size-8 items-center justify-center rounded-lg text-[#78716C] transition-colors hover:text-[#C8102E] lg:hidden"
+          aria-label="Abrir menu"
+        >
+          <Menu size={18} strokeWidth={1.8} />
+        </button>
+        <div className="min-w-0">
+          <h1 className="truncate text-lg font-extrabold leading-tight text-[#1C1917]">{info.title}</h1>
+          {info.subtitle ? (
+            <p className="hidden truncate text-xs text-[#78716C] sm:block">{info.subtitle}</p>
+          ) : null}
+        </div>
+      </div>
+      <div className="flex shrink-0 items-center gap-3">
+        <div className="hidden text-right sm:block">
+          <p className="max-w-[160px] truncate text-sm font-semibold text-[#1C1917]">{nome}</p>
+          <p className="max-w-[160px] truncate text-xs text-[#78716C]">{email}</p>
+        </div>
+        <AdminAvatar initials={initials} size={36} />
+      </div>
+    </header>
   );
 }
 
 export function AdminLayout({ children, current, navigate }: Props) {
   const { usuario, logout } = useAuth();
-  const [menuAberto, setMenuAberto] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isDirectora = Boolean(usuario?.is_diretora);
 
   function fecharMenu() {
-    setMenuAberto(false);
+    setSidebarOpen(false);
   }
 
   function sair() {
@@ -65,147 +110,110 @@ export function AdminLayout({ children, current, navigate }: Props) {
   }
 
   useEffect(() => {
-    if (!menuAberto) return;
-
+    if (!sidebarOpen) return;
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') fecharMenu();
     }
-
     document.addEventListener('keydown', onKey);
     const original = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = original;
     };
-  }, [menuAberto]);
+  }, [sidebarOpen]);
 
   useEffect(() => {
     fecharMenu();
   }, [current]);
 
+  const userInitials = iniciais(usuario?.nome);
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#F4F5F7]">
-      <header className="sticky top-0 z-[60] h-16 shrink-0 border-b border-gray-200 bg-white/90 backdrop-blur-md">
-        <div className="flex h-full items-center gap-3 px-4 sm:px-6">
+    <div className="min-h-screen bg-[#F5F3F0]" style={ADMIN_FONT}>
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/30 lg:hidden"
+          onClick={fecharMenu}
+          aria-hidden
+        />
+      )}
+
+      <aside
+        className={`fixed top-0 left-0 z-30 flex h-full w-[270px] flex-col border-r border-[#E7E5E4] bg-white transition-transform duration-300 ease-in-out ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0`}
+      >
+        <div className="flex items-center justify-between border-b border-[#E7E5E4] px-5 py-5">
+          <AdminLogo />
           <button
             type="button"
-            onClick={() => setMenuAberto(v => !v)}
-            aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
-            aria-expanded={menuAberto}
-            aria-controls="admin-sidebar"
-            className="inline-flex size-10 items-center justify-center rounded-lg text-gray-800 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8102E]/40"
+            onClick={fecharMenu}
+            className="flex size-7 items-center justify-center rounded-lg text-[#78716C] transition-colors hover:text-[#C8102E] lg:hidden"
+            aria-label="Fechar menu"
           >
-            <Hamburger aberto={menuAberto} />
+            <X size={16} strokeWidth={1.8} />
           </button>
+        </div>
 
-          <div className="flex min-w-0 flex-1 items-center gap-2.5">
-            <img src={Logo} alt="ReEncontro" className="h-10 w-auto shrink-0 object-contain sm:h-12" />
-            <div className="hidden min-w-0 sm:block">
-              <div className="truncate font-bold leading-tight text-gray-900">ReEncontro</div>
-              <div className="text-[10px] leading-tight text-gray-400">Painel Administrativo</div>
-            </div>
-          </div>
+        <nav className="flex-1 overflow-y-auto px-3 py-3">
+          {NAV_ITEMS.map(({ id, label, Icon, adminOnly }) => {
+            if (adminOnly && !isDirectora) return null;
+            const isActive = current === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => irPara(id)}
+                className={`relative mb-0.5 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all duration-150 ${
+                  isActive
+                    ? 'bg-[#FEE2E2] text-[#C8102E]'
+                    : 'text-[#1C1917] hover:bg-[#F5F3F0]'
+                }`}
+              >
+                <Icon
+                  size={17}
+                  strokeWidth={isActive ? 2 : 1.7}
+                  className={isActive ? 'text-[#C8102E]' : 'text-[#78716C]'}
+                />
+                <span className="flex-1">{label}</span>
+                {isActive && (
+                  <div className="absolute top-1/2 right-0 h-6 w-1 -translate-y-1/2 rounded-l-full bg-[#C8102E]" />
+                )}
+              </button>
+            );
+          })}
+        </nav>
 
-          <div className="flex shrink-0 items-center gap-2">
-            <div className="hidden text-right sm:block">
-              <div className="max-w-[160px] truncate text-sm font-medium text-gray-900">{usuario?.nome ?? '—'}</div>
-              <div className="max-w-[160px] truncate text-[11px] text-gray-400">{usuario?.email ?? ''}</div>
+        <div className="border-t border-[#E7E5E4] p-4">
+          <div className="flex items-center gap-3">
+            <AdminAvatar initials={userInitials} size={38} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-[#1C1917]">{usuario?.nome ?? '—'}</p>
+              <p className="truncate text-xs text-[#78716C]">{usuario?.email ?? ''}</p>
             </div>
-            <div className="flex size-8 items-center justify-center rounded-full bg-[#C8102E]/10 text-xs font-semibold text-[#C8102E]">
-              {iniciais(usuario?.nome)}
-            </div>
+            <button
+              type="button"
+              onClick={sair}
+              className="flex size-8 items-center justify-center rounded-lg text-[#A8A29E] transition-all hover:bg-[#FEE2E2] hover:text-[#C8102E]"
+              title="Sair"
+            >
+              <LogOut size={15} strokeWidth={1.8} />
+            </button>
           </div>
         </div>
-      </header>
+      </aside>
 
-      <AnimatePresence>
-        {menuAberto && (
-          <motion.div
-            key="overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.22 }}
-            className="fixed inset-0 top-16 z-40 bg-black/40 backdrop-blur-[2px]"
-            onClick={fecharMenu}
-            aria-hidden
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {menuAberto && (
-          <motion.aside
-            key="sidebar"
-            id="admin-sidebar"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Menu administrativo"
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 0.85 }}
-            className="fixed top-16 bottom-0 left-0 z-50 flex w-[min(280px,86vw)] flex-col border-r border-gray-200 bg-white shadow-2xl"
-          >
-            <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
-              {navItems.map((item, i) => {
-                const Icon = item.icon;
-                const isActive = current === item.id;
-                return (
-                  <motion.button
-                    key={item.id}
-                    type="button"
-                    onClick={() => irPara(item.id)}
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.06 + i * 0.035, duration: 0.32, ease: easeOut }}
-                    className={`group flex w-full items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-colors ${
-                      isActive
-                        ? 'bg-[#C8102E]/8 font-medium text-[#C8102E]'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
-                  >
-                    <Icon className={`size-4 shrink-0 ${isActive ? 'text-[#C8102E]' : 'text-gray-400 group-hover:text-gray-600'}`} />
-                    <span className="flex-1 text-left">{item.label}</span>
-                    {isActive && <ChevronRight className="size-3 text-[#C8102E]" />}
-                  </motion.button>
-                );
-              })}
-            </nav>
-
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.28, duration: 0.3, ease: easeOut }}
-              className="border-t border-gray-100 p-4"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#C8102E]/10 text-xs font-semibold text-[#C8102E]">
-                  {iniciais(usuario?.nome)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium text-gray-900">{usuario?.nome ?? '—'}</div>
-                  <div className="truncate text-[11px] text-gray-400">{usuario?.email ?? ''}</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={sair}
-                  className="text-gray-300 transition-colors hover:text-[#C8102E]"
-                  title="Sair"
-                >
-                  <LogOut className="size-4" />
-                </button>
-              </div>
-            </motion.div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-
-      <main className="min-w-0 flex-1 overflow-auto">
-        {children}
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col lg:ml-[270px]">
+        <AdminHeader
+          current={current}
+          onMenuClick={() => setSidebarOpen(true)}
+          nome={usuario?.nome ?? '—'}
+          email={usuario?.email ?? ''}
+          initials={userInitials}
+        />
+        <main className="flex-1 overflow-auto p-5 sm:p-7">{children}</main>
+      </div>
     </div>
   );
 }

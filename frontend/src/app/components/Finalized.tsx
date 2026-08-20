@@ -1,10 +1,10 @@
 import { Search, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { StatusBadge } from './shared/StatusBadge';
 import { AdminLayout } from './shared/AdminLayout';
+import { AdminPanel, CategoryBadge, adminInputClass, adminSelectClass } from './shared/AdminChrome';
 import { items } from './shared/data';
 import type { Screen } from '../App';
 
@@ -32,24 +32,19 @@ export function Finalized({ navigate }: Props) {
 
   return (
     <AdminLayout current="finalized" navigate={navigate}>
-      <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-gray-900">Finalizados</h1>
-          <p className="text-sm text-gray-500 mt-1">Histórico de itens entregues e descartados.</p>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-[160px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
+      <div className="space-y-4">
+        <AdminPanel className="flex flex-wrap gap-3 p-4">
+          <div className="relative min-w-[160px] flex-1">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A8A29E]" />
             <Input
-              className="pl-9"
+              className={`pl-9 ${adminInputClass}`}
               placeholder="Buscar item..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className={`w-44 ${adminSelectClass}`}>
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -58,60 +53,61 @@ export function Finalized({ navigate }: Props) {
               <SelectItem value="Descartado">Descartado</SelectItem>
             </SelectContent>
           </Select>
-          <Input type="date" className="w-44" />
-          <Input type="date" className="w-44" />
-        </div>
+          <Input type="date" className={`w-44 ${adminInputClass}`} />
+          <Input type="date" className={`w-44 ${adminInputClass}`} />
+        </AdminPanel>
 
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <AdminPanel className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Item</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Categoria</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Data</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Funcionária</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Reverter</th>
+                <tr className="border-b border-[#E7E5E4] bg-[#F5F3F0]/60">
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Item</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Categoria</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Data</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Funcionária</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Reverter</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-[#E7E5E4]">
                 {filtered.map(item => {
                   const isRecent = item.daysFound < 30;
                   return (
-                    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={item.id} className="transition-colors hover:bg-[#F5F3F0]/50">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <img
                             src={item.image}
                             alt={item.name}
-                            className="w-10 h-10 rounded-md object-cover bg-gray-100 shrink-0"
+                            className="size-10 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
                           />
                           <div>
-                            <div className="font-medium text-gray-900">{item.name}</div>
-                            <div className="text-xs text-gray-400">{item.location}</div>
+                            <div className="font-semibold text-[#1C1917]">{item.name}</div>
+                            <div className="text-xs text-[#A8A29E]">{item.location}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-xs bg-gray-100 text-gray-600 rounded px-2 py-0.5">{item.category}</span>
+                        <CategoryBadge category={item.category} />
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={item.status} />
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-600">{item.date}</td>
-                      <td className="px-4 py-3 text-xs text-gray-600">{item.staff || '—'}</td>
+                      <td className="px-4 py-3 text-xs text-[#78716C]">{item.date}</td>
+                      <td className="px-4 py-3 text-xs text-[#78716C]">{item.staff || '—'}</td>
                       <td className="px-4 py-3 text-right">
                         {isRecent ? (
                           <button
-                            className="flex items-center gap-1 text-xs text-gray-500 hover:text-[#C8102E] transition-colors ml-auto"
+                            type="button"
+                            className="ml-auto flex items-center gap-1 text-xs text-[#78716C] transition-colors hover:text-[#C8102E]"
                             title="Reverter para disponível"
                           >
                             <RotateCcw className="size-3.5" />
                             Reverter
                           </button>
                         ) : (
-                          <span className="text-xs text-gray-300">—</span>
+                          <span className="text-xs text-[#D6D3D1]">—</span>
                         )}
                       </td>
                     </tr>
@@ -122,11 +118,11 @@ export function Finalized({ navigate }: Props) {
           </div>
 
           {filtered.length === 0 && (
-            <div className="text-center py-10 text-gray-400 text-sm">
+            <div className="py-10 text-center text-sm text-[#A8A29E]">
               Nenhum item no histórico.
             </div>
           )}
-        </div>
+        </AdminPanel>
       </div>
     </AdminLayout>
   );
