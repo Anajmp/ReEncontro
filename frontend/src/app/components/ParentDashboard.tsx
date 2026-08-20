@@ -1,14 +1,8 @@
-import { useState } from 'react';
-import { Plus, Pencil, Trash2, GraduationCap } from 'lucide-react';
-import { Button } from './ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { StatusBadge } from './shared/StatusBadge';
+import { useEffect, useState } from 'react';
+import { Plus, Pencil, GraduationCap, FileText, User, Clock, ChevronDown } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { ParentLayout } from './shared/ParentLayout';
-import { useEffect } from 'react';
+import { ClaimCard, ParentInputField } from './shared/ParentChrome';
 import { myStudents } from './shared/data';
 import { reivindicacoesApi } from '../../lib/api';
 import type { Student } from './shared/data';
@@ -28,50 +22,98 @@ function StudentModal({
   onClose: () => void;
   student?: Student;
 }) {
+  const periodDefault =
+    student?.period === 'Tarde' ? 'Tarde' : student?.period === 'Noite' ? 'Integral' : 'Manhã';
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>{student ? 'Editar aluno' : 'Adicionar aluno'}</DialogTitle>
+      <DialogContent className="max-w-md rounded-3xl border-[#E7E5E4] p-8 sm:max-w-md">
+        <div className="mb-5 flex size-11 items-center justify-center rounded-2xl bg-[#FEE2E2]">
+          <GraduationCap size={20} strokeWidth={1.7} color="#C8102E" />
+        </div>
+        <DialogHeader className="text-left">
+          <DialogTitle className="text-xl font-extrabold text-[#1C1917]">
+            {student ? 'Editar aluno' : 'Adicionar aluno'}
+          </DialogTitle>
+          <DialogDescription className="text-sm leading-relaxed text-[#78716C]">
+            Preencha os dados do aluno vinculado à sua conta.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label>Nome do aluno *</Label>
-            <Input placeholder="Nome completo" defaultValue={student?.name} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>Sala *</Label>
-              <Input placeholder="Ex: 5º A" defaultValue={student?.room} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Período *</Label>
-              <Select defaultValue={student?.period === 'Manhã' ? 'manha' : student?.period === 'Tarde' ? 'tarde' : 'noite'}>
-                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="manha">Manhã</SelectItem>
-                  <SelectItem value="tarde">Tarde</SelectItem>
-                  <SelectItem value="noite">Noite</SelectItem>
-                </SelectContent>
-              </Select>
+          <ParentInputField
+            label="Nome completo"
+            leftIcon={<User size={15} strokeWidth={1.6} />}
+            type="text"
+            placeholder="Nome completo do aluno"
+            defaultValue={student?.name}
+          />
+          <ParentInputField
+            label="Turma / Série"
+            leftIcon={<GraduationCap size={15} strokeWidth={1.6} />}
+            type="text"
+            placeholder="Ex: 2º EM A"
+            defaultValue={student?.room}
+          />
+          <div>
+            <label className="mb-1.5 block text-sm font-semibold text-[#1C1917]">Período</label>
+            <div className="relative">
+              <div className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[#A8A29E]">
+                <Clock size={15} strokeWidth={1.6} />
+              </div>
+              <select
+                defaultValue={periodDefault}
+                className="w-full cursor-pointer appearance-none rounded-xl border border-[#E7E5E4] bg-[#FAFAF8] py-2.5 pr-9 pl-10 text-sm text-[#1C1917] transition-all focus:border-[#C8102E] focus:ring-2 focus:ring-[#C8102E]/20 focus:outline-none"
+              >
+                <option>Manhã</option>
+                <option>Tarde</option>
+                <option>Integral</option>
+              </select>
+              <ChevronDown size={13} className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-[#A8A29E]" />
             </div>
           </div>
         </div>
-        <div className="flex gap-3 pt-2 border-t border-gray-100 mt-1">
-          <Button variant="outline" className="flex-1" onClick={onClose}>Cancelar</Button>
-          <Button className="flex-1 bg-[#C8102E] hover:bg-[#A00D24]" onClick={onClose}>
+        <div className="mt-3 flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl bg-[#F5F3F0] py-2.5 text-sm font-semibold text-[#78716C] transition-all hover:bg-[#EDE9E4]"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl bg-[#C8102E] py-2.5 text-sm font-bold text-white transition-all hover:bg-[#A50D26] active:scale-[0.98]"
+          >
             {student ? 'Salvar alterações' : 'Adicionar aluno'}
-          </Button>
+          </button>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
 
+function studentInitials(name: string) {
+  return name.split(' ').filter(Boolean).slice(0, 2).map(n => n[0]).join('').toUpperCase();
+}
+
+const periodoBg: Record<string, string> = {
+  Manhã: '#FEF3C7',
+  Tarde: '#DBEAFE',
+  Noite: '#EDE9FE',
+  Integral: '#D1FAE5',
+};
+const periodoColor: Record<string, string> = {
+  Manhã: '#B45309',
+  Tarde: '#1D4ED8',
+  Noite: '#7C3AED',
+  Integral: '#059669',
+};
+
 export function ParentDashboard({ navigate, activeTab }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | undefined>();
-  const [tab, setTab] = useState(activeTab === 'students' ? 'students' : 'claims');
+  const [claimsSubTab, setClaimsSubTab] = useState<'claims' | 'history'>('claims');
 
   const [minhasClaims, setMinhasClaims] = useState<any[]>([]);
 
@@ -84,135 +126,151 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
   const currentClaims = minhasClaims.filter(c => c.status === 'Pendente' || c.status === 'Em Processo');
   const historyClaims = minhasClaims.filter(c => c.status === 'Entregue' || c.status === 'Descartado');
   const current = activeTab === 'students' ? 'my-students' : 'parent-dashboard';
+  const showStudents = activeTab === 'students';
+
+  const claimsList = claimsSubTab === 'history' ? historyClaims : currentClaims;
 
   return (
     <ParentLayout current={current} navigate={navigate}>
-      <div className="p-6">
-        {tab !== 'students' ? (
-          <>
-            <div className="mb-6">
-              <h1 className="text-gray-900">Minhas Reivindicações</h1>
-              <p className="text-sm text-gray-500 mt-1">Acompanhe o status das suas reivindicações.</p>
-            </div>
+      {!showStudents ? (
+        <div>
+          <div className="mb-6">
+            <h1 className="mb-1 text-xl font-extrabold text-[#1C1917]">Minhas Reivindicações</h1>
+            <p className="text-sm text-[#78716C]">Acompanhe o status dos seus pedidos de retirada.</p>
+          </div>
 
-            <Tabs
-              value={tab}
-              onValueChange={v => {
-                setTab(v);
-                if (v === 'students') navigate('my-students');
-              }}
-            >
-              <TabsList className="mb-5">
-                <TabsTrigger value="claims">Em andamento ({currentClaims.length})</TabsTrigger>
-                <TabsTrigger value="history">Histórico ({historyClaims.length})</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="claims">
-                {currentClaims.length === 0 ? (
-                  <div className="text-center py-16 text-gray-400">
-                    <p>Nenhuma reivindicação em andamento.</p>
-                    <Button variant="outline" className="mt-4" onClick={() => navigate('public-listing')}>
-                      Buscar itens
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {currentClaims.map(claim => (
-                      <div key={claim.id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-4 hover:border-gray-300 transition-colors">
-                        <img
-                          src={claim.itemImage}
-                          alt={claim.itemName}
-                          className="w-14 h-14 rounded-lg object-cover shrink-0 bg-gray-100"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900">{claim.itemName}</div>
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            Aluno: {claim.studentName} · {claim.studentRoom} · {claim.studentPeriod}
-                          </div>
-                          <div className="text-xs text-gray-400 mt-0.5">Enviado em {claim.date}</div>
-                        </div>
-                        <StatusBadge status={claim.status} />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="history">
-                {historyClaims.length === 0 ? (
-                  <div className="text-center py-16 text-gray-400">
-                    <p>Nenhum item no histórico ainda.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {historyClaims.map(claim => (
-                      <div key={claim.id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-4 opacity-80">
-                        <img
-                          src={claim.itemImage}
-                          alt={claim.itemName}
-                          className="w-14 h-14 rounded-lg object-cover shrink-0 bg-gray-100"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900">{claim.itemName}</div>
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            Aluno: {claim.studentName} · {claim.studentRoom} · {claim.studentPeriod}
-                          </div>
-                          <div className="text-xs text-gray-400 mt-0.5">{claim.date}</div>
-                        </div>
-                        <StatusBadge status={claim.status} />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </>
-        ) : (
-          <>
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-gray-900">Meus Alunos</h1>
-                <p className="text-sm text-gray-500 mt-1">Gerencie os alunos vinculados à sua conta.</p>
-              </div>
-              <Button
-                size="sm"
-                className="bg-[#C8102E] hover:bg-[#A00D24] gap-2"
-                onClick={() => { setEditingStudent(undefined); setModalOpen(true); }}
+          <div className="mb-6 flex w-fit gap-1 rounded-xl border border-[#E7E5E4] bg-white p-1">
+            {([
+              { key: 'claims', label: 'Em andamento', count: currentClaims.length },
+              { key: 'history', label: 'Histórico', count: historyClaims.length },
+            ] as const).map(({ key, label, count }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setClaimsSubTab(key)}
+                className={`flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-150 ${
+                  claimsSubTab === key
+                    ? 'bg-[#C8102E] text-white shadow-sm'
+                    : 'text-[#78716C] hover:text-[#1C1917]'
+                }`}
               >
-                <Plus className="size-4" />
-                Adicionar aluno
-              </Button>
-            </div>
+                {label}
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
+                    claimsSubTab === key ? 'bg-white/25 text-white' : 'bg-[#F5F3F0] text-[#78716C]'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            ))}
+          </div>
 
+          {claimsList.length > 0 ? (
+            <div className="space-y-3">
+              {claimsList.map(claim => (
+                <ClaimCard key={claim.id} claim={claim} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#E7E5E4] bg-white py-20 text-center">
+              <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-[#FEE2E2]">
+                <FileText size={24} strokeWidth={1.4} className="text-[#C8102E]" />
+              </div>
+              <p className="mb-1.5 font-bold text-[#1C1917]">Nenhuma reivindicação aqui</p>
+              <p className="mb-6 max-w-xs text-sm leading-relaxed text-[#A8A29E]">
+                {claimsSubTab === 'history'
+                  ? 'Seu histórico de reivindicações aparecerá aqui.'
+                  : 'Você não tem reivindicações em andamento. Acesse a listagem de itens para iniciar uma.'}
+              </p>
+              {claimsSubTab !== 'history' && (
+                <button
+                  type="button"
+                  onClick={() => navigate('public-listing')}
+                  className="rounded-xl bg-[#C8102E] px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#A50D26] active:scale-[0.98]"
+                >
+                  Ver itens disponíveis
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div>
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <div>
+              <h1 className="mb-1 text-xl font-extrabold text-[#1C1917]">Meus Alunos</h1>
+              <p className="text-sm text-[#78716C]">Alunos vinculados à sua conta.</p>
+            </div>
+            <button
+              type="button"
+              className="flex shrink-0 items-center gap-2 rounded-xl bg-[#C8102E] px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#A50D26] active:scale-[0.98]"
+              onClick={() => { setEditingStudent(undefined); setModalOpen(true); }}
+            >
+              <Plus size={15} strokeWidth={2.2} />
+              Adicionar aluno
+            </button>
+          </div>
+
+          {myStudents.length > 0 ? (
             <div className="space-y-3">
               {myStudents.map(student => (
-                <div key={student.id} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-4">
-                  <div className="w-10 h-10 bg-[#C8102E]/10 rounded-full flex items-center justify-center shrink-0">
-                    <GraduationCap className="size-5 text-[#C8102E]" />
+                <div
+                  key={student.id}
+                  className="flex items-center gap-4 rounded-2xl border border-black/[0.05] bg-white p-4 shadow-sm"
+                >
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FEE2E2]">
+                    <span className="text-sm font-extrabold text-[#C8102E]">{studentInitials(student.name)}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900">{student.name}</div>
-                    <div className="text-xs text-gray-500 mt-0.5">
-                      {student.room} · Período {student.period}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-[#1C1917]">{student.name}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <span className="flex items-center gap-1 text-xs text-[#78716C]">
+                        <GraduationCap size={11} strokeWidth={1.6} />
+                        {student.room}
+                      </span>
+                      <span
+                        className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                        style={{
+                          backgroundColor: periodoBg[student.period] ?? '#F5F5F4',
+                          color: periodoColor[student.period] ?? '#78716C',
+                        }}
+                      >
+                        {student.period}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-                      onClick={() => { setEditingStudent(student); setModalOpen(true); }}
-                    >
-                      <Pencil className="size-3.5" />
-                    </button>
-                    <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#F5F3F0] text-[#78716C] transition-colors hover:bg-[#EDE9E4]"
+                    aria-label="Editar aluno"
+                    onClick={() => { setEditingStudent(student); setModalOpen(true); }}
+                  >
+                    <Pencil size={13} strokeWidth={1.8} />
+                  </button>
                 </div>
               ))}
             </div>
-          </>
-        )}
-      </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#E7E5E4] bg-white py-20 text-center">
+              <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-[#FEE2E2]">
+                <GraduationCap size={24} strokeWidth={1.4} className="text-[#C8102E]" />
+              </div>
+              <p className="mb-1.5 font-bold text-[#1C1917]">Nenhum aluno cadastrado</p>
+              <p className="mb-6 max-w-xs text-sm text-[#A8A29E]">
+                Adicione os alunos da sua família para gerenciar reivindicações.
+              </p>
+              <button
+                type="button"
+                onClick={() => { setEditingStudent(undefined); setModalOpen(true); }}
+                className="rounded-xl bg-[#C8102E] px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#A50D26] active:scale-[0.98]"
+              >
+                Adicionar primeiro aluno
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <StudentModal
         open={modalOpen}

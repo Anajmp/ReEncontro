@@ -5,6 +5,7 @@ import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { ResetPassword } from './components/ResetPassword';
 import { ParentDashboard } from './components/ParentDashboard';
+import { ParentProfile } from './components/ParentProfile';
 import { AdminDashboard } from './components/AdminDashboard';
 import { RegisterItem } from './components/RegisterItem';
 import { AvailableItems } from './components/AvailableItems';
@@ -26,6 +27,7 @@ export type Screen =
   | 'reset-password'
   | 'parent-dashboard'
   | 'my-students'
+  | 'parent-profile'
   | 'admin-dashboard'
   | 'register-item'
   | 'available-items'
@@ -44,6 +46,7 @@ const screenToPath: Record<Screen, string> = {
   'reset-password': '/redefinir-senha',
   'parent-dashboard': '/responsavel/reivindicacoes',
   'my-students': '/responsavel/alunos',
+  'parent-profile': '/responsavel/perfil',
   'admin-dashboard': '/admin',
   'register-item': '/admin/cadastrar-item',
   'available-items': '/admin/itens',
@@ -85,6 +88,7 @@ export default function App() {
           <Route path="/redefinir-senha" element={<ResetPassword navigate={navigate} />} />
           <Route path="/responsavel/reivindicacoes" element={<RotaProtegida role="responsavel"><ParentDashboard navigate={navigate} activeTab="claims" /></RotaProtegida>} />
           <Route path="/responsavel/alunos" element={<RotaProtegida role="responsavel"><ParentDashboard navigate={navigate} activeTab="students" /></RotaProtegida>} />
+          <Route path="/responsavel/perfil" element={<RotaProtegida role="responsavel"><ParentProfile navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin" element={<RotaProtegida role="funcionaria"><AdminDashboard navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin/cadastrar-item" element={<RotaProtegida role="funcionaria"><RegisterItem navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin/itens" element={<RotaProtegida role="funcionaria"><AvailableItems navigate={navigate} /></RotaProtegida>} />

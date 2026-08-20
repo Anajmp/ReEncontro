@@ -10,6 +10,7 @@ const screens: { id: Screen; label: string; group: string }[] = [
   { id: 'reset-password', label: 'Redefinir Senha', group: 'Auth' },
   { id: 'parent-dashboard', label: 'Painel Responsável', group: 'Responsável' },
   { id: 'my-students', label: 'Meus Alunos', group: 'Responsável' },
+  { id: 'parent-profile', label: 'Meu Perfil', group: 'Responsável' },
   { id: 'admin-dashboard', label: 'Dashboard Admin', group: 'Admin' },
   { id: 'register-item', label: 'Cadastrar Item', group: 'Admin' },
   { id: 'available-items', label: 'Itens Disponíveis', group: 'Admin' },
@@ -36,7 +37,7 @@ export function DemoNav({ current, navigate }: Props) {
       <div className="pointer-events-auto">
         {open && (
           <div className="bg-white rounded-xl shadow-2xl border border-gray-200 p-4 mb-2 w-[700px] max-w-[calc(100vw-2rem)]">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3 text-center">Navegação de Demonstração — 17 Telas</div>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3 text-center">Navegação de Demonstração — 18 Telas</div>
             <div className="grid grid-cols-4 gap-4">
               {groups.map(group => (
                 <div key={group}>
