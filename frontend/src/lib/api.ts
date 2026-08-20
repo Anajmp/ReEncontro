@@ -292,3 +292,44 @@ export const reivindicacoesApi = {
   
 };
 
+
+// ===== USUÁRIOS (gestão de funcionárias) =====
+function traduzirFuncionaria(u: any) {
+  return {
+    id: u.id,
+    name: u.nome,
+    email: u.email,
+    phone: u.telefone || '',
+    isDiretora: !!u.is_diretora,
+    role: u.is_diretora ? 'Diretora' : 'Inspetora',
+    active: !!u.ativo,
+    lastLogin: u.ultimo_login_em
+      ? new Date(u.ultimo_login_em).toLocaleDateString('pt-BR')
+      : 'Nunca acessou',
+  };
+}
+
+export const usuariosApi = {
+  async listarFuncionarias() {
+    const dados = await request('/api/usuarios/funcionarias');
+    return dados.map(traduzirFuncionaria);
+  },
+
+  criar: (dados: any) =>
+    request('/api/usuarios/funcionarias', {
+      method: 'POST',
+      body: JSON.stringify(dados),
+    }),
+
+  atualizar: (id: number, dados: any) =>
+    request(`/api/usuarios/funcionarias/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(dados),
+    }),
+
+  alterarStatus: (id: number, ativo: boolean) =>
+    request(`/api/usuarios/funcionarias/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ ativo }),
+    }),
+};
