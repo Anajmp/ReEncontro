@@ -1,33 +1,67 @@
 import { Search, RotateCcw } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { StatusBadge } from './shared/StatusBadge';
 import { AdminLayout } from './shared/AdminLayout';
 import { AdminPanel, CategoryBadge, adminInputClass, adminSelectClass } from './shared/AdminChrome';
-import { items } from './shared/data';
 import type { Screen } from '../App';
+import { itensApi, reivindicacoesApi } from '../../lib/api';
 
 interface Props {
   navigate: (s: Screen) => void;
 }
 
-const finalizedItems = [
-  ...items.filter(i => i.status === 'Entregue' || i.status === 'Descartado'),
-  { ...items[1], id: 101, status: 'Entregue' as const, date: '16/03/2024', staff: 'Ana Paula' },
-  { ...items[6], id: 102, status: 'Entregue' as const, date: '15/03/2024', staff: 'Cláudia Reis' },
-  { ...items[7], id: 103, status: 'Descartado' as const, date: '14/03/2024', staff: 'Fernanda Lima' },
-].filter((item, idx, arr) => arr.findIndex(i => i.id === item.id) === idx);
-
 export function Finalized({ navigate }: Props) {
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('Entregue');
+  const [itens, setItens] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = finalizedItems.filter(item => {
+  async function carregar() {
+    setLoading(true);
+    try {
+      if (statusFilter === 'all') {
+        // Busca os dois status e junta
+        const [entregues, descartados] = await Promise.all([
+          itensApi.listarFinalizados('entregue'),
+          itensApi.listarFinalizados('descartado'),
+        ]);
+        setItens([...entregues, ...descartados]);
+      } else {
+        const status = statusFilter === 'Entregue' ? 'entregue' : 'descartado';
+        setItens(await itensApi.listarFinalizados(status));
+      }
+    } catch (err) {
+      console.error('Erro ao carregar finalizados:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Recarrega sempre que o filtro de status muda
+  useEffect(() => { carregar(); }, [statusFilter]);
+
+  // Verifica se a entrega ainda está na janela de 24h (RN-015)
+  function podeReverter(item: any) {
+    if (item.status !== 'Entregue' || !item.finalizadoEmRaw) return false;
+    const horas = (Date.now() - new Date(item.finalizadoEmRaw).getTime()) / 36e5;
+    return horas <= 24;
+  }
+
+  async function reverter(itemId: number, nome: string) {
+    if (!confirm(`Reverter a entrega de "${nome}"? O item voltará para disponível.`)) return;
+    try {
+      await reivindicacoesApi.reverterEntrega(itemId);
+      carregar();
+    } catch (err: any) {
+      alert(err.message || 'Erro ao reverter a entrega');
+    }
+  }
+
+  const filtered = itens.filter(item => {
     const q = search.toLowerCase();
-    const matchSearch = !q || item.name.toLowerCase().includes(q);
-    const matchStatus = statusFilter === 'all' || item.status === statusFilter;
-    return matchSearch && matchStatus;
+    return !q || item.name.toLowerCase().includes(q);
   });
 
   return (
@@ -48,13 +82,11 @@ export function Finalized({ navigate }: Props) {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="Entregue">Entregues</SelectItem>
+              <SelectItem value="Descartado">Descartados</SelectItem>
               <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="Entregue">Entregue</SelectItem>
-              <SelectItem value="Descartado">Descartado</SelectItem>
             </SelectContent>
           </Select>
-          <Input type="date" className={`w-44 ${adminInputClass}`} />
-          <Input type="date" className={`w-44 ${adminInputClass}`} />
         </AdminPanel>
 
         <AdminPanel className="overflow-hidden">
@@ -65,59 +97,62 @@ export function Finalized({ navigate }: Props) {
                   <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Item</th>
                   <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Categoria</th>
                   <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Data</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Finalizado em</th>
                   <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Funcionária</th>
                   <th className="px-4 py-3 text-right text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Reverter</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E7E5E4]">
-                {filtered.map(item => {
-                  const isRecent = item.daysFound < 30;
-                  return (
-                    <tr key={item.id} className="transition-colors hover:bg-[#F5F3F0]/50">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="size-10 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
-                          />
-                          <div>
-                            <div className="font-semibold text-[#1C1917]">{item.name}</div>
-                            <div className="text-xs text-[#A8A29E]">{item.location}</div>
-                          </div>
+                {filtered.map(item => (
+                  <tr key={item.id} className="transition-colors hover:bg-[#F5F3F0]/50">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="size-10 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
+                        />
+                        <div>
+                          <div className="font-semibold text-[#1C1917]">{item.name}</div>
+                          <div className="text-xs text-[#A8A29E]">{item.location}</div>
+                          {item.motivoDescarte && (
+                            <div className="mt-0.5 text-xs text-[#C8102E]">Motivo: {item.motivoDescarte}</div>
+                          )}
                         </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <CategoryBadge category={item.category} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={item.status} />
-                      </td>
-                      <td className="px-4 py-3 text-xs text-[#78716C]">{item.date}</td>
-                      <td className="px-4 py-3 text-xs text-[#78716C]">{item.staff || '—'}</td>
-                      <td className="px-4 py-3 text-right">
-                        {isRecent ? (
-                          <button
-                            type="button"
-                            className="ml-auto flex items-center gap-1 text-xs text-[#78716C] transition-colors hover:text-[#C8102E]"
-                            title="Reverter para disponível"
-                          >
-                            <RotateCcw className="size-3.5" />
-                            Reverter
-                          </button>
-                        ) : (
-                          <span className="text-xs text-[#D6D3D1]">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <CategoryBadge category={item.category} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={item.status} />
+                    </td>
+                    <td className="px-4 py-3 text-xs text-[#78716C]">{item.finalizadoEm || '—'}</td>
+                    <td className="px-4 py-3 text-xs text-[#78716C]">{item.finalizadoPor || '—'}</td>
+                    <td className="px-4 py-3 text-right">
+                      {podeReverter(item) ? (
+                        <button
+                          type="button"
+                          onClick={() => reverter(item.id, item.name)}
+                          className="ml-auto flex items-center gap-1 text-xs text-[#78716C] transition-colors hover:text-[#C8102E]"
+                          title="Reverter para disponível (até 24h após a entrega)"
+                        >
+                          <RotateCcw className="size-3.5" />
+                          Reverter
+                        </button>
+                      ) : (
+                        <span className="text-xs text-[#D6D3D1]">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
 
-          {filtered.length === 0 && (
+          {loading ? (
+            <div className="py-10 text-center text-sm text-[#A8A29E]">Carregando...</div>
+          ) : filtered.length === 0 && (
             <div className="py-10 text-center text-sm text-[#A8A29E]">
               Nenhum item no histórico.
             </div>

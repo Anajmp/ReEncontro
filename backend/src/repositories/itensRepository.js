@@ -117,4 +117,25 @@ export const itensRepository = {
     );
     return result.affectedRows > 0;
   },
+
+  // Lista itens finalizados (entregues ou descartados), com quem finalizou
+  async findFinalizados(status) {
+    const [rows] = await db.execute(
+      `SELECT
+         i.id, i.descricao, i.local_encontrado, i.data_encontrado,
+         i.status, i.finalizado_em, i.motivo_descarte,
+         c.nome AS categoria,
+         p.nome AS ponto_coleta,
+         u.nome AS finalizado_por,
+         (SELECT url FROM item_fotos WHERE item_id = i.id AND is_capa = TRUE LIMIT 1) AS foto_capa
+       FROM itens i
+       LEFT JOIN categorias c ON c.id = i.categoria_id
+       LEFT JOIN pontos_coleta p ON p.id = i.ponto_coleta_id
+       LEFT JOIN users u ON u.id = i.finalizado_por_user_id
+       WHERE i.status = ?
+       ORDER BY i.finalizado_em DESC`,
+      [status],
+    );
+    return rows;
+  },
 };

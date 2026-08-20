@@ -68,4 +68,15 @@ export const itensController = {
       next(err);
     }
   },
+
+  // GET /api/itens/finalizados?status=entregue
+  async listarFinalizados(req, res, next) {
+    try {
+      const status = req.query.status || "entregue";
+      const itens = await itensService.listarFinalizados(status);
+      res.json(itens);
+    } catch (err) {
+      next(err);
+    }
+  },
 };

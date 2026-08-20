@@ -124,6 +124,27 @@ function traduzirItem(itemBackend: any) {
     daysFound: calcularDias(itemBackend.data_disponibilizacao || itemBackend.data_encontrado),
   };
 }
+// Traduz um item finalizado (inclui dados de finalização)
+function traduzirItemFinalizado(i: any) {
+  const statusMap: Record<string, string> = {
+    entregue: 'Entregue',
+    descartado: 'Descartado',
+  };
+  return {
+    id: i.id,
+    name: i.descricao,
+    category: i.categoria,
+    location: i.local_encontrado,
+    date: i.data_encontrado ? new Date(i.data_encontrado).toLocaleDateString('pt-BR') : '',
+    status: statusMap[i.status] || i.status,
+    image: i.foto_capa || 'https://via.placeholder.com/200?text=Sem+foto',
+    collectionPoint: i.ponto_coleta || '',
+    finalizadoEmRaw: i.finalizado_em,  
+    finalizadoPor: i.finalizado_por || '—',
+    motivoDescarte: i.motivo_descarte || '',
+  };
+  
+}
 
 export const itensApi = {
   async listar() {
@@ -142,6 +163,10 @@ export const itensApi = {
       body: JSON.stringify(dados),
     }),
   criar: (formData: FormData) => requestUpload('/api/itens', formData),
+    async listarFinalizados(status: 'entregue' | 'descartado') {
+    const dados = await request(`/api/itens/finalizados?status=${status}`);
+    return dados.map(traduzirItemFinalizado);
+  },
 };
 
 // ===== ALUNOS =====
@@ -259,6 +284,10 @@ export const reivindicacoesApi = {
     const dados = await request('/api/reivindicacoes/minhas');
     return dados.map(traduzirReivindicacaoCliente);
   },
+
+    reverterEntrega: (itemId: number) =>
+    request(`/api/reivindicacoes/reverter/${itemId}`, { method: 'PATCH' }),
+  
 
   
 };

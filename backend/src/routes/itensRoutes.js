@@ -13,6 +13,13 @@ const router = Router();
 
 // Públicas
 router.get("/", itensController.listar);
+// GET /api/itens/finalizados — só funcionária
+router.get(
+  "/finalizados",
+  authMiddleware,
+  apenasFuncionaria,
+  itensController.listarFinalizados,
+);
 router.get("/:id", itensController.detalhar);
 // PATCH /api/itens/:id/descartar — só funcionária
 router.patch(

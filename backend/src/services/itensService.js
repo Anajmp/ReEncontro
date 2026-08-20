@@ -73,4 +73,12 @@ export const itensService = {
     }
     return { id };
   },
+
+  async listarFinalizados(status) {
+    // só aceita esses dois status (proteção)
+    if (!["entregue", "descartado"].includes(status)) {
+      throw { status: 400, mensagem: "Status inválido" };
+    }
+    return itensRepository.findFinalizados(status);
+  },
 };
