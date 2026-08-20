@@ -8,15 +8,20 @@ import { AdminLayout } from './shared/AdminLayout';
 import type { Screen } from '../App';
 import { AdminPanel, adminBtnOutline, adminBtnPrimary, adminInputClass, adminSelectClass } from './shared/AdminChrome';
 import { cn } from './ui/utils';
+import { itensApi } from '../../lib/api';
+import { useEffect } from 'react';
+import { referenciasApi } from '../../lib/api';
 
-interface Props {
-  navigate: (s: Screen) => void;
-}
 
 interface PhotoPreview {
   id: number;
   url: string;
   name: string;
+  file: File;        // ← guarda o arquivo real
+}
+
+interface Props {
+  navigate: (s: Screen) => void;
 }
 
 export function RegisterItem({ navigate }: Props) {
@@ -24,10 +29,24 @@ export function RegisterItem({ navigate }: Props) {
   const [isDragging, setIsDragging] = useState(false);
   const [saved, setSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [descricao, setDescricao] = useState('');
+  const [categoriaId, setCategoriaId] = useState('');
+  const [local, setLocal] = useState('');
+  const [pontoColetaId, setPontoColetaId] = useState('');
+  const [dataEncontrado, setDataEncontrado] = useState(new Date().toISOString().split('T')[0]);
+  const [erro, setErro] = useState('');
+  const [salvando, setSalvando] = useState(false);
+    const [categorias, setCategorias] = useState<any[]>([]);
+  const [pontosColeta, setPontosColeta] = useState<any[]>([]);
 
-  const addPhoto = (file: File) => {
+  useEffect(() => {
+    referenciasApi.categorias().then(setCategorias).catch(console.error);
+    referenciasApi.pontosColeta().then(setPontosColeta).catch(console.error);
+  }, []);
+
+    const addPhoto = (file: File) => {
     const url = URL.createObjectURL(file);
-    setPhotos(prev => [...prev, { id: Date.now(), url, name: file.name }]);
+    setPhotos(prev => [...prev, { id: Date.now() + Math.random(), url, name: file.name, file }]);
   };
 
   const removePhoto = (id: number) => {
@@ -49,6 +68,40 @@ export function RegisterItem({ navigate }: Props) {
       .slice(0, 5 - photos.length)
       .forEach(addPhoto);
   };
+
+    async function cadastrar() {
+    setErro('');
+    if (photos.length === 0) {
+      setErro('Adicione ao menos uma foto do item.');
+      return;
+    }
+    if (!descricao.trim() || !categoriaId || !local || !pontoColetaId || !dataEncontrado) {
+      setErro('Preencha todos os campos obrigatórios (*).');
+      return;
+    }
+
+    setSalvando(true);
+    try {
+      const formData = new FormData();
+      formData.append('descricao', descricao.trim());
+      formData.append('categoriaId', categoriaId);
+      formData.append('localEncontrado', local);
+      formData.append('pontoColetaId', pontoColetaId);
+      formData.append('dataEncontrado', dataEncontrado);
+      photos.forEach(p => formData.append('fotos', p.file));
+
+      await itensApi.criar(formData);
+
+      // limpa o formulário e mostra sucesso
+      setPhotos([]); setDescricao(''); setCategoriaId('');
+      setLocal(''); setPontoColetaId('');
+      setSaved(true);
+    } catch (err: any) {
+      setErro(err.message || 'Erro ao cadastrar o item.');
+    } finally {
+      setSalvando(false);
+    }
+  }
 
   if (saved) {
     return (
@@ -138,68 +191,71 @@ export function RegisterItem({ navigate }: Props) {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold text-[#1C1917]">Descrição *</Label>
-              <Input className={adminInputClass} placeholder="Ex: Mochila azul marinho com alças ajustáveis, sem identificação..." />
+              <Input className={adminInputClass} placeholder="Ex: Mochila azul marinho..." value={descricao} onChange={e => setDescricao(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-sm font-semibold text-[#1C1917]">Categoria *</Label>
-                <Select>
-                  <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="vestuario">Vestuário</SelectItem>
-                    <SelectItem value="acessorios">Acessórios</SelectItem>
-                    <SelectItem value="material">Material Escolar</SelectItem>
-                    <SelectItem value="eletronicos">Eletrônicos</SelectItem>
-                    <SelectItem value="calcados">Calçados</SelectItem>
-                    <SelectItem value="outros">Outros</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Select value={categoriaId} onValueChange={setCategoriaId}>
+  <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione" /></SelectTrigger>
+  <SelectContent>
+    {categorias.map(c => (
+      <SelectItem key={c.id} value={String(c.id)}>{c.nome}</SelectItem>
+    ))}
+  </SelectContent>
+</Select>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-sm font-semibold text-[#1C1917]">Data encontrado *</Label>
-                <Input type="date" className={adminInputClass} defaultValue={new Date().toISOString().split('T')[0]} />
+                <Input type="date" className={adminInputClass} value={dataEncontrado} onChange={e => setDataEncontrado(e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-sm font-semibold text-[#1C1917]">Local encontrado *</Label>
-                <Select>
-                  <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="patio">Pátio Principal</SelectItem>
-                    <SelectItem value="refeitorio">Refeitório</SelectItem>
-                    <SelectItem value="biblioteca">Biblioteca</SelectItem>
-                    <SelectItem value="quadra">Quadra de Esportes</SelectItem>
-                    <SelectItem value="vestiario">Vestiário</SelectItem>
-                    <SelectItem value="corredor-a">Corredor Bloco A</SelectItem>
-                    <SelectItem value="corredor-b">Corredor Bloco B</SelectItem>
-                    <SelectItem value="portaria">Portaria</SelectItem>
-                    <SelectItem value="lab">Laboratório de Informática</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Select value={local} onValueChange={setLocal}>
+  <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione" /></SelectTrigger>
+  <SelectContent>
+    <SelectItem value="Pátio Principal">Pátio Principal</SelectItem>
+    <SelectItem value="Refeitório">Refeitório</SelectItem>
+    <SelectItem value="Biblioteca">Biblioteca</SelectItem>
+    <SelectItem value="Quadra de Esportes">Quadra de Esportes</SelectItem>
+    <SelectItem value="Vestiário">Vestiário</SelectItem>
+    <SelectItem value="Corredor Bloco A">Corredor Bloco A</SelectItem>
+    <SelectItem value="Corredor Bloco B">Corredor Bloco B</SelectItem>
+    <SelectItem value="Portaria">Portaria</SelectItem>
+    <SelectItem value="Laboratório de Informática">Laboratório de Informática</SelectItem>
+  </SelectContent>
+</Select>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-sm font-semibold text-[#1C1917]">Ponto de coleta *</Label>
-                <Select>
-                  <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sec-a">Secretaria — Bloco A</SelectItem>
-                    <SelectItem value="sec-b">Secretaria — Bloco B</SelectItem>
-                    <SelectItem value="portaria">Portaria — Entrada Principal</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Select value={pontoColetaId} onValueChange={setPontoColetaId}>
+  <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione" /></SelectTrigger>
+  <SelectContent>
+    {pontosColeta.map(p => (
+      <SelectItem key={p.id} value={String(p.id)}>{p.nome}</SelectItem>
+    ))}
+  </SelectContent>
+</Select>
               </div>
             </div>
           </div>
         </AdminPanel>
 
         <div className="flex justify-end gap-3">
-          <Button variant="outline" className={adminBtnOutline} onClick={() => navigate('available-items')}>
+                  {erro && (
+          <p className="rounded-xl bg-[#FFF1F2] px-4 py-3 text-sm text-[#C8102E]">{erro}</p>
+        )}
+
+        <div className="flex justify-end gap-3">
+          <Button variant="outline" className={adminBtnOutline} onClick={() => navigate('available-items')} disabled={salvando}>
             Cancelar
           </Button>
-          <Button className={adminBtnPrimary} onClick={() => setSaved(true)}>
-            Cadastrar item
+          <Button className={adminBtnPrimary} onClick={cadastrar} disabled={salvando}>
+            {salvando ? 'Cadastrando...' : 'Cadastrar item'}
           </Button>
+        </div>
         </div>
       </div>
     </AdminLayout>

@@ -48,6 +48,33 @@ async function request(endpoint: string, options: RequestInit = {}) {
   return res.json();
 }
 
+// Requisição com upload de arquivos (multipart/form-data)
+async function requestUpload(endpoint: string, formData: FormData) {
+  const token = localStorage.getItem('token');
+
+  const res = await fetch(`${API_URL}${endpoint}`, {
+    method: 'POST',
+    headers: {
+      // NÃO definir Content-Type aqui — o navegador define sozinho com o boundary
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const erro = await res.json().catch(() => ({ erro: 'Erro na requisição' }));
+    throw new Error(erro.erro || erro.mensagem || 'Erro na requisição');
+  }
+
+  return res.json();
+}
+
+// ===== REFERÊNCIAS (categorias e pontos de coleta) =====
+export const referenciasApi = {
+  categorias: () => request('/api/categorias'),
+  pontosColeta: () => request('/api/pontos-coleta'),
+};
+
 // ===== AUTENTICAÇÃO =====
 export const authApi = {
   login: (email: string, senha: string) =>
@@ -114,6 +141,7 @@ export const itensApi = {
       method: 'PATCH',
       body: JSON.stringify(dados),
     }),
+  criar: (formData: FormData) => requestUpload('/api/itens', formData),
 };
 
 // ===== ALUNOS =====
