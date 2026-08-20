@@ -116,6 +116,36 @@ export const itensApi = {
     }),
 };
 
+// ===== ALUNOS =====
+
+// Traduz um aluno do backend pro formato da tela
+function traduzirAluno(a: any) {
+  const periodoMap: Record<string, string> = {
+    manha: 'Manhã', tarde: 'Tarde', integral: 'Integral',
+  };
+  return {
+    id: a.id,
+    name: a.nome,
+    room: a.sala,
+    period: periodoMap[a.periodo] || a.periodo,
+    periodoRaw: a.periodo,        // valor cru, útil pro form de edição
+    anoLetivo: a.ano_letivo,
+  };
+}
+
+export const alunosApi = {
+  async listarMeus() {
+    const dados = await request('/api/alunos/meus');
+    return dados.map(traduzirAluno);
+  },
+
+  criar: (dados: any) =>
+    request('/api/alunos', { method: 'POST', body: JSON.stringify(dados) }),
+
+  atualizar: (id: number, dados: any) =>
+    request(`/api/alunos/${id}`, { method: 'PATCH', body: JSON.stringify(dados) }),
+};
+
 // ===== REIVINDICAÇÕES =====
 
 // Traduz uma reivindicação do backend pro formato da tela
@@ -201,5 +231,7 @@ export const reivindicacoesApi = {
     const dados = await request('/api/reivindicacoes/minhas');
     return dados.map(traduzirReivindicacaoCliente);
   },
+
+  
 };
 

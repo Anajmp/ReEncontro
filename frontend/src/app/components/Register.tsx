@@ -48,7 +48,7 @@ export function Register({ navigate }: Props) {
   const periodoMap: Record<string, string> = {
     'Manhã': 'manha', 'manha': 'manha',
     'Tarde': 'tarde', 'tarde': 'tarde',
-    'Noite': 'noite', 'noite': 'noite',
+    'Integral': 'integral', 'integral': 'integral',
   };
 
   async function fazerCadastro() {
@@ -261,7 +261,7 @@ export function Register({ navigate }: Props) {
                         <SelectContent>
                           <SelectItem value="manha">Manhã</SelectItem>
                           <SelectItem value="tarde">Tarde</SelectItem>
-                          <SelectItem value="noite">Noite</SelectItem>
+                          <SelectItem value="integral">Integral</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

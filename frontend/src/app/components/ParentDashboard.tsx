@@ -7,23 +7,75 @@ import { myStudents } from './shared/data';
 import { reivindicacoesApi } from '../../lib/api';
 import type { Student } from './shared/data';
 import type { Screen } from '../App';
+import { alunosApi } from '../../lib/api';
 
 interface Props {
   navigate: (s: Screen) => void;
   activeTab: 'claims' | 'students';
 }
-
 function StudentModal({
   open,
   onClose,
   student,
+  onSaved,
 }: {
   open: boolean;
   onClose: () => void;
-  student?: Student;
+  student?: any;
+  onSaved: () => void;
 }) {
-  const periodDefault =
-    student?.period === 'Tarde' ? 'Tarde' : student?.period === 'Noite' ? 'Integral' : 'Manhã';
+  const [nome, setNome] = useState('');
+  const [sala, setSala] = useState('');
+  const [periodo, setPeriodo] = useState('Manhã');
+  const [erro, setErro] = useState('');
+  const [salvando, setSalvando] = useState(false);
+
+  // Preenche os campos quando abre (edição) ou limpa (novo)
+  useEffect(() => {
+    if (open) {
+      setNome(student?.name ?? '');
+      setSala(student?.room ?? '');
+      setPeriodo(student?.period ?? 'Manhã');
+      setErro('');
+    }
+  }, [open, student]);
+
+  // Converte o label da tela para o valor que o backend espera
+  const periodoMap: Record<string, string> = {
+    'Manhã': 'manha',
+    'Tarde': 'tarde',
+    'Integral': 'integral',
+  };
+
+  async function salvar() {
+    setErro('');
+    if (!nome.trim() || !sala.trim()) {
+      setErro('Preencha o nome e a turma do aluno.');
+      return;
+    }
+    setSalvando(true);
+    try {
+      const dados = {
+        nome: nome.trim(),
+        sala: sala.trim(),
+        periodo: periodoMap[periodo] ?? 'manha',
+        ano_letivo: new Date().getFullYear(),
+      };
+
+      if (student?.id) {
+        await alunosApi.atualizar(student.id, dados);
+      } else {
+        await alunosApi.criar(dados);
+      }
+
+      onSaved();   // recarrega a lista
+      onClose();
+    } catch (err: any) {
+      setErro(err.message || 'Erro ao salvar o aluno.');
+    } finally {
+      setSalvando(false);
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -45,14 +97,16 @@ function StudentModal({
             leftIcon={<User size={15} strokeWidth={1.6} />}
             type="text"
             placeholder="Nome completo do aluno"
-            defaultValue={student?.name}
+            value={nome}
+            onChange={(e: any) => setNome(e.target.value)}
           />
           <ParentInputField
             label="Turma / Série"
             leftIcon={<GraduationCap size={15} strokeWidth={1.6} />}
             type="text"
             placeholder="Ex: 2º EM A"
-            defaultValue={student?.room}
+            value={sala}
+            onChange={(e: any) => setSala(e.target.value)}
           />
           <div>
             <label className="mb-1.5 block text-sm font-semibold text-[#1C1917]">Período</label>
@@ -61,7 +115,8 @@ function StudentModal({
                 <Clock size={15} strokeWidth={1.6} />
               </div>
               <select
-                defaultValue={periodDefault}
+                value={periodo}
+                onChange={(e) => setPeriodo(e.target.value)}
                 className="w-full cursor-pointer appearance-none rounded-xl border border-[#E7E5E4] bg-[#FAFAF8] py-2.5 pr-9 pl-10 text-sm text-[#1C1917] transition-all focus:border-[#C8102E] focus:ring-2 focus:ring-[#C8102E]/20 focus:outline-none"
               >
                 <option>Manhã</option>
@@ -71,21 +126,27 @@ function StudentModal({
               <ChevronDown size={13} className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-[#A8A29E]" />
             </div>
           </div>
+
+          {erro && (
+            <p className="rounded-xl bg-[#FFF1F2] px-4 py-2.5 text-sm text-[#C8102E]">{erro}</p>
+          )}
         </div>
         <div className="mt-3 flex gap-3">
           <button
             type="button"
             onClick={onClose}
+            disabled={salvando}
             className="flex-1 rounded-xl bg-[#F5F3F0] py-2.5 text-sm font-semibold text-[#78716C] transition-all hover:bg-[#EDE9E4]"
           >
             Cancelar
           </button>
           <button
             type="button"
-            onClick={onClose}
+            onClick={salvar}
+            disabled={salvando}
             className="flex-1 rounded-xl bg-[#C8102E] py-2.5 text-sm font-bold text-white transition-all hover:bg-[#A50D26] active:scale-[0.98]"
           >
-            {student ? 'Salvar alterações' : 'Adicionar aluno'}
+            {salvando ? 'Salvando...' : student ? 'Salvar alterações' : 'Adicionar aluno'}
           </button>
         </div>
       </DialogContent>
@@ -116,7 +177,18 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
   const [claimsSubTab, setClaimsSubTab] = useState<'claims' | 'history'>('claims');
 
   const [minhasClaims, setMinhasClaims] = useState<any[]>([]);
+  const [myStudents, setMyStudents] = useState<any[]>([]);
 
+  async function carregarAlunos() {
+    try {
+      const dados = await alunosApi.listarMeus();
+      setMyStudents(dados);
+    } catch (err) {
+      console.error('Erro ao carregar alunos:', err);
+    }
+  }
+
+  useEffect(() => { carregarAlunos(); }, []);
   useEffect(() => {
     reivindicacoesApi.listarMinhas()
       .then(setMinhasClaims)
@@ -272,10 +344,11 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
         </div>
       )}
 
-      <StudentModal
+            <StudentModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         student={editingStudent}
+        onSaved={carregarAlunos}
       />
     </ParentLayout>
   );
