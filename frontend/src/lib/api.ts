@@ -225,8 +225,11 @@ function traduzirReivindicacao(r: any) {
 // Tradução para o painel do cliente (inclui status variável)
 function traduzirReivindicacaoCliente(r: any) {
   const statusMap: Record<string, string> = {
-    pendente: 'Pendente', aprovada: 'Em Processo', rejeitada: 'Descartado',
-    cancelada: 'Descartado', entregue: 'Entregue',
+    pendente: 'Pendente',
+    aprovada: 'Em Processo',
+    rejeitada: 'Rejeitada',
+    cancelada: 'Cancelada',
+    entregue: 'Entregue',
   };
   const periodoMap: Record<string, string> = {
     manha: 'Manhã', tarde: 'Tarde', integral: 'Integral',

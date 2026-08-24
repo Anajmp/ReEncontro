@@ -8,6 +8,8 @@ const styles: Record<Status, { color: string; bg: string; Icon: typeof Clock }> 
   'Em Processo': { color: '#1D4ED8', bg: '#DBEAFE', Icon: Search },
   'Entregue': { color: '#6B7280', bg: '#F3F4F6', Icon: CheckCircle },
   'Descartado': { color: '#C8102E', bg: '#FEE2E2', Icon: XCircle },
+  'Rejeitada': { color: '#C8102E', bg: '#FEE2E2', Icon: XCircle },
+  'Cancelada': { color: '#C2410C', bg: '#FFEDD5', Icon: XCircle },
 };
 
 export function StatusBadge({ status, className }: { status: Status; className?: string }) {

@@ -24,7 +24,7 @@ export const reivindicacoesRepository = {
       // 1. TRAVA a linha do item (FOR UPDATE) e confere o status atual.
       //    Se outra pessoa estiver reivindicando ao mesmo tempo, ela espera aqui.
       const [itens] = await conn.execute(
-        `SELECT id, status FROM itens WHERE id = ? FOR UPDATE`,
+        `SELECT id, status, descricao FROM itens WHERE id = ? FOR UPDATE`,
         [itemId],
       );
 
@@ -63,7 +63,7 @@ export const reivindicacoesRepository = {
       ]);
 
       await conn.commit();
-      return result.insertId;
+      return { id: result.insertId, descricaoItem: itens[0].descricao };
     } catch (err) {
       await conn.rollback();
       throw err;
@@ -106,6 +106,23 @@ export const reivindicacoesRepository = {
     return rows;
   },
 
+  // Lista as reivindicações de UM usuário específico (as dele apenas)
+  async listarPorUsuario(userId) {
+    const [rows] = await db.execute(
+      `SELECT
+         r.id, r.item_id, r.status, r.nome_aluno, r.sala_aluno, r.periodo_aluno,
+         r.motivo_rejeicao, r.created_at, r.data_aprovacao,
+         i.descricao AS item_descricao,
+         (SELECT url FROM item_fotos WHERE item_id = i.id AND is_capa = TRUE LIMIT 1) AS item_foto
+       FROM reivindicacoes r
+       INNER JOIN itens i ON i.id = r.item_id
+       WHERE r.user_id = ?
+       ORDER BY r.created_at DESC`,
+      [userId],
+    );
+    return rows;
+  },
+
   // Aprova uma reivindicação: reiv -> aprovada, item -> em_processo
   async aprovar(reivindicacaoId, funcionariaId) {
     const conn = await db.getConnection();
@@ -114,7 +131,12 @@ export const reivindicacoesRepository = {
 
       // Busca a reivindicação e trava a linha
       const [reivs] = await conn.execute(
-        `SELECT id, item_id, status FROM reivindicacoes WHERE id = ? FOR UPDATE`,
+        `SELECT r.id, r.item_id, r.status, r.nome_requerente, r.email_requerente,
+                i.descricao AS descricao_item, p.nome AS ponto_coleta
+         FROM reivindicacoes r
+         INNER JOIN itens i ON i.id = r.item_id
+         LEFT JOIN pontos_coleta p ON p.id = i.ponto_coleta_id
+         WHERE r.id = ? FOR UPDATE`,
         [reivindicacaoId],
       );
       if (reivs.length === 0) {
@@ -142,7 +164,14 @@ export const reivindicacoesRepository = {
       );
 
       await conn.commit();
-      return { reivindicacaoId, itemId };
+      return {
+        reivindicacaoId,
+        itemId,
+        nomeRequerente: reivs[0].nome_requerente,
+        emailRequerente: reivs[0].email_requerente,
+        descricaoItem: reivs[0].descricao_item,
+        pontoColeta: reivs[0].ponto_coleta,
+      };
     } catch (err) {
       await conn.rollback();
       throw err;
@@ -158,7 +187,11 @@ export const reivindicacoesRepository = {
       await conn.beginTransaction();
 
       const [reivs] = await conn.execute(
-        `SELECT id, item_id, status FROM reivindicacoes WHERE id = ? FOR UPDATE`,
+        `SELECT r.id, r.item_id, r.status, r.nome_requerente, r.email_requerente,
+                i.descricao AS descricao_item
+         FROM reivindicacoes r
+         INNER JOIN itens i ON i.id = r.item_id
+         WHERE r.id = ? FOR UPDATE`,
         [reivindicacaoId],
       );
       if (reivs.length === 0) {
@@ -185,7 +218,13 @@ export const reivindicacoesRepository = {
       );
 
       await conn.commit();
-      return { reivindicacaoId, itemId };
+      return {
+        reivindicacaoId,
+        itemId,
+        nomeRequerente: reivs[0].nome_requerente,
+        emailRequerente: reivs[0].email_requerente,
+        descricaoItem: reivs[0].descricao_item,
+      };
     } catch (err) {
       await conn.rollback();
       throw err;
@@ -201,7 +240,11 @@ export const reivindicacoesRepository = {
       await conn.beginTransaction();
 
       const [reivs] = await conn.execute(
-        `SELECT id, item_id, status FROM reivindicacoes WHERE id = ? FOR UPDATE`,
+        `SELECT r.id, r.item_id, r.status, r.nome_requerente, r.email_requerente,
+                i.descricao AS descricao_item
+         FROM reivindicacoes r
+         INNER JOIN itens i ON i.id = r.item_id
+         WHERE r.id = ? FOR UPDATE`,
         [reivindicacaoId],
       );
       if (reivs.length === 0) {
@@ -232,7 +275,13 @@ export const reivindicacoesRepository = {
       );
 
       await conn.commit();
-      return { reivindicacaoId, itemId };
+      return {
+        reivindicacaoId,
+        itemId,
+        nomeRequerente: reivs[0].nome_requerente,
+        emailRequerente: reivs[0].email_requerente,
+        descricaoItem: reivs[0].descricao_item,
+      };
     } catch (err) {
       await conn.rollback();
       throw err;
@@ -248,13 +297,16 @@ export const reivindicacoesRepository = {
       await conn.beginTransaction();
 
       const [reivs] = await conn.execute(
-        `SELECT id, item_id, status FROM reivindicacoes WHERE id = ? FOR UPDATE`,
+        `SELECT r.id, r.item_id, r.status, r.nome_requerente, r.email_requerente,
+                i.descricao AS descricao_item
+         FROM reivindicacoes r
+         INNER JOIN itens i ON i.id = r.item_id
+         WHERE r.id = ? FOR UPDATE`,
         [reivindicacaoId],
       );
       if (reivs.length === 0) {
         throw { status: 404, mensagem: "Reivindicação não encontrada" };
       }
-      // Só cancela o que está pendente ou aprovado (em andamento)
       if (!["pendente", "aprovada"].includes(reivs[0].status)) {
         throw {
           status: 409,
@@ -277,7 +329,13 @@ export const reivindicacoesRepository = {
       );
 
       await conn.commit();
-      return { reivindicacaoId, itemId };
+      return {
+        reivindicacaoId,
+        itemId,
+        nomeRequerente: reivs[0].nome_requerente,
+        emailRequerente: reivs[0].email_requerente,
+        descricaoItem: reivs[0].descricao_item,
+      };
     } catch (err) {
       await conn.rollback();
       throw err;
@@ -340,22 +398,5 @@ export const reivindicacoesRepository = {
     } finally {
       conn.release();
     }
-  },
-
-  // Lista as reivindicações de UM usuário específico (as dele apenas)
-  async listarPorUsuario(userId) {
-    const [rows] = await db.execute(
-      `SELECT
-         r.id, r.item_id, r.status, r.nome_aluno, r.sala_aluno, r.periodo_aluno,
-         r.motivo_rejeicao, r.created_at, r.data_aprovacao,
-         i.descricao AS item_descricao,
-         (SELECT url FROM item_fotos WHERE item_id = i.id AND is_capa = TRUE LIMIT 1) AS item_foto
-       FROM reivindicacoes r
-       INNER JOIN itens i ON i.id = r.item_id
-       WHERE r.user_id = ?
-       ORDER BY r.created_at DESC`,
-      [userId],
-    );
-    return rows;
   },
 };

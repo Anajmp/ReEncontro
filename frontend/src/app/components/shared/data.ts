@@ -1,4 +1,4 @@
-export type Status = 'Disponível' | 'Pendente' | 'Em Processo' | 'Entregue' | 'Descartado';
+export type Status = 'Disponível' | 'Pendente' | 'Em Processo' | 'Entregue' | 'Descartado' | 'Rejeitada' | 'Cancelada';
 export type Category = 'Vestuário' | 'Acessórios' | 'Material Escolar' | 'Eletrônicos' | 'Calçados' | 'Outros';
 export type Period = 'Manhã' | 'Tarde' | 'Noite';
 export type Role = 'Inspetora' | 'Diretora';

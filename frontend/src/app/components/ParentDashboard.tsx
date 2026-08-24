@@ -196,7 +196,9 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
   }, []);
 
   const currentClaims = minhasClaims.filter(c => c.status === 'Pendente' || c.status === 'Em Processo');
-  const historyClaims = minhasClaims.filter(c => c.status === 'Entregue' || c.status === 'Descartado');
+  const historyClaims = minhasClaims.filter(c =>
+  c.status === 'Entregue' || c.status === 'Rejeitada' || c.status === 'Cancelada'
+);
   const current = activeTab === 'students' ? 'my-students' : 'parent-dashboard';
   const showStudents = activeTab === 'students';
 
