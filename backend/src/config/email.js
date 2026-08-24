@@ -1,27 +1,39 @@
 // =====================================================================
-// Configuração do Nodemailer (envio de e-mails via SMTP/Gmail)
+// Envio de e-mails via API HTTP do Brevo.
+// Usamos a API (porta 443) em vez de SMTP porque as hospedagens
+// gratuitas bloqueiam as portas SMTP (25, 465, 587).
 // =====================================================================
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-export const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: Number(process.env.SMTP_PORT) === 465, // true na 465, false na 587 // true para porta 465, false para 587
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
-// Função utilitária para enviar e-mail
+/**
+ * Envia um e-mail transacional pela API do Brevo.
+ * Mesma assinatura de antes — nada nos services precisa mudar.
+ */
 export async function enviarEmail({ para, assunto, html }) {
-  return transporter.sendMail({
-    from: process.env.SMTP_FROM,
-    to: para,
-    subject: assunto,
-    html,
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "api-key": process.env.BREVO_API_KEY,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      sender: {
+        email: process.env.BREVO_FROM_EMAIL,
+        name: process.env.BREVO_FROM_NAME || "ReEncontro",
+      },
+      to: [{ email: para }],
+      subject: assunto,
+      htmlContent: html,
+    }),
   });
+
+  if (!res.ok) {
+    const erro = await res.text();
+    throw new Error(`Brevo respondeu ${res.status}: ${erro}`);
+  }
+
+  return res.json();
 }
