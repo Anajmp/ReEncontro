@@ -9,7 +9,7 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { StatusBadge } from './shared/StatusBadge';
-import { itensApi, reivindicacoesApi } from '../../lib/api';
+import { itensApi, reivindicacoesApi, alunosApi } from '../../lib/api';
 import type { Item } from './shared/data';
 import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
@@ -99,10 +99,53 @@ function ClaimModal({
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
+  const [alunos, setAlunos] = useState<any[]>([]);
+  const [alunoId, setAlunoId] = useState('');
+
+  const periodoMap: Record<string, string> = {
+    Manhã: 'manha',
+    Tarde: 'tarde',
+    Integral: 'integral',
+  };
+
+  function selecionarAluno(aluno: any) {
+    setAlunoId(String(aluno.id));
+    setNomeAluno(aluno.name);
+    setSala(aluno.room);
+    setPeriodo(periodoMap[aluno.period] || aluno.periodoRaw || aluno.period);
+  }
+
+  function trocarAluno(id: string) {
+    if (id === 'outro') {
+      setAlunoId('outro');
+      setNomeAluno('');
+      setSala('');
+      setPeriodo('');
+      return;
+    }
+    const aluno = alunos.find(a => String(a.id) === id);
+    if (aluno) selecionarAluno(aluno);
+  }
+
   useEffect(() => {
+    if (!open) return;
+
     if (usuario) {
       setNome(usuario.nome || '');
       setEmail(usuario.email || '');
+      setTelefone(usuario.telefone || '');
+
+      alunosApi.listarMeus()
+        .then(lista => {
+          setAlunos(lista);
+          if (lista.length === 1) {
+            selecionarAluno(lista[0]);
+          }
+        })
+        .catch(err => console.error('Erro ao carregar alunos:', err));
+    } else {
+      setAlunos([]);
+      setAlunoId('');
     }
   }, [open]);
 
@@ -110,18 +153,21 @@ function ClaimModal({
 
   const cfg = getCatConfig(item.category);
   const CatIcon = cfg.Icon;
+  const mostrarSeletor = Boolean(usuario && alunos.length > 1);
+  const alunoTravado = Boolean(alunoId && alunoId !== 'outro');
 
   async function enviar() {
     setErro('');
     if (!item) return;
     if (!nome || !email || !nomeAluno || !sala || !periodo) {
-      setErro('Preencha todos os campos obrigatórios.');
+      setErro('Preencha todos os campos obrigatórios (*)');
       return;
     }
     setEnviando(true);
     try {
       await reivindicacoesApi.criar({
         item_id: item.id,
+        aluno_id: alunoId && alunoId !== 'outro' ? Number(alunoId) : undefined,
         nome_requerente: nome,
         email_requerente: email,
         telefone_requerente: telefone || undefined,
@@ -140,15 +186,16 @@ function ClaimModal({
   function fechar() {
     onClose();
     setSubmitted(false);
-    setNomeAluno('');
-    setSala('');
-    setPeriodo('');
-    setTelefone('');
     setErro('');
     if (!usuario) {
       setNome('');
       setEmail('');
+      setTelefone('');
     }
+    setNomeAluno('');
+    setSala('');
+    setPeriodo('');
+    setAlunoId('');
   }
 
   const modalClass =
@@ -234,22 +281,56 @@ function ClaimModal({
             <Label htmlFor="claim-phone" className="font-semibold text-[#1C1917]">
               Telefone <span className="font-normal text-[#A8A29E]">(opcional)</span>
             </Label>
-            <Input id="claim-phone" placeholder="(11) 99999-9999" value={telefone} onChange={e => setTelefone(e.target.value)} className="rounded-xl border-[#E7E5E4]" />
+            <Input id="claim-phone" placeholder="(19) 99999-9999" value={telefone} onChange={e => setTelefone(e.target.value)} className="rounded-xl border-[#E7E5E4]" />
           </div>
+
+          {mostrarSeletor && (
+            <div className="space-y-1.5">
+              <Label className="font-semibold text-[#1C1917]">Qual aluno? *</Label>
+              <Select value={alunoId} onValueChange={trocarAluno}>
+                <SelectTrigger className="rounded-xl border-[#E7E5E4]">
+                  <SelectValue placeholder="Selecione o aluno" />
+                </SelectTrigger>
+                <SelectContent>
+                  {alunos.map(a => (
+                    <SelectItem key={a.id} value={String(a.id)}>
+                      {a.name} — {a.room} · {a.period}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="outro">Outro aluno (preencher manualmente)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="space-y-1.5 sm:col-span-2">
               <Label htmlFor="claim-student" className="font-semibold text-[#1C1917]">Nome do aluno *</Label>
-              <Input id="claim-student" placeholder="Nome completo do aluno" value={nomeAluno} onChange={e => setNomeAluno(e.target.value)} className="rounded-xl border-[#E7E5E4]" />
+              <Input
+                id="claim-student"
+                placeholder="Nome completo do aluno"
+                value={nomeAluno}
+                onChange={e => setNomeAluno(e.target.value)}
+                disabled={alunoTravado}
+                className="rounded-xl border-[#E7E5E4] disabled:bg-[#F5F3F0]"
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="claim-room" className="font-semibold text-[#1C1917]">Sala *</Label>
-              <Input id="claim-room" placeholder="Ex: 5A" value={sala} onChange={e => setSala(e.target.value)} className="rounded-xl border-[#E7E5E4]" />
+              <Input
+                id="claim-room"
+                placeholder="Ex: 5A"
+                value={sala}
+                onChange={e => setSala(e.target.value)}
+                disabled={alunoTravado}
+                className="rounded-xl border-[#E7E5E4] disabled:bg-[#F5F3F0]"
+              />
             </div>
           </div>
           <div className="space-y-1.5">
             <Label className="font-semibold text-[#1C1917]">Período *</Label>
-            <Select value={periodo} onValueChange={setPeriodo}>
-              <SelectTrigger className="rounded-xl border-[#E7E5E4]">
+            <Select value={periodo} onValueChange={setPeriodo} disabled={alunoTravado}>
+              <SelectTrigger className="rounded-xl border-[#E7E5E4] disabled:bg-[#F5F3F0]">
                 <SelectValue placeholder="Selecione o período" />
               </SelectTrigger>
               <SelectContent>

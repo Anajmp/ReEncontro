@@ -2,6 +2,7 @@
 // reivindicacoesService — regras de negócio das reivindicações.
 // =====================================================================
 import { reivindicacoesRepository } from "../repositories/reivindicacoesRepository.js";
+import { alunosRepository } from "../repositories/alunosRepository.js";
 import { enviarEmail } from "../config/email.js";
 import { emailTemplates } from "../utils/emailTemplates.js";
 
@@ -11,16 +12,35 @@ export const reivindicacoesService = {
     // Se a pessoa está logada, vincula o user_id. Se não, fica anônima (null).
     const userId = usuarioLogado?.id ?? null;
 
+    let alunoId = dados.aluno_id ?? null;
+    let nomeAluno = dados.nome_aluno;
+    let salaAluno = dados.sala_aluno;
+    let periodoAluno = dados.periodo_aluno;
+
+    // Se veio aluno_id, valida que pertence ao responsável e usa o snapshot cadastrado
+    if (alunoId) {
+      if (!userId) {
+        throw { status: 401, mensagem: "É preciso estar logado para vincular um aluno cadastrado" };
+      }
+      const aluno = await alunosRepository.findByIdDoResponsavel(alunoId, userId);
+      if (!aluno) {
+        throw { status: 404, mensagem: "Aluno não encontrado ou não pertence a você" };
+      }
+      nomeAluno = aluno.nome;
+      salaAluno = aluno.sala;
+      periodoAluno = aluno.periodo;
+    }
+
     const resultado = await reivindicacoesRepository.criar({
       itemId: dados.item_id,
       userId,
-      alunoId: dados.aluno_id ?? null,
+      alunoId,
       nomeRequerente: dados.nome_requerente,
       emailRequerente: dados.email_requerente,
       telefoneRequerente: dados.telefone_requerente,
-      nomeAluno: dados.nome_aluno,
-      salaAluno: dados.sala_aluno,
-      periodoAluno: dados.periodo_aluno,
+      nomeAluno,
+      salaAluno,
+      periodoAluno,
     });
 
     // Dispara o e-mail de confirmação de forma assíncrona.
@@ -28,7 +48,7 @@ export const reivindicacoesService = {
     const template = emailTemplates.reivindicacaoCriada({
       nomeRequerente: dados.nome_requerente,
       descricaoItem: resultado.descricaoItem,
-      nomeAluno: dados.nome_aluno,
+      nomeAluno,
     });
 
     enviarEmail({

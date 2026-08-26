@@ -8,8 +8,8 @@ export const authRepository = {
   // Busca um usuário pelo email (usado no login)
   async findByEmail(email) {
     const [rows] = await db.execute(
-      `SELECT id, nome, email, senha_hash, role, is_diretora, ativo, avatar_seed
-      FROM users WHERE email = ?`,
+      `SELECT id, nome, email, senha_hash, telefone, role, is_diretora, ativo, avatar_seed
+       FROM users WHERE email = ?`,
       [email],
     );
     return rows[0] ?? null;

@@ -16,7 +16,7 @@ export function ParentProfile({ navigate }: Props) {
   const { usuario, atualizarUsuario } = useAuth();
   const [nome, setNome] = useState(usuario?.nome ?? '');
   const [email, setEmail] = useState(usuario?.email ?? '');
-  const [telefone, setTelefone] = useState('');
+  const [telefone, setTelefone] = useState(usuario?.telefone ?? '');
   const [saved, setSaved] = useState(false);
 
   const [senhaAtual, setSenhaAtual] = useState('');

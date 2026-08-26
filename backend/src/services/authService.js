@@ -46,6 +46,7 @@ export const authService = {
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
+        telefone: usuario.telefone,
         role: usuario.role,
         is_diretora: usuario.is_diretora,
         avatar_seed: usuario.avatar_seed,
@@ -90,7 +91,14 @@ export const authService = {
 
     return {
       token,
-      usuario: { id: responsavelId, nome, email, role: 'responsavel', avatar_seed: avatarSeed },
+      usuario: {
+        id: responsavelId,
+        nome,
+        email,
+        telefone: telefone ?? null,
+        role: 'responsavel',
+        avatar_seed: avatarSeed,
+      },
     };
   },
 };

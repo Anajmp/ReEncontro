@@ -16,6 +16,7 @@ export interface Usuario {
   id: number;
   nome: string;
   email: string;
+  telefone?: string;
   role: string; // 'responsavel' | 'funcionaria'
   is_diretora?: boolean | number;
   avatar_seed?: string;

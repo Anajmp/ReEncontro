@@ -17,6 +17,17 @@ export const alunosRepository = {
     return rows;
   },
 
+  // Busca um aluno ativo que pertença ao responsável
+  async findByIdDoResponsavel(alunoId, responsavelId) {
+    const [rows] = await db.execute(
+      `SELECT id, nome, sala, periodo, ano_letivo
+       FROM alunos
+       WHERE id = ? AND responsavel_id = ? AND ativo = 1`,
+      [alunoId, responsavelId],
+    );
+    return rows[0] ?? null;
+  },
+
   // Cria um aluno vinculado ao responsável
   async criar(responsavelId, { nome, sala, periodo, anoLetivo }) {
     const [result] = await db.execute(
