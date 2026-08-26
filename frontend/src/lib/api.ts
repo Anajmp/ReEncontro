@@ -111,16 +111,29 @@ function traduzirItem(itemBackend: any) {
     descartado: 'Descartado',
   };
 
+  // Listagem devolve foto_capa; detalhe devolve fotos[{ url, is_capa }]
+  const urlsFotos: string[] = Array.isArray(itemBackend.fotos)
+    ? itemBackend.fotos.map((f: any) => f.url).filter(Boolean)
+    : [];
+  const fotoCapa =
+    itemBackend.foto_capa
+    || itemBackend.fotos?.find((f: any) => f.is_capa)?.url
+    || urlsFotos[0]
+    || 'https://via.placeholder.com/400x300?text=Sem+foto';
+
   return {
     id: itemBackend.id,
     name: itemBackend.descricao,
-    category: itemBackend.categoria,
+    category: itemBackend.categoria || itemBackend.categoria_nome,
     location: itemBackend.local_encontrado,
-    date: new Date(itemBackend.data_encontrado).toLocaleDateString('pt-BR'),
+    date: itemBackend.data_encontrado
+      ? new Date(itemBackend.data_encontrado).toLocaleDateString('pt-BR')
+      : '',
     status: statusMap[itemBackend.status] || itemBackend.status,
-    image: itemBackend.foto_capa || 'https://via.placeholder.com/400x300?text=Sem+foto',
+    image: fotoCapa,
+    images: urlsFotos.length > 0 ? urlsFotos : [fotoCapa],
     description: itemBackend.descricao,
-    collectionPoint: itemBackend.ponto_coleta || '',
+    collectionPoint: itemBackend.ponto_coleta || itemBackend.ponto_coleta_nome || '',
     daysFound: calcularDias(itemBackend.data_disponibilizacao || itemBackend.data_encontrado),
   };
 }

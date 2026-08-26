@@ -8,7 +8,10 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { StatusBadge } from './shared/StatusBadge';
+import { SiteHeader } from './shared/SiteHeader';
 import type { Screen } from '../App';
+
+const FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -108,8 +111,8 @@ export function ItemDetail({ navigate }: Props) {
   // Enquanto carrega
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Carregando item...</p>
+      <div className="flex min-h-screen items-center justify-center bg-[#F5F3F0]" style={FONT}>
+        <p className="text-[#78716C]">Carregando item...</p>
       </div>
     );
   }
@@ -117,14 +120,14 @@ export function ItemDetail({ navigate }: Props) {
   // Se não encontrou o item
   if (!item) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
-        <p className="text-gray-500">Item não encontrado.</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#F5F3F0]" style={FONT}>
+        <p className="text-[#78716C]">Item não encontrado.</p>
         <Button onClick={() => navigate('public-listing')}>Voltar para a listagem</Button>
       </div>
     );
   }
 
-  const photos = [item.image];
+  const photos = item.images?.length ? item.images : [item.image];
   
   const infoRows = [
     { icon: Package, label: 'Categoria', value: item.category },
@@ -134,20 +137,13 @@ export function ItemDetail({ navigate }: Props) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      <header className="bg-white border-b border-gray-200 px-6 py-3.5 flex items-center gap-4 sticky top-0 z-20 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#C8102E] rounded-lg flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-sm">R</span>
-          </div>
-          <span className="font-bold text-gray-900">ReEncontro</span>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#F5F3F0] pb-24" style={FONT}>
+      <SiteHeader navigate={navigate} />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <main className="relative z-10 mx-auto max-w-5xl px-5 py-8 sm:px-8">
         <button
           onClick={() => navigate('public-listing')}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-6"
+          className="mb-6 flex items-center gap-2 text-sm text-[#78716C] transition-colors hover:text-[#1C1917]"
         >
           <ArrowLeft className="size-4" />
           Voltar para a listagem
@@ -156,7 +152,7 @@ export function ItemDetail({ navigate }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Gallery */}
           <div className="space-y-3">
-            <div className="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
+            <div className="aspect-[6/7] bg-gray-100 rounded-lg overflow-hidden">
               <img
                 src={photos[activePhoto]}
                 alt={item.name}
