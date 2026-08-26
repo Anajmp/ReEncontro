@@ -123,7 +123,7 @@ function traduzirItem(itemBackend: any) {
 
   return {
     id: itemBackend.id,
-    name: itemBackend.descricao,
+    name: itemBackend.nome || itemBackend.descricao, // fallback pros antigos
     category: itemBackend.categoria || itemBackend.categoria_nome,
     location: itemBackend.local_encontrado,
     date: itemBackend.data_encontrado
@@ -145,7 +145,7 @@ function traduzirItemFinalizado(i: any) {
   };
   return {
     id: i.id,
-    name: i.descricao,
+    name: i.nome || i.descricao,
     category: i.categoria,
     location: i.local_encontrado,
     date: i.data_encontrado ? new Date(i.data_encontrado).toLocaleDateString('pt-BR') : '',

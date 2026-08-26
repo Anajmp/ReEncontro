@@ -20,6 +20,7 @@ interface Props {
 function EditItemModal({ item, open, onClose, onSaved }: {
   item: any | null; open: boolean; onClose: () => void; onSaved: () => void;
 }) {
+  const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
   const [categoriaId, setCategoriaId] = useState('');
   const [local, setLocal] = useState('');
@@ -30,7 +31,8 @@ function EditItemModal({ item, open, onClose, onSaved }: {
   // Preenche com os dados atuais quando abre
   useEffect(() => {
     if (item) {
-      setDescricao(item.name || '');
+      setNome(item.name || '');
+      setDescricao(item.description || '');
       setLocal(item.location || '');
       // categoria e ponto: o item traduzido tem nome, mas o backend quer ID.
       // Por simplicidade, o usuário reescolhe (começa vazio).
@@ -43,13 +45,14 @@ function EditItemModal({ item, open, onClose, onSaved }: {
 
   async function salvar() {
     setErro('');
-    if (!descricao || !categoriaId || !local || !pontoColetaId) {
+    if (!nome || !descricao || !categoriaId || !local || !pontoColetaId) {
       setErro('Preencha todos os campos');
       return;
     }
     setSalvando(true);
     try {
       await itensApi.editar(item.id, {
+        nome,
         descricao,
         categoria_id: Number(categoriaId),
         local_encontrado: local,
@@ -71,6 +74,10 @@ function EditItemModal({ item, open, onClose, onSaved }: {
           <DialogTitle className="text-[#1C1917]">Editar item</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-semibold text-[#1C1917]">Nome do item *</Label>
+            <Input className={adminInputClass} value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Mochila azul" />
+          </div>
           <div className="space-y-1.5">
             <Label className="text-sm font-semibold text-[#1C1917]">Descrição *</Label>
             <Input className={adminInputClass} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Descrição do item" />

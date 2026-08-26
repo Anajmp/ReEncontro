@@ -30,6 +30,7 @@ export function RegisterItem({ navigate }: Props) {
   const [saved, setSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [descricao, setDescricao] = useState('');
+  const [nome, setNome] = useState('');
   const [categoriaId, setCategoriaId] = useState('');
   const [local, setLocal] = useState('');
   const [pontoColetaId, setPontoColetaId] = useState('');
@@ -75,7 +76,7 @@ export function RegisterItem({ navigate }: Props) {
       setErro('Adicione ao menos uma foto do item.');
       return;
     }
-    if (!descricao.trim() || !categoriaId || !local || !pontoColetaId || !dataEncontrado) {
+    if (!nome.trim() || !descricao.trim() || !categoriaId || !local || !pontoColetaId || !dataEncontrado) {
       setErro('Preencha todos os campos obrigatórios (*).');
       return;
     }
@@ -83,6 +84,7 @@ export function RegisterItem({ navigate }: Props) {
     setSalvando(true);
     try {
       const formData = new FormData();
+      formData.append('nome', nome.trim());
       formData.append('descricao', descricao.trim());
       formData.append('categoriaId', categoriaId);
       formData.append('localEncontrado', local);
@@ -93,7 +95,7 @@ export function RegisterItem({ navigate }: Props) {
       await itensApi.criar(formData);
 
       // limpa o formulário e mostra sucesso
-      setPhotos([]); setDescricao(''); setCategoriaId('');
+      setPhotos([]); setNome(''); setDescricao(''); setCategoriaId('');
       setLocal(''); setPontoColetaId('');
       setSaved(true);
     } catch (err: any) {
@@ -189,6 +191,10 @@ export function RegisterItem({ navigate }: Props) {
         <AdminPanel className="p-5">
           <h3 className="mb-4 text-base font-bold text-[#1C1917]">Informações do item</h3>
           <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold text-[#1C1917]">Nome do item *</Label>
+              <Input className={adminInputClass} placeholder="Ex: Mochila azul" value={nome} onChange={e => setNome(e.target.value)} />
+            </div>
             <div className="space-y-1.5">
               <Label className="text-sm font-semibold text-[#1C1917]">Descrição *</Label>
               <Input className={adminInputClass} placeholder="Ex: Mochila azul marinho..." value={descricao} onChange={e => setDescricao(e.target.value)} />

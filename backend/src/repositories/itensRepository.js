@@ -10,7 +10,7 @@ export const itensRepository = {
   async findDisponiveis({ categoriaId, dataInicio, dataFim } = {}) {
     let sql = `
       SELECT
-        i.id, i.descricao, i.local_encontrado, i.data_encontrado, i.data_disponibilizacao, i.status,
+        i.id, i.nome, i.descricao, i.local_encontrado, i.data_encontrado, i.data_disponibilizacao, i.status,
         c.nome AS categoria,
         pc.nome AS ponto_coleta,
         (SELECT url FROM item_fotos
@@ -62,6 +62,7 @@ export const itensRepository = {
 
   // Cria um novo item e retorna o ID gerado
   async create({
+    nome,
     descricao,
     categoriaId,
     localEncontrado,
@@ -71,10 +72,11 @@ export const itensRepository = {
   }) {
     const [result] = await db.execute(
       `INSERT INTO itens
-        (descricao, categoria_id, local_encontrado, ponto_coleta_id,
+        (nome, descricao, categoria_id, local_encontrado, ponto_coleta_id,
          data_encontrado, data_disponibilizacao, cadastrado_por_user_id)
-       VALUES (?, ?, ?, ?, ?, CURDATE(), ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, CURDATE(), ?)`,
       [
+        nome,
         descricao,
         categoriaId,
         localEncontrado,
@@ -108,12 +110,12 @@ export const itensRepository = {
   },
 
   // Atualiza os dados de texto de um item
-  async update(id, { descricao, categoriaId, localEncontrado, pontoColetaId }) {
+  async update(id, { nome, descricao, categoriaId, localEncontrado, pontoColetaId }) {
     const [result] = await db.execute(
       `UPDATE itens
-       SET descricao = ?, categoria_id = ?, local_encontrado = ?, ponto_coleta_id = ?
+       SET nome = ?, descricao = ?, categoria_id = ?, local_encontrado = ?, ponto_coleta_id = ?
        WHERE id = ? AND status IN ('disponivel', 'pendente')`,
-      [descricao, categoriaId, localEncontrado, pontoColetaId, id],
+      [nome, descricao, categoriaId, localEncontrado, pontoColetaId, id],
     );
     return result.affectedRows > 0;
   },
@@ -122,7 +124,7 @@ export const itensRepository = {
   async findFinalizados(status) {
     const [rows] = await db.execute(
       `SELECT
-         i.id, i.descricao, i.local_encontrado, i.data_encontrado,
+         i.id, i.nome, i.descricao, i.local_encontrado, i.data_encontrado,
          i.status, i.finalizado_em, i.motivo_descarte,
          c.nome AS categoria,
          p.nome AS ponto_coleta,

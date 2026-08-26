@@ -107,6 +107,7 @@ CREATE TABLE pontos_coleta (
 -- ---------------------------------------------------------------------
 CREATE TABLE itens (
   id                      BIGINT AUTO_INCREMENT PRIMARY KEY,
+  nome                    VARCHAR(120)  NOT NULL,              -- título curto exibido na listagem
   descricao               TEXT          NOT NULL,
   categoria_id            BIGINT        NOT NULL,
   local_encontrado        VARCHAR(120)  NOT NULL,              -- texto livre: "Pátio", "Sala 5B"

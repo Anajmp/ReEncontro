@@ -7,6 +7,7 @@ import { z } from "zod";
 
 // Schema para criar um item
 export const criarItemSchema = z.object({
+  nome: z.string().min(2, "Nome muito curto").max(120),
   descricao: z.string().min(3, "Descrição muito curta").max(2000),
   categoriaId: z.coerce.number().int().positive("Categoria inválida"),
   localEncontrado: z.string().min(2).max(120),
@@ -30,6 +31,7 @@ export const listarItensSchema = z.object({
 });
 
 export const editarItemSchema = z.object({
+  nome: z.string().min(2, "Nome muito curto").max(120),
   descricao: z.string().min(3, "Descrição muito curta").max(255),
   categoria_id: z.coerce.number().int().positive("Categoria inválida"),
   local_encontrado: z.string().min(2).max(255),

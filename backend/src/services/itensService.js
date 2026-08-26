@@ -60,6 +60,7 @@ export const itensService = {
 
   async editar(id, dados) {
     const ok = await itensRepository.update(id, {
+      nome: dados.nome,
       descricao: dados.descricao,
       categoriaId: dados.categoria_id,
       localEncontrado: dados.local_encontrado,
