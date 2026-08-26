@@ -305,7 +305,7 @@ function ClaimModal({
 function CardEsqueleto() {
   return (
     <div className="overflow-hidden rounded-2xl border border-black/[0.05] bg-white shadow-sm">
-      <div className="h-44 animate-pulse bg-[#F5F3F0]" />
+      <div className="aspect-[6/7] animate-pulse bg-[#F5F3F0]" />
       <div className="space-y-3 p-4">
         <div className="h-4 w-3/4 animate-pulse rounded bg-[#F5F3F0]" />
         <div className="h-5 w-20 animate-pulse rounded-full bg-[#F5F3F0]" />
@@ -331,7 +331,7 @@ function ItemCard({
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-black/[0.05] bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <button type="button" className="relative h-44 overflow-hidden bg-[#F5F3F0] text-left" onClick={onDetalhe}>
+      <button type="button" className="relative aspect-[6/7] overflow-hidden bg-[#F5F3F0] text-left" onClick={onDetalhe}>
         <img
           src={item.image}
           alt={item.name}
@@ -436,8 +436,7 @@ export function PublicListing({ navigate }: Props) {
                 className="flex items-center gap-2.5 rounded-full border border-[#E7E5E4] bg-[#FAFAF8] py-1 pr-3.5 pl-1 text-sm font-semibold text-[#1C1917] shadow-sm transition-all hover:border-[#C8102E]/30 hover:bg-white hover:shadow"
               >
                 <UserAvatar
-                  seed={usuario.avatar_seed || usuario.email}
-                  nome={usuario.nome}
+                  usuario={usuario}
                   size={30}
                   className="ring-2 ring-white"
                 />

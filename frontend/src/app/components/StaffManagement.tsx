@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { AdminLayout } from './shared/AdminLayout';
 import {
-  AdminPanel, AdminAvatar, adminBtnPrimary, adminBtnOutline, adminInputClass, adminSelectClass,
+  AdminPanel, adminBtnPrimary, adminBtnOutline, adminInputClass, adminSelectClass,
 } from './shared/AdminChrome';
+import { avatarDiretora, avatarFuncionaria } from '../../lib/avatar';
 import type { Screen } from '../App';
 import { usuariosApi } from '../../lib/api';
 
@@ -200,18 +201,15 @@ export function StaffManagement({ navigate }: Props) {
               </thead>
               <tbody className="divide-y divide-[#E7E5E4]">
                 {staff.map(member => {
-                  const initials = member.name.split(' ').slice(0, 2).map((n: string) => n[0]).join('');
                   return (
                     <tr key={member.id} className="transition-colors hover:bg-[#F5F3F0]/50">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          {member.isDiretora ? (
-                            <AdminAvatar initials={initials} size={32} />
-                          ) : (
-                            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#F5F5F4] text-xs font-bold text-[#78716C]">
-                              {initials}
-                            </div>
-                          )}
+                          <img
+                            src={member.isDiretora ? avatarDiretora() : avatarFuncionaria(member.email || String(member.id))}
+                            alt=""
+                            className="size-8 shrink-0 rounded-full border border-[#E7E5E4] bg-white"
+                          />
                           <span className="font-semibold text-[#1C1917]">{member.name}</span>
                         </div>
                       </td>

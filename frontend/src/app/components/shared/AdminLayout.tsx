@@ -4,11 +4,10 @@ import {
   CheckCircle2, BarChart2, Users, LogOut, Menu, X,
 } from 'lucide-react';
 import type { Screen } from '../../App';
-import { useAuth, iniciais } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { LupaMarca } from './LupaMarca';
-import {
-  ADMIN_FONT, AdminAvatar, PAGE_INFO,
-} from './AdminChrome';
+import { ADMIN_FONT, PAGE_INFO } from './AdminChrome';
+import { UserAvatar } from './UserAvatar';
 
 const NAV_ITEMS: {
   id: Screen;
@@ -49,15 +48,11 @@ function AdminLogo() {
 function AdminHeader({
   current,
   onMenuClick,
-  nome,
-  email,
-  initials,
+  usuario,
 }: {
   current: Screen;
   onMenuClick: () => void;
-  nome: string;
-  email: string;
-  initials: string;
+  usuario: { nome?: string; email?: string; role?: string; avatar_seed?: string } | null;
 }) {
   const info = PAGE_INFO[current] ?? { title: 'Admin', subtitle: '' };
   return (
@@ -80,10 +75,10 @@ function AdminHeader({
       </div>
       <div className="flex shrink-0 items-center gap-3">
         <div className="hidden text-right sm:block">
-          <p className="max-w-[160px] truncate text-sm font-semibold text-[#1C1917]">{nome}</p>
-          <p className="max-w-[160px] truncate text-xs text-[#78716C]">{email}</p>
+          <p className="max-w-[160px] truncate text-sm font-semibold text-[#1C1917]">{usuario?.nome ?? '—'}</p>
+          <p className="max-w-[160px] truncate text-xs text-[#78716C]">{usuario?.email ?? ''}</p>
         </div>
-        <AdminAvatar initials={initials} size={36} />
+        <UserAvatar usuario={usuario} size={36} />
       </div>
     </header>
   );
@@ -126,8 +121,6 @@ export function AdminLayout({ children, current, navigate }: Props) {
   useEffect(() => {
     fecharMenu();
   }, [current]);
-
-  const userInitials = iniciais(usuario?.nome);
 
   return (
     <div className="min-h-screen bg-[#F5F3F0]" style={ADMIN_FONT}>
@@ -187,7 +180,7 @@ export function AdminLayout({ children, current, navigate }: Props) {
 
         <div className="border-t border-[#E7E5E4] p-4">
           <div className="flex items-center gap-3">
-            <AdminAvatar initials={userInitials} size={38} />
+            <UserAvatar usuario={usuario} size={38} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-[#1C1917]">{usuario?.nome ?? '—'}</p>
               <p className="truncate text-xs text-[#78716C]">{usuario?.email ?? ''}</p>
@@ -208,9 +201,7 @@ export function AdminLayout({ children, current, navigate }: Props) {
         <AdminHeader
           current={current}
           onMenuClick={() => setSidebarOpen(true)}
-          nome={usuario?.nome ?? '—'}
-          email={usuario?.email ?? ''}
-          initials={userInitials}
+          usuario={usuario}
         />
         <main className="flex-1 overflow-auto p-5 sm:p-7">{children}</main>
       </div>

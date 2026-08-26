@@ -1,19 +1,22 @@
-import { avatarUrl } from '../../../lib/avatar';
-import { iniciais } from '../../../contexts/AuthContext';
+import { avatarDoUsuario } from '../../../lib/avatar';
 import { cn } from '../ui/utils';
 
 interface Props {
-  seed?: string | null;
-  nome?: string | null;
+  usuario: {
+    role?: string;
+    is_diretora?: boolean | number;
+    avatar_seed?: string;
+    email?: string;
+    nome?: string;
+  } | null;
   size?: number;
   className?: string;
   rounded?: 'full' | '2xl' | 'xl';
 }
 
-/** Avatar DiceBear a partir do seed; se não houver seed, mostra iniciais. */
+/** Avatar do usuário — diretora fixa, inspetora feminina aleatória, responsável escolhido. */
 export function UserAvatar({
-  seed,
-  nome,
+  usuario,
   size = 36,
   className,
   rounded = 'full',
@@ -21,30 +24,18 @@ export function UserAvatar({
   const radius =
     rounded === 'full' ? 'rounded-full' : rounded === '2xl' ? 'rounded-2xl' : 'rounded-xl';
 
-  if (seed) {
-    return (
-      <img
-        src={avatarUrl(seed)}
-        alt={nome ? `Avatar de ${nome}` : 'Avatar'}
-        width={size}
-        height={size}
-        className={cn('shrink-0 object-cover bg-white', radius, className)}
-        style={{ width: size, height: size }}
-      />
-    );
-  }
-
   return (
-    <div
+    <img
+      src={avatarDoUsuario(usuario)}
+      alt={usuario?.nome ? `Avatar de ${usuario.nome}` : 'Avatar'}
+      width={size}
+      height={size}
       className={cn(
-        'flex shrink-0 items-center justify-center bg-[#FEE2E2] font-extrabold text-[#C8102E]',
+        'shrink-0 border border-[#E7E5E4] bg-white object-cover',
         radius,
         className,
       )}
-      style={{ width: size, height: size, fontSize: size * 0.32 }}
-      aria-hidden
-    >
-      {iniciais(nome ?? undefined)}
-    </div>
+      style={{ width: size, height: size }}
+    />
   );
 }

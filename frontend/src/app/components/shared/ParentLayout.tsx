@@ -117,8 +117,7 @@ function SidebarContent({
       <div className="border-t border-[#E7E5E4] px-4 py-4">
         <div className="mb-3 flex items-center gap-3">
           <UserAvatar
-            seed={usuario?.avatar_seed || usuario?.email}
-            nome={usuario?.nome}
+            usuario={usuario}
             size={36}
           />
           <div className="min-w-0">

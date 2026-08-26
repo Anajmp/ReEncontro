@@ -74,11 +74,8 @@ export function ParentProfile({ navigate }: Props) {
         <div className="mb-4 rounded-2xl border border-black/[0.05] bg-white p-6 shadow-sm">
           <div className="mb-6 flex items-center gap-4">
             <UserAvatar
-              seed={avatarSeed || usuario?.avatar_seed || usuario?.email}
-              nome={nome}
+              usuario={usuario ? { ...usuario, avatar_seed: avatarSeed || usuario.avatar_seed } : null}
               size={56}
-              rounded="full"
-              className="border border-[#E7E5E4]"
             />
             <div>
               <p className="font-extrabold text-[#1C1917]">{nome || '—'}</p>
