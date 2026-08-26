@@ -2,15 +2,18 @@ import { useState } from 'react';
 import { User, Mail, Phone, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 import { ParentLayout } from './shared/ParentLayout';
 import { ParentInputField } from './shared/ParentChrome';
-import { useAuth, iniciais } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import type { Screen } from '../App';
+import { AvatarPicker } from './shared/AvatarPicker';
+import { UserAvatar } from './shared/UserAvatar';
+import { usuariosApi } from '../../lib/api';
 
 interface Props {
   navigate: (s: Screen) => void;
 }
 
 export function ParentProfile({ navigate }: Props) {
-  const { usuario } = useAuth();
+  const { usuario, atualizarUsuario } = useAuth();
   const [nome, setNome] = useState(usuario?.nome ?? '');
   const [email, setEmail] = useState(usuario?.email ?? '');
   const [telefone, setTelefone] = useState('');
@@ -24,6 +27,24 @@ export function ParentProfile({ navigate }: Props) {
   const [showConf, setShowConf] = useState(false);
   const [passwordSaved, setPasswordSaved] = useState(false);
   const [passError, setPassError] = useState('');
+
+  const [avatarSeed, setAvatarSeed] = useState(
+    usuario?.avatar_seed || usuario?.email || '',
+  );
+  const [salvandoAvatar, setSalvandoAvatar] = useState(false);
+
+  async function salvarAvatar(seed: string) {
+    setSalvandoAvatar(true);
+    try {
+      await usuariosApi.atualizarAvatar(seed);
+      setAvatarSeed(seed);
+      atualizarUsuario({ avatar_seed: seed });
+    } catch (err: any) {
+      alert(err.message || 'Erro ao salvar o avatar');
+    } finally {
+      setSalvandoAvatar(false);
+    }
+  }
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,9 +73,13 @@ export function ParentProfile({ navigate }: Props) {
 
         <div className="mb-4 rounded-2xl border border-black/[0.05] bg-white p-6 shadow-sm">
           <div className="mb-6 flex items-center gap-4">
-            <div className="flex size-14 items-center justify-center rounded-full bg-[#FEE2E2]">
-              <span className="text-base font-extrabold text-[#C8102E]">{iniciais(nome)}</span>
-            </div>
+            <UserAvatar
+              seed={avatarSeed || usuario?.avatar_seed || usuario?.email}
+              nome={nome}
+              size={56}
+              rounded="full"
+              className="border border-[#E7E5E4]"
+            />
             <div>
               <p className="font-extrabold text-[#1C1917]">{nome || '—'}</p>
               <p className="text-sm text-[#78716C]">{email}</p>
@@ -100,6 +125,15 @@ export function ParentProfile({ navigate }: Props) {
               </button>
             </div>
           </form>
+        </div>
+
+        <div className="mb-4 rounded-2xl border border-black/[0.05] bg-white p-6 shadow-sm">
+          <h3 className="mb-4 text-base font-bold text-[#1C1917]">Personagem</h3>
+          <AvatarPicker
+            seedAtual={avatarSeed}
+            onSelecionar={salvarAvatar}
+            salvando={salvandoAvatar}
+          />
         </div>
 
         <div className="rounded-2xl border border-black/[0.05] bg-white p-6 shadow-sm">

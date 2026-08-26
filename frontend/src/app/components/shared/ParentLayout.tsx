@@ -3,9 +3,10 @@ import {
   FileText, GraduationCap, User, LogOut, ArrowLeft, Menu, X,
 } from 'lucide-react';
 import type { Screen } from '../../App';
-import { useAuth, iniciais } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { LupaMarca } from './LupaMarca';
 import { PARENT_FONT } from './ParentChrome';
+import { UserAvatar } from './UserAvatar';
 
 const NAV_ITEMS: { id: Screen; label: string; Icon: ElementType }[] = [
   { id: 'parent-dashboard', label: 'Minhas Reivindicações', Icon: FileText },
@@ -115,9 +116,11 @@ function SidebarContent({
 
       <div className="border-t border-[#E7E5E4] px-4 py-4">
         <div className="mb-3 flex items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#FEE2E2]">
-            <span className="text-xs font-extrabold text-[#C8102E]">{iniciais(usuario?.nome)}</span>
-          </div>
+          <UserAvatar
+            seed={usuario?.avatar_seed || usuario?.email}
+            nome={usuario?.nome}
+            size={36}
+          />
           <div className="min-w-0">
             <p className="truncate text-sm font-bold text-[#1C1917]">{usuario?.nome ?? '—'}</p>
             <p className="truncate text-xs text-[#A8A29E]">{usuario?.email ?? ''}</p>

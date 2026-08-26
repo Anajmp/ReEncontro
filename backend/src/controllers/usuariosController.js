@@ -6,6 +6,7 @@ import {
   criarFuncionariaSchema,
   editarFuncionariaSchema,
 } from "../models/usuarioSchema.js";
+import { usuariosRepository } from '../repositories/usuariosRepository.js';
 
 export const usuariosController = {
   // GET /api/usuarios/funcionarias
@@ -61,4 +62,19 @@ export const usuariosController = {
       next(err);
     }
   },
+
+    // PATCH /api/usuarios/avatar
+    async atualizarAvatar(req, res, next) {
+      try {
+        const { avatar_seed } = req.body;
+        if (!avatar_seed || typeof avatar_seed !== 'string' || avatar_seed.length > 60) {
+          throw { status: 400, mensagem: 'Avatar inválido' };
+        }
+        // req.usuario.id vem do token — cada um só altera o próprio avatar
+        await usuariosRepository.atualizarAvatar(req.usuario.id, avatar_seed);
+        res.json({ mensagem: 'Avatar atualizado', avatar_seed });
+      } catch (err) {
+        next(err);
+      }
+    },
 };

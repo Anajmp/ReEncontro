@@ -18,6 +18,7 @@ export interface Usuario {
   email: string;
   role: string; // 'responsavel' | 'funcionaria'
   is_diretora?: boolean | number;
+  avatar_seed?: string;
 }
 
 interface AuthContextValue {
@@ -28,6 +29,7 @@ interface AuthContextValue {
   login: (email: string, senha: string) => Promise<Usuario>;
   registrar: (dados: any) => Promise<Usuario>;
   logout: () => void;
+  atualizarUsuario: (parcial: Partial<Usuario>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -98,6 +100,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
   }
 
+  // Atualiza campos do usuário (ex.: avatar_seed) sem novo login
+  function atualizarUsuario(parcial: Partial<Usuario>) {
+    setUsuario(atual => {
+      if (!atual) return atual;
+      const atualizado = { ...atual, ...parcial };
+      localStorage.setItem(CHAVE_USUARIO, JSON.stringify(atualizado));
+      return atualizado;
+    });
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -108,6 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         registrar,
         logout,
+        atualizarUsuario,
       }}
     >
       {children}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  Search, MapPin, Calendar, LogIn, Check, User, LogOut,
+  Search, MapPin, Calendar, LogIn, Check, LogOut,
   BookOpen, Shirt, Watch, Headphones, Package, Footprints,
 } from 'lucide-react';
 import { Button } from './ui/button';
@@ -15,6 +15,7 @@ import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { getUsuario, logout } from '../../lib/auth';
 import { useLoginSplash } from './LoginSplash';
+import { UserAvatar } from './shared/UserAvatar';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -428,39 +429,42 @@ export function PublicListing({ navigate }: Props) {
           <LogoMarca />
 
           {usuario ? (
-            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-              <Button
-                variant="outline"
-                size="sm"
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
                 onClick={() => navigate(usuario.role === 'funcionaria' ? 'admin-dashboard' : 'parent-dashboard')}
-                className="gap-2 rounded-xl border-[#E7E5E4] bg-white text-[#78716C]"
+                className="flex items-center gap-2.5 rounded-full border border-[#E7E5E4] bg-[#FAFAF8] py-1 pr-3.5 pl-1 text-sm font-semibold text-[#1C1917] shadow-sm transition-all hover:border-[#C8102E]/30 hover:bg-white hover:shadow"
               >
-                <User className="size-4" />
-                <span className="hidden sm:inline">{usuario.nome.split(' ')[0]}</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
+                <UserAvatar
+                  seed={usuario.avatar_seed || usuario.email}
+                  nome={usuario.nome}
+                  size={30}
+                  className="ring-2 ring-white"
+                />
+                <span className="hidden max-w-[120px] truncate sm:inline">{usuario.nome.split(' ')[0]}</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   logout();
                   window.location.reload();
                 }}
-                className="gap-2 text-[#78716C]"
+                className="flex size-9 items-center justify-center rounded-full text-[#A8A29E] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
+                title="Sair"
+                aria-label="Sair"
               >
-                <LogOut className="size-4" />
-                <span className="hidden sm:inline">Sair</span>
-              </Button>
+                <LogOut className="size-4" strokeWidth={1.8} />
+              </button>
             </div>
           ) : (
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
+              type="button"
               onClick={playLoginTransition}
-              className="gap-2 font-semibold text-[#78716C] hover:text-[#C8102E]"
+              className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold text-[#78716C] transition-colors hover:bg-[#F5F3F0] hover:text-[#C8102E]"
             >
               <LogIn className="size-4" />
               Entrar
-            </Button>
+            </button>
           )}
         </div>
       </header>

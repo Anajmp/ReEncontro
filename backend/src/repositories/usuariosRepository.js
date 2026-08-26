@@ -52,4 +52,14 @@ export const usuariosRepository = {
     );
     return result.affectedRows > 0;
   },
+
+    // Atualiza o avatar do próprio usuário
+    async atualizarAvatar(userId, avatarSeed) {
+      const [result] = await db.execute(
+        `UPDATE users SET avatar_seed = ? WHERE id = ?`,
+        [avatarSeed, userId]
+      );
+      return result.affectedRows > 0;
+    },
+
 };

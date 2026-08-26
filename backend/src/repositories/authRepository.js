@@ -8,9 +8,8 @@ export const authRepository = {
   // Busca um usuário pelo email (usado no login)
   async findByEmail(email) {
     const [rows] = await db.execute(
-      `SELECT id, nome, email, senha_hash, role, is_diretora, ativo
-       FROM users
-       WHERE email = ?`,
+      `SELECT id, nome, email, senha_hash, role, is_diretora, ativo, avatar_seed
+      FROM users WHERE email = ?`,
       [email],
     );
     return rows[0] ?? null;
@@ -38,6 +37,7 @@ export const authRepository = {
     senhaHash,
     telefone,
     alunos,
+    avatarSeed,
   }) {
     const conn = await db.getConnection();
     try {
@@ -45,9 +45,9 @@ export const authRepository = {
 
       // 1. Cria o usuário responsável
       const [result] = await conn.execute(
-        `INSERT INTO users (nome, email, senha_hash, telefone, role)
-         VALUES (?, ?, ?, ?, 'responsavel')`,
-        [nome, email, senhaHash, telefone ?? null],
+        `INSERT INTO users (nome, email, senha_hash, telefone, role, avatar_seed)
+         VALUES (?, ?, ?, ?, 'responsavel', ?)`,
+        [nome, email, senhaHash, telefone ?? null, avatarSeed]
       );
       const responsavelId = result.insertId;
 

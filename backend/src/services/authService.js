@@ -48,11 +48,15 @@ export const authService = {
         email: usuario.email,
         role: usuario.role,
         is_diretora: usuario.is_diretora,
+        avatar_seed: usuario.avatar_seed,
       },
     };
   },
 
   async registrar({ nome, email, senha, telefone, alunos }) {
+       // Gera um seed aleatório para o avatar
+       const avatarSeed = Math.random().toString(36).slice(2, 10);
+   
     // 1. Verifica se o email já está em uso
     const jaExiste = await authRepository.emailExiste(email);
     if (jaExiste) {
@@ -74,6 +78,7 @@ export const authService = {
       senhaHash,
       telefone,
       alunos,
+      avatarSeed,
     });
 
     // 5. Já gera um token pra logar automaticamente após o cadastro
@@ -85,7 +90,7 @@ export const authService = {
 
     return {
       token,
-      usuario: { id: responsavelId, nome, email, role: "responsavel" },
+      usuario: { id: responsavelId, nome, email, role: 'responsavel', avatar_seed: avatarSeed },
     };
   },
 };

@@ -335,4 +335,10 @@ export const usuariosApi = {
       method: 'PATCH',
       body: JSON.stringify({ ativo }),
     }),
+
+    atualizarAvatar: (avatarSeed: string) =>
+      request('/api/usuarios/avatar', {
+        method: 'PATCH',
+        body: JSON.stringify({ avatar_seed: avatarSeed }),
+      }),
 };
