@@ -14,7 +14,6 @@ import { InProcess } from './components/InProcess';
 import { Finalized } from './components/Finalized';
 import { Reports } from './components/Reports';
 import { StaffManagement } from './components/StaffManagement';
-import { DemoNav } from './components/shared/DemoNav';
 import { RotaProtegida } from './components/RotaProtegida';
 import { LoginSplashProvider } from './components/LoginSplash';
 import { PortaDeEntrada } from './components/LoadingScreen';
@@ -104,7 +103,6 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
-        <DemoNav current={current} navigate={navigate} />
       </div>
     </LoginSplashProvider>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useState, type ElementType, type ReactNode } from 'react';
 import {
   LayoutDashboard, PlusCircle, Archive, Clock, RefreshCw,
-  CheckCircle2, BarChart2, Users, LogOut, Menu, X, ShieldAlert
+  CheckCircle2, BarChart2, Users, LogOut, Menu, X, ShieldAlert, Globe,
 } from 'lucide-react';
 import type { Screen } from '../../App';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -15,6 +15,7 @@ const NAV_ITEMS: {
   Icon: ElementType;
   adminOnly?: boolean;
 }[] = [
+  { id: 'public-listing', label: 'Ver site público', Icon: Globe },
   { id: 'admin-dashboard', label: 'Dashboard', Icon: LayoutDashboard },
   { id: 'register-item', label: 'Cadastrar Item', Icon: PlusCircle },
   { id: 'available-items', label: 'Itens Disponíveis', Icon: Archive },
@@ -23,7 +24,7 @@ const NAV_ITEMS: {
   { id: 'finalized', label: 'Finalizados', Icon: CheckCircle2 },
   { id: 'reports', label: 'Relatórios', Icon: BarChart2 },
   { id: 'staff-management', label: 'Gestão de Funcionárias', Icon: Users, adminOnly: true },
-    { id: 'lgpd', label: 'Privacidade (LGPD)', Icon: ShieldAlert },
+  { id: 'lgpd', label: 'Privacidade (LGPD)', Icon: ShieldAlert },
 ];
 
 interface Props {
