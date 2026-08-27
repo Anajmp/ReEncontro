@@ -53,13 +53,46 @@ export const usuariosRepository = {
     return result.affectedRows > 0;
   },
 
-    // Atualiza o avatar do próprio usuário
-    async atualizarAvatar(userId, avatarSeed) {
-      const [result] = await db.execute(
-        `UPDATE users SET avatar_seed = ? WHERE id = ?`,
-        [avatarSeed, userId]
-      );
-      return result.affectedRows > 0;
-    },
+  // Atualiza o avatar do próprio usuário
+  async atualizarAvatar(userId, avatarSeed) {
+    const [result] = await db.execute(
+      `UPDATE users SET avatar_seed = ? WHERE id = ?`,
+      [avatarSeed, userId],
+    );
+    return result.affectedRows > 0;
+  },
 
+  // Busca o hash da senha do próprio usuário (para conferir a senha atual)
+  async buscarSenhaHash(userId) {
+    const [rows] = await db.execute(
+      `SELECT senha_hash FROM users WHERE id = ?`,
+      [userId],
+    );
+    return rows[0]?.senha_hash ?? null;
+  },
+
+  // Atualiza a senha
+  async atualizarSenha(userId, novaSenhaHash) {
+    const [result] = await db.execute(
+      `UPDATE users SET senha_hash = ? WHERE id = ?`,
+      [novaSenhaHash, userId],
+    );
+    return result.affectedRows > 0;
+  },
+
+  async atualizarPerfil(userId, { nome, email, telefone }) {
+    const [result] = await db.execute(
+      `UPDATE users SET nome = ?, email = ?, telefone = ? WHERE id = ?`,
+      [nome, email, telefone ?? null, userId],
+    );
+    return result.affectedRows > 0;
+  },
+
+  async emailEmUsoPorOutro(email, userId) {
+    const [rows] = await db.execute(
+      `SELECT id FROM users WHERE email = ? AND id != ?`,
+      [email, userId],
+    );
+    return rows.length > 0;
+  },
 };

@@ -366,4 +366,16 @@ export const usuariosApi = {
         method: 'PATCH',
         body: JSON.stringify({ avatar_seed: avatarSeed }),
       }),
+
+      alterarSenha: (senhaAtual: string, novaSenha: string) =>
+    request('/api/usuarios/senha', {
+      method: 'PATCH',
+      body: JSON.stringify({ senhaAtual, novaSenha }),
+    }),
+
+      atualizarPerfil: (dados: { nome: string; email: string; telefone?: string }) =>
+    request('/api/usuarios/perfil', {
+      method: 'PATCH',
+      body: JSON.stringify(dados),
+    }),
 };

@@ -44,4 +44,37 @@ export const usuariosService = {
     if (!ok) throw { status: 404, mensagem: "Funcionária não encontrada" };
     return { id, ativo };
   },
+
+  async alterarSenha(userId, senhaAtual, novaSenha) {
+    const hashAtual = await usuariosRepository.buscarSenhaHash(userId);
+    if (!hashAtual) {
+      throw { status: 404, mensagem: "Usuário não encontrado" };
+    }
+
+    // Confere a senha atual antes de permitir a troca
+    const confere = await bcrypt.compare(senhaAtual, hashAtual);
+    if (!confere) {
+      throw { status: 401, mensagem: "A senha atual está incorreta" };
+    }
+
+    if (novaSenha.length < 6) {
+      throw {
+        status: 400,
+        mensagem: "A nova senha deve ter ao menos 6 caracteres",
+      };
+    }
+
+    const novoHash = await bcrypt.hash(novaSenha, 10);
+    await usuariosRepository.atualizarSenha(userId, novoHash);
+
+    return { mensagem: "Senha alterada com sucesso" };
+  },
+
+  async atualizarPerfil(userId, dados) {
+    if (await usuariosRepository.emailEmUsoPorOutro(dados.email, userId)) {
+      throw { status: 409, mensagem: "Este e-mail já está em uso" };
+    }
+    await usuariosRepository.atualizarPerfil(userId, dados);
+    return { mensagem: "Dados atualizados" };
+  },
 };

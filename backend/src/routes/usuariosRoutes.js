@@ -9,7 +9,7 @@ import { apenasDiretora } from "../middlewares/roleMiddleware.js";
 const router = Router();
 
 // PATCH /api/usuarios/avatar — qualquer usuário logado altera o próprio
-router.patch('/avatar', authMiddleware, usuariosController.atualizarAvatar);
+router.patch("/avatar", authMiddleware, usuariosController.atualizarAvatar);
 
 router.get(
   "/funcionarias",
@@ -36,5 +36,8 @@ router.patch(
   usuariosController.alterarStatus,
 );
 
+// PATCH /api/usuarios/senha — qualquer usuário logado altera a própria
+router.patch("/senha", authMiddleware, usuariosController.alterarSenha);
 
+router.patch("/perfil", authMiddleware, usuariosController.atualizarPerfil);
 export default router;

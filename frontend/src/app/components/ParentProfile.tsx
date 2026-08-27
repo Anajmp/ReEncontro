@@ -46,21 +46,34 @@ export function ParentProfile({ navigate }: Props) {
     }
   }
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+    const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    try {
+      await usuariosApi.atualizarPerfil({ nome, email, telefone });
+      atualizarUsuario({ nome, email, telefone });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao salvar');
+    }
   };
 
-  const handleSavePassword = (e: React.FormEvent) => {
+    const handleSavePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPassError('');
+
     if (!senhaAtual) { setPassError('Informe a senha atual.'); return; }
     if (novaSenha.length < 6) { setPassError('Nova senha deve ter ao menos 6 caracteres.'); return; }
     if (novaSenha !== confirmar) { setPassError('As senhas não conferem.'); return; }
-    setPasswordSaved(true);
-    setSenhaAtual(''); setNovaSenha(''); setConfirmar('');
-    setTimeout(() => setPasswordSaved(false), 2500);
+
+    try {
+      await usuariosApi.alterarSenha(senhaAtual, novaSenha);
+      setPasswordSaved(true);
+      setSenhaAtual(''); setNovaSenha(''); setConfirmar('');
+      setTimeout(() => setPasswordSaved(false), 2500);
+    } catch (err: any) {
+      setPassError(err.message || 'Erro ao alterar a senha.');
+    }
   };
 
   return (
