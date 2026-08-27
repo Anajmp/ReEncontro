@@ -95,4 +95,28 @@ export const emailTemplates = {
       `),
     };
   },
+
+  // Enviado ao solicitar redefinição de senha (RF-016)
+  redefinicaoSenha({ nome, link }) {
+    return {
+      assunto: "Redefinição de senha — ReEncontro",
+      html: base(`
+        <p>Olá, <strong>${nome}</strong>!</p>
+        <p>Recebemos um pedido para redefinir a senha da sua conta.</p>
+        <p style="margin: 24px 0;">
+          <a href="${link}"
+             style="display: inline-block; background: ${cor}; color: #fff; text-decoration: none;
+                    padding: 12px 24px; border-radius: 8px; font-weight: bold;">
+            Redefinir minha senha
+          </a>
+        </p>
+        <p style="font-size: 13px; color: #78716C;">
+          Este link é válido por <strong>1 hora</strong> e pode ser usado apenas uma vez.
+        </p>
+        <p style="font-size: 13px; color: #78716C;">
+          Se você não solicitou a redefinição, ignore este e-mail — sua senha continua a mesma.
+        </p>
+      `),
+    };
+  },
 };

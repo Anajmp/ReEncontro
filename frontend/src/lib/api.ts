@@ -88,6 +88,18 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(dados),
     }),
+
+      esqueciSenha: (email: string) =>
+    request('/api/auth/esqueci-senha', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  redefinirSenha: (token: string, novaSenha: string) =>
+    request('/api/auth/redefinir-senha', {
+      method: 'POST',
+      body: JSON.stringify({ token, novaSenha }),
+    }),
 };
 
 // ===== ITENS =====
