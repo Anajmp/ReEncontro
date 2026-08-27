@@ -28,7 +28,7 @@ const categoryData = [
   { name: 'Vestuário', value: 34 },
   { name: 'Material Escolar', value: 28 },
   { name: 'Outros', value: 18 },
-  { name: 'Acessórios', value: 12 },
+  { name: 'Acessório', value: 12 },
   { name: 'Calçados', value: 8 },
 ].map(d => ({ ...d, color: getCatConfig(d.name).color }));
 

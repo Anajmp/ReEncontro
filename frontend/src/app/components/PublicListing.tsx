@@ -9,7 +9,7 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { StatusBadge } from './shared/StatusBadge';
-import { itensApi, reivindicacoesApi, alunosApi } from '../../lib/api';
+import { itensApi, reivindicacoesApi, alunosApi,referenciasApi } from '../../lib/api';
 import type { Item } from './shared/data';
 import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
@@ -447,6 +447,7 @@ function ItemCard({
 }
 
 export function PublicListing({ navigate }: Props) {
+  const [categorias, setCategorias] = useState<any[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [claimOpen, setClaimOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -455,6 +456,11 @@ export function PublicListing({ navigate }: Props) {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const routerNavigate = useNavigate();
+
+
+  useEffect(() => {
+    referenciasApi.categorias().then(setCategorias).catch(console.error);
+  }, []);
 
   useEffect(() => {
     itensApi.listar()
@@ -527,8 +533,8 @@ export function PublicListing({ navigate }: Props) {
           />
         </div>
 
-        <div className="mb-7 flex flex-wrap gap-2" role="tablist" aria-label="Categorias">
-          {CATEGORIAS.map(cat => {
+                <div className="mb-7 flex flex-wrap gap-2" role="tablist" aria-label="Categorias">
+          {[{ id: 'all', label: 'Todas' }, ...categorias.map(c => ({ id: c.nome, label: c.nome }))].map(cat => {
             const ativo = category === cat.id;
             return (
               <button
