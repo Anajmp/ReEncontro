@@ -1,10 +1,13 @@
-// =====================================================================
-// relatoriosController — camada HTTP do módulo relatorios.
-// TODO: implementar. Use itensController.js como molde.
-// =====================================================================
+import { relatoriosService } from "../services/relatoriosService.js";
+
 export const relatoriosController = {
-  // exemplo:
-  // async listar(req, res, next) {
-  //   try { ... } catch (err) { next(err); }
-  // },
+  // GET /api/relatorios?dias=30
+  async gerar(req, res, next) {
+    try {
+      const dados = await relatoriosService.gerar(req.query.dias);
+      res.json(dados);
+    } catch (err) {
+      next(err);
+    }
+  },
 };

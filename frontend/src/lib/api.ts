@@ -379,3 +379,8 @@ export const usuariosApi = {
       body: JSON.stringify(dados),
     }),
 };
+
+// ===== RELATÓRIOS =====
+export const relatoriosApi = {
+  gerar: (dias: number) => request(`/api/relatorios?dias=${dias}`),
+};

@@ -1,179 +1,189 @@
+import { useState, useEffect } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, CartesianGrid,
+  PieChart, Pie, Cell, CartesianGrid,
 } from 'recharts';
-import { Download, Package, CheckCircle2, Trash2, TrendingUp } from 'lucide-react';
-import { Button } from './ui/button';
+import { Package, CheckCircle2, Trash2, TrendingUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { AdminLayout } from './shared/AdminLayout';
 import type { Screen } from '../App';
 import {
-  MetricCard, CardHeader, CustomBarTooltip, AdminPanel, adminBtnOutline, adminSelectClass,
+  MetricCard, CardHeader, CustomBarTooltip, AdminPanel, adminSelectClass,
 } from './shared/AdminChrome';
+import { relatoriosApi } from '../../lib/api';
 
 interface Props {
   navigate: (s: Screen) => void;
 }
 
-const monthlyData = [
-  { month: 'Set', encontrados: 14, entregues: 10, descartados: 2 },
-  { month: 'Out', encontrados: 18, entregues: 14, descartados: 1 },
-  { month: 'Nov', encontrados: 22, entregues: 17, descartados: 3 },
-  { month: 'Dez', encontrados: 15, entregues: 13, descartados: 0 },
-  { month: 'Jan', encontrados: 28, entregues: 20, descartados: 4 },
-  { month: 'Fev', encontrados: 31, entregues: 24, descartados: 2 },
-  { month: 'Mar', encontrados: 26, entregues: 19, descartados: 1 },
-];
+// Cores e rótulos de cada status
+const STATUS_INFO: Record<string, { nome: string; cor: string }> = {
+  entregue:    { nome: 'Entregues',   cor: '#059669' },
+  disponivel:  { nome: 'Disponíveis', cor: '#2563EB' },
+  pendente:    { nome: 'Pendentes',   cor: '#B45309' },
+  em_processo: { nome: 'Em Processo', cor: '#C8102E' },
+  descartado:  { nome: 'Descartados', cor: '#78716C' },
+};
 
-const statusData = [
-  { name: 'Entregues', value: 117, color: '#059669' },
-  { name: 'Disponíveis', value: 23, color: '#2563EB' },
-  { name: 'Em Processo', value: 5, color: '#C8102E' },
-  { name: 'Descartados', value: 13, color: '#78716C' },
-];
-
-const returnRateData = [
-  { month: 'Set', taxa: 71 },
-  { month: 'Out', taxa: 78 },
-  { month: 'Nov', taxa: 77 },
-  { month: 'Dez', taxa: 87 },
-  { month: 'Jan', taxa: 71 },
-  { month: 'Fev', taxa: 77 },
-  { month: 'Mar', taxa: 73 },
-];
+// Converte "2026-09" em "Set/26"
+function formatarMes(mes: string): string {
+  const [ano, m] = mes.split('-');
+  const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  return `${nomes[Number(m) - 1]}/${ano.slice(2)}`;
+}
 
 export function Reports({ navigate }: Props) {
+  const [dias, setDias] = useState('30');
+  const [dados, setDados] = useState<any>(null);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    setCarregando(true);
+    relatoriosApi.gerar(Number(dias))
+      .then(setDados)
+      .catch(err => console.error('Erro ao carregar relatórios:', err))
+      .finally(() => setCarregando(false));
+  }, [dias]);
+
+  // Prepara os dados para os gráficos
+  const dadosMensais = (dados?.por_mes ?? []).map((m: any) => ({
+    month: formatarMes(m.mes),
+    encontrados: m.encontrados,
+    entregues: m.devolvidos,
+    descartados: m.descartados,
+  }));
+
+  const dadosStatus = (dados?.por_status ?? []).map((s: any) => ({
+    name: STATUS_INFO[s.status]?.nome ?? s.status,
+    value: s.total,
+    color: STATUS_INFO[s.status]?.cor ?? '#A8A29E',
+  }));
+
+  const total = dados?.total_cadastrados ?? 0;
+  const entregues = dados?.total_entregues ?? 0;
+  const descartados = dados?.total_descartados ?? 0;
+  const taxa = dados?.taxa_devolucao ?? 0;
+
+  const pct = (parte: number) =>
+    total > 0 ? `${Math.round((parte / total) * 100)}% do total` : '—';
+
   return (
     <AdminLayout current="reports" navigate={navigate}>
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex items-center justify-end gap-3">
-          <Select defaultValue="6m">
+          <Select value={dias} onValueChange={setDias}>
             <SelectTrigger className={`w-44 ${adminSelectClass}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1m">Último mês</SelectItem>
-              <SelectItem value="3m">Últimos 3 meses</SelectItem>
-              <SelectItem value="6m">Últimos 6 meses</SelectItem>
-              <SelectItem value="1y">Último ano</SelectItem>
-              <SelectItem value="custom">Personalizado</SelectItem>
+              <SelectItem value="7">Últimos 7 dias</SelectItem>
+              <SelectItem value="30">Últimos 30 dias</SelectItem>
+              <SelectItem value="90">Últimos 90 dias</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" className={`gap-2 ${adminBtnOutline}`}>
-            <Download className="size-4" />
-            Exportar PDF
-          </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <MetricCard
-            label="Total de itens (período)"
-            value="154"
-            context="+12% vs. período anterior"
-            icon={<Package size={18} color="#78716C" strokeWidth={1.8} />}
-            iconBg="#F5F5F4"
-            valueColor="#1C1917"
-            trend="up"
-          />
-          <MetricCard
-            label="Total entregues"
-            value="117"
-            context="76% do total"
-            icon={<CheckCircle2 size={18} color="#059669" strokeWidth={1.8} />}
-            iconBg="#D1FAE5"
-            valueColor="#059669"
-          />
-          <MetricCard
-            label="Taxa de devolução"
-            value="76%"
-            context="+3pp vs. período anterior"
-            icon={<TrendingUp size={18} color="#2563EB" strokeWidth={1.8} />}
-            iconBg="#DBEAFE"
-            valueColor="#2563EB"
-            trend="up"
-          />
-          <MetricCard
-            label="Descartados"
-            value="13"
-            context="8,4% do total"
-            icon={<Trash2 size={18} color="#78716C" strokeWidth={1.8} />}
-            iconBg="#F5F5F4"
-            valueColor="#78716C"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <AdminPanel className="p-5 lg:col-span-2">
-            <CardHeader title="Itens por mês" />
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={monthlyData} barSize={12} barGap={2}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE8" vertical={false} />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A8A29E' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A8A29E' }} />
-                <Tooltip content={<CustomBarTooltip />} cursor={{ fill: '#F5F3F0' }} />
-                <Bar dataKey="encontrados" fill="#E7E5E4" radius={[4, 4, 0, 0]} name="Encontrados" />
-                <Bar dataKey="entregues" fill="#C8102E" radius={[4, 4, 0, 0]} name="Entregues" />
-                <Bar dataKey="descartados" fill="#78716C" radius={[4, 4, 0, 0]} name="Descartados" />
-              </BarChart>
-            </ResponsiveContainer>
+        {carregando ? (
+          <AdminPanel className="py-16 text-center text-sm text-[#A8A29E]">
+            Carregando relatórios...
           </AdminPanel>
-
-          <AdminPanel className="p-5">
-            <CardHeader title="Distribuição por status" />
-            <ResponsiveContainer width="100%" height={160}>
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={65}
-                  paddingAngle={3}
-                  dataKey="value"
-                >
-                  {statusData.map((entry, i) => (
-                    <Cell key={`cell-${i}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #E7E5E4', fontSize: 12 }} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="mt-3 space-y-2">
-              {statusData.map(d => (
-                <div key={d.name} className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-sm" style={{ backgroundColor: d.color }} />
-                    <span className="text-[#78716C]">{d.name}</span>
-                  </div>
-                  <span className="font-semibold text-[#1C1917]">{d.value}</span>
-                </div>
-              ))}
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <MetricCard
+                label="Total de itens (período)"
+                value={String(total)}
+                context={`Últimos ${dias} dias`}
+                icon={<Package size={18} color="#78716C" strokeWidth={1.8} />}
+                iconBg="#F5F5F4"
+                valueColor="#1C1917"
+              />
+              <MetricCard
+                label="Total entregues"
+                value={String(entregues)}
+                context={pct(entregues)}
+                icon={<CheckCircle2 size={18} color="#059669" strokeWidth={1.8} />}
+                iconBg="#D1FAE5"
+                valueColor="#059669"
+              />
+              <MetricCard
+                label="Taxa de devolução"
+                value={`${taxa}%`}
+                context="Entregues sobre o total"
+                icon={<TrendingUp size={18} color="#2563EB" strokeWidth={1.8} />}
+                iconBg="#DBEAFE"
+                valueColor="#2563EB"
+              />
+              <MetricCard
+                label="Descartados"
+                value={String(descartados)}
+                context={pct(descartados)}
+                icon={<Trash2 size={18} color="#78716C" strokeWidth={1.8} />}
+                iconBg="#F5F5F4"
+                valueColor="#78716C"
+              />
             </div>
-          </AdminPanel>
-        </div>
 
-        <AdminPanel className="p-5">
-          <CardHeader title="Taxa de devolução mensal (%)" />
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={returnRateData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE8" />
-              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A8A29E' }} />
-              <YAxis domain={[60, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A8A29E' }} unit="%" />
-              <Tooltip
-                contentStyle={{ borderRadius: 12, border: '1px solid #E7E5E4', fontSize: 12 }}
-                formatter={(v: number) => [`${v}%`, 'Taxa de devolução']}
-              />
-              <Line
-                type="monotone"
-                dataKey="taxa"
-                stroke="#C8102E"
-                strokeWidth={2}
-                dot={{ fill: '#C8102E', r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </AdminPanel>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <AdminPanel className="p-5 lg:col-span-2">
+                <CardHeader title="Itens por mês" />
+                {dadosMensais.length === 0 ? (
+                  <p className="py-16 text-center text-sm text-[#A8A29E]">
+                    Nenhum item cadastrado neste período.
+                  </p>
+                ) : (
+                  <ResponsiveContainer width="100%" height={240}>
+                    <BarChart data={dadosMensais} barSize={12} barGap={2}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE8" vertical={false} />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A8A29E' }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A8A29E' }} allowDecimals={false} />
+                      <Tooltip content={<CustomBarTooltip />} cursor={{ fill: '#F5F3F0' }} />
+                      <Bar dataKey="encontrados" fill="#E7E5E4" radius={[4, 4, 0, 0]} name="Encontrados" />
+                      <Bar dataKey="entregues" fill="#C8102E" radius={[4, 4, 0, 0]} name="Devolvidos" />
+                      <Bar dataKey="descartados" fill="#78716C" radius={[4, 4, 0, 0]} name="Descartados" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </AdminPanel>
+
+              <AdminPanel className="p-5">
+                <CardHeader title="Distribuição por status" />
+                {dadosStatus.length === 0 ? (
+                  <p className="py-16 text-center text-sm text-[#A8A29E]">Sem dados.</p>
+                ) : (
+                  <>
+                    <ResponsiveContainer width="100%" height={160}>
+                      <PieChart>
+                        <Pie
+                          data={dadosStatus}
+                          cx="50%" cy="50%"
+                          innerRadius={40} outerRadius={65}
+                          paddingAngle={3} dataKey="value"
+                        >
+                          {dadosStatus.map((entry: any, i: number) => (
+                            <Cell key={`cell-${i}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #E7E5E4', fontSize: 12 }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="mt-3 space-y-2">
+                      {dadosStatus.map((d: any) => (
+                        <div key={d.name} className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            <div className="size-2.5 rounded-sm" style={{ backgroundColor: d.color }} />
+                            <span className="text-[#78716C]">{d.name}</span>
+                          </div>
+                          <span className="font-semibold text-[#1C1917]">{d.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </AdminPanel>
+            </div>
+          </>
+        )}
       </div>
     </AdminLayout>
   );

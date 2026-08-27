@@ -9,7 +9,7 @@ import reivindicacoesRoutes from "./reivindicacoesRoutes.js";
 import alunosRoutes from "./alunosRoutes.js";
 import referenciasRoutes from "./referenciasRoutes.js";
 import usuariosRoutes from "./usuariosRoutes.js";
-// import relatoriosRoutes from './relatoriosRoutes.js';
+import relatoriosRoutes from "./relatoriosRoutes.js";
 const router = Router();
 
 router.use("/", referenciasRoutes);
@@ -18,6 +18,6 @@ router.use("/auth", authRoutes);
 router.use("/reivindicacoes", reivindicacoesRoutes);
 router.use("/alunos", alunosRoutes);
 router.use("/usuarios", usuariosRoutes);
-// router.use('/relatorios', relatoriosRoutes);
+router.use("/relatorios", relatoriosRoutes);
 
 export default router;
