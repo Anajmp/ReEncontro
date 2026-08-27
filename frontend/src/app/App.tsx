@@ -18,6 +18,7 @@ import { DemoNav } from './components/shared/DemoNav';
 import { RotaProtegida } from './components/RotaProtegida';
 import { LoginSplashProvider } from './components/LoginSplash';
 import { PortaDeEntrada } from './components/LoadingScreen';
+import { Lgpd } from './components/Lgpd';
 
 export type Screen =
   | 'public-listing'
@@ -35,7 +36,8 @@ export type Screen =
   | 'in-process'
   | 'finalized'
   | 'reports'
-  | 'staff-management';
+  | 'staff-management'
+  | 'lgpd';
 
 // Liga cada nome de tela a uma URL de verdade
 const screenToPath: Record<Screen, string> = {
@@ -55,6 +57,7 @@ const screenToPath: Record<Screen, string> = {
   'finalized': '/admin/finalizados',
   'reports': '/admin/relatorios',
   'staff-management': '/admin/funcionarias',
+  'lgpd': '/admin/privacidade'
 };
 
 // Hook que devolve a função navigate(screen) usando o React Router por baixo
@@ -97,6 +100,7 @@ export default function App() {
           <Route path="/admin/finalizados" element={<RotaProtegida role="funcionaria"><Finalized navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin/relatorios" element={<RotaProtegida role="funcionaria"><Reports navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin/funcionarias" element={<RotaProtegida role="funcionaria"><StaffManagement navigate={navigate} /></RotaProtegida>} />
+          <Route path="/admin/privacidade" element={<Lgpd navigate={navigate} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 

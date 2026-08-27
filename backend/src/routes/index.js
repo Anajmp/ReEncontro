@@ -10,6 +10,8 @@ import alunosRoutes from "./alunosRoutes.js";
 import referenciasRoutes from "./referenciasRoutes.js";
 import usuariosRoutes from "./usuariosRoutes.js";
 import relatoriosRoutes from "./relatoriosRoutes.js";
+import lgpdRoutes from "./lgpdRoutes.js";
+
 const router = Router();
 
 router.use("/", referenciasRoutes);
@@ -19,5 +21,6 @@ router.use("/reivindicacoes", reivindicacoesRoutes);
 router.use("/alunos", alunosRoutes);
 router.use("/usuarios", usuariosRoutes);
 router.use("/relatorios", relatoriosRoutes);
+router.use("/lgpd", lgpdRoutes);
 
 export default router;

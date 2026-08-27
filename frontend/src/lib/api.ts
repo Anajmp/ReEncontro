@@ -384,3 +384,15 @@ export const usuariosApi = {
 export const relatoriosApi = {
   gerar: (dias: number) => request(`/api/relatorios?dias=${dias}`),
 };
+
+// ===== LGPD =====
+export const lgpdApi = {
+  buscar: (email: string) =>
+    request(`/api/lgpd/buscar?email=${encodeURIComponent(email)}`),
+
+  anonimizar: (email: string, confirmacao: string) =>
+    request('/api/lgpd/anonimizar', {
+      method: 'POST',
+      body: JSON.stringify({ email, confirmacao }),
+    }),
+};

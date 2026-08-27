@@ -39,6 +39,7 @@ export const PAGE_INFO: Record<Screen, { title: string; subtitle: string }> = {
   finalized: { title: 'Finalizados', subtitle: 'Histórico de itens entregues e descartados' },
   reports: { title: 'Relatórios', subtitle: 'Análise e exportação de dados' },
   'staff-management': { title: 'Gestão de Funcionárias', subtitle: 'Contas com acesso ao sistema administrativo' },
+    'lgpd': { title: 'Privacidade (LGPD)', subtitle: 'Exclusão de dados pessoais a pedido do titular' },
 };
 
 const CAT_CFG: Record<string, { color: string; bg: string; Icon: typeof BookOpen }> = {
