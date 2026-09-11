@@ -10,13 +10,14 @@ import {
   AuthPage,
   AuthSubmitButton,
 } from './shared/AuthChrome';
+import { BotaoGoogle } from './shared/BotaoGoogle';
 
 interface Props {
   navigate: (s: Screen) => void;
 }
 
 export function Login({ navigate }: Props) {
-  const { login } = useAuth();
+  const { login, salvarSessao } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -116,6 +117,26 @@ export function Login({ navigate }: Props) {
             {carregando ? 'Entrando...' : 'Entrar'}
           </AuthSubmitButton>
         </form>
+
+        {/* Separador */}
+        <div className="my-5 flex items-center gap-3">
+          <div className="h-px flex-1 bg-[#E7E5E4]" />
+          <span className="text-xs font-medium text-[#A8A29E]">ou</span>
+          <div className="h-px flex-1 bg-[#E7E5E4]" />
+        </div>
+
+        <BotaoGoogle
+          onSucesso={(resultado) => {
+            salvarSessao(resultado);
+            // Se o cadastro ainda não tem aluno, manda completar
+            if (!resultado.usuario.cadastro_completo) {
+              navigate('completar-cadastro');
+            } else {
+              navigate('parent-dashboard');
+            }
+          }}
+          onErro={(msg) => setErro(msg)}
+        />
 
         <p className="mt-7 text-center text-sm text-[#78716C]">
           Ainda não tem conta?{' '}

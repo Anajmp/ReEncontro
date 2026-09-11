@@ -2,6 +2,7 @@
 // alunosService — regras de negócio dos alunos.
 // =====================================================================
 import { alunosRepository } from "../repositories/alunosRepository.js";
+import { authRepository } from "../repositories/authRepository.js";
 
 export const alunosService = {
   async listarMeus(responsavelId) {
@@ -15,6 +16,10 @@ export const alunosService = {
       periodo: dados.periodo,
       anoLetivo: dados.ano_letivo,
     });
+
+    // Ao cadastrar o primeiro aluno, o cadastro passa a ser completo
+    await authRepository.marcarCadastroCompleto(responsavelId);
+
     return { id: alunoId };
   },
 

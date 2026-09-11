@@ -8,7 +8,7 @@ export const authRepository = {
   // Busca um usuário pelo email (usado no login)
   async findByEmail(email) {
     const [rows] = await db.execute(
-      `SELECT id, nome, email, senha_hash, telefone, role, is_diretora, ativo, avatar_seed
+      `SELECT id, nome, email, senha_hash, telefone, role, is_diretora, ativo, avatar_seed, cadastro_completo
        FROM users WHERE email = ?`,
       [email],
     );
@@ -75,4 +75,40 @@ export const authRepository = {
       conn.release();
     }
   },
+
+    // Busca um usuário pelo ID do Google
+    async findByGoogleId(googleId) {
+      const [rows] = await db.execute(
+        `SELECT id, nome, email, telefone, role, is_diretora, ativo, avatar_seed, cadastro_completo
+         FROM users WHERE google_id = ?`,
+        [googleId]
+      );
+      return rows[0] ?? null;
+    },
+  
+    // Vincula uma conta existente (que tem senha) ao Google
+    async vincularGoogle(userId, googleId) {
+      await db.execute(
+        `UPDATE users SET google_id = ? WHERE id = ?`,
+        [googleId, userId]
+      );
+    },
+  
+    // Cria um responsável que entrou pelo Google (sem senha, sem alunos ainda)
+    async criarResponsavelGoogle({ nome, email, googleId, avatarSeed }) {
+      const [result] = await db.execute(
+        `INSERT INTO users (nome, email, google_id, avatar_seed, role, cadastro_completo)
+         VALUES (?, ?, ?, ?, 'responsavel', 0)`,
+        [nome, email, googleId, avatarSeed]
+      );
+      return result.insertId;
+    },
+  
+    // Marca o cadastro como completo (depois que cadastrar o primeiro aluno)
+    async marcarCadastroCompleto(userId) {
+      await db.execute(
+        `UPDATE users SET cadastro_completo = 1 WHERE id = ?`,
+        [userId]
+      );
+    },
 };

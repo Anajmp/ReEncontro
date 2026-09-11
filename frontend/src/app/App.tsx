@@ -18,6 +18,7 @@ import { RotaProtegida } from './components/RotaProtegida';
 import { LoginSplashProvider } from './components/LoginSplash';
 import { PortaDeEntrada } from './components/LoadingScreen';
 import { Lgpd } from './components/Lgpd';
+import { CompletarCadastro } from './components/CompletarCadastro';
 
 export type Screen =
   | 'public-listing'
@@ -28,6 +29,7 @@ export type Screen =
   | 'parent-dashboard'
   | 'my-students'
   | 'parent-profile'
+  | 'completar-cadastro'
   | 'admin-dashboard'
   | 'register-item'
   | 'available-items'
@@ -48,6 +50,7 @@ const screenToPath: Record<Screen, string> = {
   'parent-dashboard': '/responsavel/reivindicacoes',
   'my-students': '/responsavel/alunos',
   'parent-profile': '/responsavel/perfil',
+  'completar-cadastro': '/completar-cadastro',
   'admin-dashboard': '/admin',
   'register-item': '/admin/cadastrar-item',
   'available-items': '/admin/itens',
@@ -88,6 +91,7 @@ export default function App() {
           <Route path="/login" element={<Login navigate={navigate} />} />
           <Route path="/cadastro" element={<Register navigate={navigate} />} />
           <Route path="/redefinir-senha" element={<ResetPassword navigate={navigate} />} />
+          <Route path="/completar-cadastro" element={<CompletarCadastro navigate={navigate} />} />
           <Route path="/responsavel/reivindicacoes" element={<RotaProtegida role="responsavel"><ParentDashboard navigate={navigate} activeTab="claims" /></RotaProtegida>} />
           <Route path="/responsavel/alunos" element={<RotaProtegida role="responsavel"><ParentDashboard navigate={navigate} activeTab="students" /></RotaProtegida>} />
           <Route path="/responsavel/perfil" element={<RotaProtegida role="responsavel"><ParentProfile navigate={navigate} /></RotaProtegida>} />

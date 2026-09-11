@@ -80,6 +80,13 @@ export const usuariosRepository = {
     return result.affectedRows > 0;
   },
 
+  async atualizarTelefone(userId, telefone) {
+    await db.execute(`UPDATE users SET telefone = ? WHERE id = ?`, [
+      telefone,
+      userId,
+    ]);
+  },
+
   async atualizarPerfil(userId, { nome, email, telefone }) {
     const [result] = await db.execute(
       `UPDATE users SET nome = ?, email = ?, telefone = ? WHERE id = ?`,

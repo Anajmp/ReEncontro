@@ -50,6 +50,7 @@ export const authService = {
         role: usuario.role,
         is_diretora: usuario.is_diretora,
         avatar_seed: usuario.avatar_seed,
+        cadastro_completo: Boolean(usuario.cadastro_completo),
       },
     };
   },

@@ -4,6 +4,7 @@
 import { Router } from "express";
 import { authController } from "../controllers/authController.js";
 import { passwordResetController } from "../controllers/passwordResetController.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
@@ -15,5 +16,13 @@ router.post("/redefinir-senha", passwordResetController.redefinir);
 router.post("/login", authController.login);
 // POST /api/auth/register
 router.post("/register", authController.registrar);
+// POST /api/auth/google — público
+router.post("/google", authController.loginGoogle);
+// POST /api/auth/completar-cadastro — precisa estar logado
+router.post(
+  "/completar-cadastro",
+  authMiddleware,
+  authController.completarCadastro,
+);
 
 export default router;

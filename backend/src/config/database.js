@@ -29,7 +29,12 @@ export async function testConnection() {
     console.log("Conectado ao MySQL");
     conn.release();
   } catch (err) {
-    console.error("Erro ao conectar no MySQL:", err.message);
+    console.error('Erro ao conectar no MySQL:');
+    console.error('  code:', err.code);
+    console.error('  errno:', err.errno);
+    console.error('  message:', err.message);
+    console.error('  sqlState:', err.sqlState);
+    console.error(err);
     process.exit(1);
   }
 }

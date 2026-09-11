@@ -34,6 +34,7 @@ export const PAGE_INFO: Record<Screen, { title: string; subtitle: string }> = {
   'parent-dashboard': { title: 'Painel', subtitle: '' },
   'my-students': { title: 'Alunos', subtitle: '' },
   'parent-profile': { title: 'Meu Perfil', subtitle: '' },
+  'completar-cadastro': { title: 'Completar cadastro', subtitle: 'Cadastre o primeiro aluno para continuar' },
   'admin-dashboard': { title: 'Dashboard', subtitle: 'Visão geral dos achados e perdidos' },
   'register-item': { title: 'Cadastrar Item', subtitle: 'Adicione um novo item encontrado ao sistema' },
   'available-items': { title: 'Itens Disponíveis', subtitle: 'Gerencie os itens aguardando retirada' },
