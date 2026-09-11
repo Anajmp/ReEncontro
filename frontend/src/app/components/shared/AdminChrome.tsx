@@ -13,6 +13,9 @@ export const adminPanelClass = 'rounded-2xl border border-black/[0.05] bg-white 
 export const adminInputClass =
   'h-11 rounded-xl border border-[#E7E5E4] bg-white px-4 text-sm text-[#1C1917] placeholder:text-[#C4BFBA] focus:border-[#C8102E] focus:outline-none focus:ring-2 focus:ring-[#C8102E]/20';
 
+export const adminSearchInputClass =
+  'h-11 rounded-xl border border-[#E7E5E4] bg-white pl-10 pr-4 text-sm text-[#1C1917] placeholder:text-[#C4BFBA] focus:border-[#C8102E] focus:outline-none focus:ring-2 focus:ring-[#C8102E]/20';
+
 export const adminSelectClass =
   'h-11 rounded-xl border-[#E7E5E4] bg-white text-[#1C1917] shadow-none focus-visible:border-[#C8102E] focus-visible:ring-[#C8102E]/20';
 

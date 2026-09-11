@@ -135,50 +135,70 @@ export function InProcess({ navigate }: Props) {
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             {claims.map(claim => (
               <AdminPanel key={claim.id} className="overflow-hidden">
-                <div className="flex gap-0">
-                  <div className="w-28 shrink-0">
-                    <img src={claim.itemImage} alt={claim.itemName} className="min-h-[160px] w-full object-cover" style={{ maxHeight: 220 }} />
+              <div className="flex flex-col sm:flex-row sm:gap-0">
+                <div className="w-full shrink-0 sm:w-28">
+                  <img
+                    src={claim.itemImage}
+                    alt={claim.itemName}
+                    className="aspect-[16/9] w-full object-cover sm:aspect-auto sm:min-h-[160px] sm:max-h-[220px]"
+                  />
+                </div>
+                <div className="min-w-0 flex-1 p-4">
+                  <div className="mb-3 flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate font-bold text-[#1C1917]">{claim.itemName}</div>
+                      <div className="mt-0.5 text-xs text-[#A8A29E]">Reivindicado em {claim.date}</div>
+                    </div>
+                    <StatusBadge status={claim.status} />
                   </div>
-                  <div className="flex-1 p-4">
-                    <div className="mb-3 flex items-start justify-between">
-                      <div className="font-bold text-[#1C1917]">{claim.itemName}</div>
-                      <StatusBadge status={claim.status} />
+                  <div className="mb-3 space-y-1.5">
+                    <div className="flex items-center gap-2 text-xs text-[#78716C]">
+                      <User className="size-3.5 shrink-0 text-[#A8A29E]" />
+                      <span className="truncate font-semibold">{claim.claimantName}</span>
                     </div>
-                    <div className="mb-3 space-y-1.5">
+                    <div className="flex items-center gap-2 text-xs text-[#78716C]">
+                      <Mail className="size-3.5 shrink-0 text-[#A8A29E]" />
+                      <span className="truncate">{claim.claimantEmail}</span>
+                    </div>
+                    {claim.claimantPhone && (
                       <div className="flex items-center gap-2 text-xs text-[#78716C]">
-                        <User className="size-3.5 shrink-0 text-[#A8A29E]" />
-                        <span className="font-semibold">{claim.claimantName}</span>
+                        <Phone className="size-3.5 shrink-0 text-[#A8A29E]" />
+                        {claim.claimantPhone}
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-[#78716C]">
-                        <Mail className="size-3.5 shrink-0 text-[#A8A29E]" />
-                        {claim.claimantEmail}
-                      </div>
-                      {claim.claimantPhone && (
-                        <div className="flex items-center gap-2 text-xs text-[#78716C]">
-                          <Phone className="size-3.5 shrink-0 text-[#A8A29E]" />
-                          {claim.claimantPhone}
-                        </div>
-                      )}
+                    )}
+                  </div>
+
+                  <div className="mb-3 rounded-xl bg-[#F5F3F0] px-3 py-2">
+                    <div className="flex items-center gap-2 text-xs text-[#78716C]">
+                      <GraduationCap className="size-3.5 shrink-0 text-[#A8A29E]" />
+                      <span className="truncate">
+                        <strong className="text-[#1C1917]">{claim.studentName}</strong> · {claim.studentRoom} · {claim.studentPeriod}
+                      </span>
                     </div>
-                    <div className="mb-3 rounded-xl bg-[#F5F3F0] px-3 py-2">
-                      <div className="flex items-center gap-2 text-xs text-[#78716C]">
-                        <GraduationCap className="size-3.5 shrink-0 text-[#A8A29E]" />
-                        <span><strong className="text-[#1C1917]">{claim.studentName}</strong> · {claim.studentRoom} · {claim.studentPeriod}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" className={`flex-1 gap-1.5 ${adminBtnPrimary}`} onClick={() => entregar(claim.id)}>
-                        <CheckCircle2 className="size-3.5" />
-                        Confirmar Entrega
-                      </Button>
-                      <Button size="sm" variant="outline" className={`flex-1 gap-1.5 ${adminBtnOutline}`} onClick={() => abrirCancelar(claim)}>
-                        <X className="size-3.5" />
-                        Cancelar
-                      </Button>
-                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Button
+                      size="sm"
+                      className="w-full gap-1.5 rounded-xl bg-[#059669] font-semibold hover:bg-[#047857] sm:flex-1"
+                      onClick={() => entregar(claim.id)}
+                    >
+                      <CheckCircle2 className="size-3.5" />
+                      Confirmar Entrega
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className={`w-full gap-1.5 sm:flex-1 ${adminBtnOutline}`}
+                      onClick={() => abrirCancelar(claim)}
+                    >
+                      <X className="size-3.5" />
+                      Cancelar
+                    </Button>
                   </div>
                 </div>
-              </AdminPanel>
+              </div>
+            </AdminPanel>
             ))}
           </div>
         )}

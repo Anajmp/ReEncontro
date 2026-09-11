@@ -199,7 +199,7 @@ function ClaimModal({
   }
 
   const modalClass =
-    'max-w-lg rounded-3xl border-0 p-8 shadow-2xl [&_[data-slot=dialog-close]]:top-5 [&_[data-slot=dialog-close]]:right-5 [&_[data-slot=dialog-close]]:flex [&_[data-slot=dialog-close]]:size-8 [&_[data-slot=dialog-close]]:items-center [&_[data-slot=dialog-close]]:justify-center [&_[data-slot=dialog-close]]:rounded-full [&_[data-slot=dialog-close]]:bg-[#F5F3F0] [&_[data-slot=dialog-close]]:text-[#78716C] [&_[data-slot=dialog-close]]:opacity-100 hover:[&_[data-slot=dialog-close]]:bg-[#EDE9E4]';
+    'max-h-[90vh] max-w-lg overflow-y-auto rounded-3xl border-0 p-8 shadow-2xl [&_[data-slot=dialog-close]]:top-5 [&_[data-slot=dialog-close]]:right-5 [&_[data-slot=dialog-close]]:flex [&_[data-slot=dialog-close]]:size-8 [&_[data-slot=dialog-close]]:items-center [&_[data-slot=dialog-close]]:justify-center [&_[data-slot=dialog-close]]:rounded-full [&_[data-slot=dialog-close]]:bg-[#F5F3F0] [&_[data-slot=dialog-close]]:text-[#78716C] [&_[data-slot=dialog-close]]:opacity-100 hover:[&_[data-slot=dialog-close]]:bg-[#EDE9E4]';
 
   if (submitted) {
     return (
@@ -363,11 +363,11 @@ function CardEsqueleto() {
   return (
     <div className="overflow-hidden rounded-2xl border border-black/[0.05] bg-white shadow-sm">
       <div className="aspect-[6/7] animate-pulse bg-[#F5F3F0]" />
-      <div className="space-y-3 p-4">
-        <div className="h-4 w-3/4 animate-pulse rounded bg-[#F5F3F0]" />
-        <div className="h-5 w-20 animate-pulse rounded-full bg-[#F5F3F0]" />
+      <div className="space-y-2 p-3 sm:space-y-3 sm:p-4">
+        <div className="h-3.5 w-3/4 animate-pulse rounded bg-[#F5F3F0]" />
+        <div className="h-4 w-16 animate-pulse rounded-full bg-[#F5F3F0]" />
         <div className="h-3 w-1/2 animate-pulse rounded bg-[#F5F3F0]" />
-        <div className="h-9 w-full animate-pulse rounded-xl bg-[#F5F3F0]" />
+        <div className="h-8 w-full animate-pulse rounded-xl bg-[#F5F3F0]" />
       </div>
     </div>
   );
@@ -400,38 +400,39 @@ function ItemCard({
         </div>
       </button>
 
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
         <span
-          className="mb-2.5 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+          className="mb-2 inline-flex w-fit items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold sm:mb-2.5 sm:px-2 sm:text-[11px]"
           style={{ backgroundColor: cfg.bg, color: cfg.color }}
         >
-          <CatIcon size={11} strokeWidth={2} />
-          {item.category}
+          <CatIcon size={10} strokeWidth={2} className="sm:hidden" />
+          <CatIcon size={11} strokeWidth={2} className="hidden sm:block" />
+          <span className="truncate">{item.category}</span>
         </span>
 
-        <button type="button" className="text-left" onClick={onDetalhe}>
-          <h3 className="text-sm font-semibold leading-snug text-[#1C1917] transition-colors group-hover:text-[#C8102E]" style={FONT}>
+        <button type="button" className="min-w-0 text-left" onClick={onDetalhe}>
+          <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-[#1C1917] transition-colors group-hover:text-[#C8102E] sm:text-sm" style={FONT}>
             {item.name}
           </h3>
         </button>
 
-        <div className="mt-3 space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs text-[#78716C]">
-            <MapPin className="size-3 shrink-0" strokeWidth={1.5} />
+        <div className="mt-2 space-y-1 sm:mt-3 sm:space-y-1.5">
+          <div className="flex items-center gap-1 text-[10px] text-[#78716C] sm:gap-1.5 sm:text-xs">
+            <MapPin className="size-2.5 shrink-0 sm:size-3" strokeWidth={1.5} />
             <span className="truncate">{item.location}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-[#78716C]">
-            <Calendar className="size-3 shrink-0" strokeWidth={1.5} />
+          <div className="flex items-center gap-1 text-[10px] text-[#78716C] sm:gap-1.5 sm:text-xs">
+            <Calendar className="size-2.5 shrink-0 sm:size-3" strokeWidth={1.5} />
             {item.date}
           </div>
         </div>
 
-        <div className="mt-auto pt-4">
+        <div className="mt-auto pt-3 sm:pt-4">
           <button
             type="button"
             onClick={onReivindicar}
             disabled={indisponivel}
-            className={`w-full rounded-xl py-2 text-sm font-semibold transition-all duration-150 ${
+            className={`w-full rounded-xl py-1.5 text-xs font-semibold transition-all duration-150 sm:py-2 sm:text-sm ${
               indisponivel
                 ? 'cursor-not-allowed bg-[#F5F3F0] text-[#A8A29E]'
                 : 'bg-[#C8102E] text-white hover:bg-[#A50D26] active:scale-[0.98]'
@@ -484,7 +485,7 @@ export function PublicListing({ navigate }: Props) {
   const disponiveis = items.filter(i => i.status === 'Disponível').length;
 
   return (
-    <div className="relative min-h-screen bg-[#F5F3F0] pb-24" style={FONT}>
+    <div className="relative min-h-screen overflow-x-hidden bg-[#F5F3F0] pb-24" style={FONT}>
       <SiteHeader navigate={navigate} />
 
       <main className="relative z-10 mx-auto max-w-6xl px-5 py-8 sm:px-8">
@@ -533,7 +534,8 @@ export function PublicListing({ navigate }: Props) {
           />
         </div>
 
-                <div className="mb-7 flex flex-wrap gap-2" role="tablist" aria-label="Categorias">
+                <div className="-mx-5 mb-7 overflow-x-auto px-5 scrollbar-hide sm:mx-0 sm:overflow-visible sm:px-0">
+          <div className="flex flex-nowrap gap-2 sm:flex-wrap" role="tablist" aria-label="Categorias">
           {[{ id: 'all', label: 'Todas' }, ...categorias.map(c => ({ id: c.nome, label: c.nome }))].map(cat => {
             const ativo = category === cat.id;
             return (
@@ -541,7 +543,7 @@ export function PublicListing({ navigate }: Props) {
                 key={cat.id}
                 type="button"
                 onClick={() => setCategory(cat.id)}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-150 ${
+                className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-150 ${
                   ativo
                     ? 'bg-[#C8102E] text-white shadow-sm shadow-[#C8102E]/20'
                     : 'border border-[#E7E5E4] bg-white text-[#78716C] hover:border-[#C8102E]/30 hover:text-[#C8102E]'
@@ -551,6 +553,7 @@ export function PublicListing({ navigate }: Props) {
               </button>
             );
           })}
+          </div>
         </div>
 
         {!loading && (
@@ -562,7 +565,7 @@ export function PublicListing({ navigate }: Props) {
         )}
 
         {loading ? (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }, (_, i) => (
               <CardEsqueleto key={i} />
             ))}
@@ -576,7 +579,7 @@ export function PublicListing({ navigate }: Props) {
             <p className="text-sm text-[#A8A29E]">Tente outro termo, categoria ou data.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map(item => (
               <ItemCard
                 key={item.id}

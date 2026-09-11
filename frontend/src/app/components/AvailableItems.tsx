@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { StatusBadge } from './shared/StatusBadge';
 import { AdminLayout } from './shared/AdminLayout';
 import {
-  AdminPanel, CategoryBadge, adminBtnPrimary, adminInputClass, adminSelectClass,
+  AdminPanel, CategoryBadge, adminBtnPrimary, adminInputClass, adminSearchInputClass, adminSelectClass,
 } from './shared/AdminChrome';
 import { itensApi, reivindicacoesApi } from '../../lib/api';
 import type { Screen } from '../App';
@@ -172,9 +172,9 @@ export function AvailableItems({ navigate }: Props) {
 
         <AdminPanel className="flex flex-wrap gap-3 p-4">
           <div className="relative min-w-[160px] flex-1">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A8A29E]" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A8A29E]" />
             <Input
-              className={`pl-9 ${adminInputClass}`}
+              className={adminSearchInputClass}
               placeholder="Buscar..."
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -209,7 +209,59 @@ export function AvailableItems({ navigate }: Props) {
         </AdminPanel>
 
         <AdminPanel className="overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Lista em cards — mobile */}
+          <div className="divide-y divide-[#E7E5E4] lg:hidden">
+            {filtered.map(item => (
+              <div
+                key={item.id}
+                className={`flex gap-3 p-4 ${item.daysFound > 0 ? 'bg-[#FEF3C7]/30' : ''}`}
+              >
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="size-14 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className="truncate font-semibold text-[#1C1917]">{item.name}</p>
+                        {item.daysFound > 0 && (
+                          <span className="inline-flex shrink-0 items-center rounded-full bg-[#FEF3C7] px-1.5 py-0.5 text-[10px] font-bold text-[#D97706]">
+                            +90 dias
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-0.5 truncate text-xs text-[#A8A29E]">{item.location} · {item.date}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#F5F3F0] hover:text-[#1C1917]"
+                        onClick={() => { setEditing(item); setEditOpen(true); }}
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
+                        onClick={() => descartar(item.id, item.name)}
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <CategoryBadge category={item.category} />
+                    <StatusBadge status={item.status} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tabela — desktop */}
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#E7E5E4] bg-[#F5F3F0]/60">
