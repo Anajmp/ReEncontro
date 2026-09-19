@@ -1,65 +1,61 @@
 // =====================================================================
 // authService — regras de negócio da autenticação.
+//
+// O login utiliza a entidade de domínio Usuario, que encapsula a
+// verificação de senha e as regras de perfil. Assim o hash da senha
+// não circula fora da classe.
 // =====================================================================
 import bcrypt from "bcrypt";
 import { authRepository } from "../repositories/authRepository.js";
 import { gerarToken } from "../utils/tokens.js";
+import { Usuario } from "../models/Usuario.js";
 
 export const authService = {
   async login(email, senha) {
-    // 1. Busca o usuário pelo email
-    const usuario = await authRepository.findByEmail(email);
+    // 1. Busca a linha do usuário no banco
+    const linha = await authRepository.findByEmail(email);
 
-    // 2. Se não existe, erro genérico (não revela se o email existe)
-    if (!usuario) {
+    // 2. Se não existe, erro genérico (não revela se o e-mail está cadastrado)
+    if (!linha) {
       throw { status: 401, mensagem: "E-mail ou senha inválidos" };
     }
 
-    // 3. Verifica se a conta está ativa
-    if (!usuario.ativo) {
+    // 3. Monta a entidade de domínio a partir dos dados brutos
+    const usuario = new Usuario(linha);
+
+    // 4. A própria entidade responde se a conta pode autenticar
+    if (!usuario.podeAutenticar()) {
       throw {
         status: 403,
         mensagem: "Conta desativada. Contate a administração.",
       };
     }
 
-    // 4. Compara a senha enviada com o hash salvo no banco
-    const senhaConfere = await bcrypt.compare(senha, usuario.senha_hash);
+    // 5. A comparação com o hash acontece dentro da classe
+    const senhaConfere = await usuario.verificarSenha(senha);
     if (!senhaConfere) {
       throw { status: 401, mensagem: "E-mail ou senha inválidos" };
     }
 
-    // 5. Gera o token JWT com os dados essenciais do usuário
+    // 6. Gera o token JWT com os dados essenciais
     const token = gerarToken({
       id: usuario.id,
       role: usuario.role,
-      is_diretora: usuario.is_diretora,
+      is_diretora: usuario.isDiretora,
     });
 
-    // 6. Registra o último login (não bloqueia a resposta se falhar)
+    // 7. Registra o último acesso
     await authRepository.updateUltimoLogin(usuario.id);
 
-    // 7. Devolve o token + dados públicos do usuário (nunca o senha_hash!)
-    return {
-      token,
-      usuario: {
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email,
-        telefone: usuario.telefone,
-        role: usuario.role,
-        is_diretora: usuario.is_diretora,
-        avatar_seed: usuario.avatar_seed,
-        cadastro_completo: Boolean(usuario.cadastro_completo),
-      },
-    };
+    // 8. paraResposta() garante que o hash da senha nunca seja exposto
+    return { token, usuario: usuario.paraResposta() };
   },
 
   async registrar({ nome, email, senha, telefone, alunos }) {
-       // Gera um seed aleatório para o avatar
-       const avatarSeed = Math.random().toString(36).slice(2, 10);
-   
-    // 1. Verifica se o email já está em uso
+    // Gera um seed aleatório para o avatar
+    const avatarSeed = Math.random().toString(36).slice(2, 10);
+
+    // 1. Verifica se o e-mail já está em uso
     const jaExiste = await authRepository.emailExiste(email);
     if (jaExiste) {
       throw { status: 409, mensagem: "Este e-mail já está cadastrado" };
@@ -73,7 +69,7 @@ export const authService = {
     // 3. Criptografa a senha (10 rounds de salt — padrão seguro)
     const senhaHash = await bcrypt.hash(senha, 10);
 
-    // 4. Cria o responsável + alunos (transação)
+    // 4. Cria o responsável + alunos (transação atômica)
     const responsavelId = await authRepository.criarResponsavelComAlunos({
       nome,
       email,
@@ -83,7 +79,7 @@ export const authService = {
       avatarSeed,
     });
 
-    // 5. Já gera um token pra logar automaticamente após o cadastro
+    // 5. Já gera um token para logar automaticamente após o cadastro
     const token = gerarToken({
       id: responsavelId,
       role: "responsavel",
@@ -97,8 +93,10 @@ export const authService = {
         nome,
         email,
         telefone: telefone ?? null,
-        role: 'responsavel',
+        role: "responsavel",
+        is_diretora: false,
         avatar_seed: avatarSeed,
+        cadastro_completo: true,
       },
     };
   },
