@@ -102,4 +102,13 @@ export const usuariosRepository = {
     );
     return rows.length > 0;
   },
+
+    // Lista os e-mails das funcionárias ativas (para notificações internas)
+  async emailsFuncionariasAtivas() {
+    const [rows] = await db.execute(
+      `SELECT nome, email FROM users
+       WHERE role = 'funcionaria' AND ativo = 1`
+    );
+    return rows;
+  },
 };
