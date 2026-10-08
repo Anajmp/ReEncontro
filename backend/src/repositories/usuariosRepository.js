@@ -80,6 +80,13 @@ export const usuariosRepository = {
     return result.affectedRows > 0;
   },
 
+  async atualizarTelefone(userId, telefone) {
+    await db.execute(`UPDATE users SET telefone = ? WHERE id = ?`, [
+      telefone,
+      userId,
+    ]);
+  },
+
   async atualizarPerfil(userId, { nome, email, telefone }) {
     const [result] = await db.execute(
       `UPDATE users SET nome = ?, email = ?, telefone = ? WHERE id = ?`,
@@ -94,5 +101,14 @@ export const usuariosRepository = {
       [email, userId],
     );
     return rows.length > 0;
+  },
+
+    // Lista os e-mails das funcionárias ativas (para notificações internas)
+  async emailsFuncionariasAtivas() {
+    const [rows] = await db.execute(
+      `SELECT nome, email FROM users
+       WHERE role = 'funcionaria' AND ativo = 1`
+    );
+    return rows;
   },
 };

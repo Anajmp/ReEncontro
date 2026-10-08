@@ -205,7 +205,7 @@ export function AdminLayout({ children, current, navigate }: Props) {
           onMenuClick={() => setSidebarOpen(true)}
           usuario={usuario}
         />
-        <main className="flex-1 overflow-auto p-5 sm:p-7">{children}</main>
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-5 sm:p-7">{children}</main>
       </div>
     </div>
   );

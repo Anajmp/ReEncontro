@@ -187,7 +187,53 @@ export function StaffManagement({ navigate }: Props) {
         </div>
 
         <AdminPanel className="overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Lista em cards — mobile */}
+          <div className="divide-y divide-[#E7E5E4] lg:hidden">
+            {staff.map(member => (
+              <div key={member.id} className="flex items-center gap-3 p-4">
+                <img
+                  src={member.isDiretora ? avatarDiretora() : avatarFuncionaria(member.email || String(member.id))}
+                  alt=""
+                  className="size-10 shrink-0 rounded-full border border-[#E7E5E4] bg-white"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-[#1C1917]">{member.name}</p>
+                  <p className="truncate text-xs text-[#78716C]">{member.email}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                      style={member.isDiretora
+                        ? { backgroundColor: '#FEE2E2', color: '#C8102E' }
+                        : { backgroundColor: '#F5F5F4', color: '#78716C' }}>
+                      {member.role}
+                    </span>
+                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                      style={member.active
+                        ? { backgroundColor: '#D1FAE5', color: '#059669' }
+                        : { backgroundColor: '#F5F5F4', color: '#A8A29E' }}>
+                      {member.active ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-[#A8A29E]">Último acesso: {member.lastLogin}</p>
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <button type="button" title="Editar"
+                    className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#F5F3F0] hover:text-[#1C1917]"
+                    onClick={() => { setEditing(member); setModalOpen(true); }}>
+                    <Pencil className="size-3.5" />
+                  </button>
+                  <button type="button"
+                    title={member.active ? 'Desativar conta' : 'Ativar conta'}
+                    className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
+                    onClick={() => alternarStatus(member)}>
+                    <Power className="size-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tabela — desktop */}
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#E7E5E4] bg-[#F5F3F0]/60">

@@ -89,7 +89,7 @@ export function Reports({ navigate }: Props) {
           </AdminPanel>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               <MetricCard
                 label="Total de itens (período)"
                 value={String(total)}
@@ -132,17 +132,19 @@ export function Reports({ navigate }: Props) {
                     Nenhum item cadastrado neste período.
                   </p>
                 ) : (
-                  <ResponsiveContainer width="100%" height={240}>
+                  <div className="h-52 w-full sm:h-60">
+                  <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={dadosMensais} barSize={12} barGap={2}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE8" vertical={false} />
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A8A29E' }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A8A29E' }} allowDecimals={false} />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#A8A29E' }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#A8A29E' }} allowDecimals={false} width={32} />
                       <Tooltip content={<CustomBarTooltip />} cursor={{ fill: '#F5F3F0' }} />
                       <Bar dataKey="encontrados" fill="#E7E5E4" radius={[4, 4, 0, 0]} name="Encontrados" />
                       <Bar dataKey="entregues" fill="#C8102E" radius={[4, 4, 0, 0]} name="Devolvidos" />
                       <Bar dataKey="descartados" fill="#78716C" radius={[4, 4, 0, 0]} name="Descartados" />
                     </BarChart>
                   </ResponsiveContainer>
+                  </div>
                 )}
               </AdminPanel>
 
@@ -152,12 +154,13 @@ export function Reports({ navigate }: Props) {
                   <p className="py-16 text-center text-sm text-[#A8A29E]">Sem dados.</p>
                 ) : (
                   <>
-                    <ResponsiveContainer width="100%" height={160}>
+                    <div className="mx-auto h-44 w-full max-w-[220px] sm:h-48">
+                    <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
                           data={dadosStatus}
                           cx="50%" cy="50%"
-                          innerRadius={40} outerRadius={65}
+                          innerRadius={36} outerRadius={58}
                           paddingAngle={3} dataKey="value"
                         >
                           {dadosStatus.map((entry: any, i: number) => (
@@ -167,6 +170,7 @@ export function Reports({ navigate }: Props) {
                         <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #E7E5E4', fontSize: 12 }} />
                       </PieChart>
                     </ResponsiveContainer>
+                    </div>
                     <div className="mt-3 space-y-2">
                       {dadosStatus.map((d: any) => (
                         <div key={d.name} className="flex items-center justify-between text-xs">

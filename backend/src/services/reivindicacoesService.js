@@ -5,7 +5,7 @@ import { reivindicacoesRepository } from "../repositories/reivindicacoesReposito
 import { alunosRepository } from "../repositories/alunosRepository.js";
 import { enviarEmail } from "../config/email.js";
 import { emailTemplates } from "../utils/emailTemplates.js";
-
+import { usuariosRepository } from '../repositories/usuariosRepository.js';
 export const reivindicacoesService = {
   // Cria uma reivindicação. Recebe os dados do formulário + (opcional) o usuário logado.
   async criar(dados, usuarioLogado) {
@@ -58,13 +58,42 @@ export const reivindicacoesService = {
     }).catch((err) => {
       console.error("Falha ao enviar e-mail de confirmação:", err.message);
     });
+    
+      // Avisa a equipe da escola sobre a nova solicitação
+    usuariosRepository.emailsFuncionariasAtivas()
+      .then(funcionarias => {
+        const aviso = emailTemplates.novaReivindicacaoParaEquipe({
+          descricaoItem: resultado.descricaoItem,
+          nomeRequerente: dados.nome_requerente,
+          nomeAluno: dados.nome_aluno,
+          salaAluno: dados.sala_aluno,
+          periodoAluno: dados.periodo_aluno,
+        });
+
+        // Um envio por funcionária, todos assíncronos
+        funcionarias.forEach(f => {
+          enviarEmail({
+            para: f.email,
+            assunto: aviso.assunto,
+            html: aviso.html,
+          }).catch(err =>
+            console.error(`Falha ao avisar ${f.email}:`, err.message)
+          );
+        });
+      })
+      .catch(err =>
+        console.error('Falha ao buscar funcionárias para aviso:', err.message)
+      );
+
 
     return {
       id: resultado.id,
       mensagem: "Reivindicação registrada! Nossa equipe entrará em contato.",
     };
-  },
 
+    
+  },
+  
   async listarPendentes() {
     return reivindicacoesRepository.listarPendentes();
   },
@@ -90,6 +119,8 @@ export const reivindicacoesService = {
     );
 
     return resultado;
+
+    
   },
 
   async rejeitar(reivindicacaoId, funcionariaId, motivo) {

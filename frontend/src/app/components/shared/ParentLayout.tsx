@@ -195,7 +195,7 @@ export function ParentLayout({ children, current, navigate }: Props) {
           <ParentLogo />
         </header>
 
-        <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-7 sm:px-8 lg:mx-0">
+        <main className="mx-auto w-full max-w-3xl flex-1 overflow-x-hidden px-5 py-7 sm:px-8 lg:mx-0">
           {children}
         </main>
       </div>

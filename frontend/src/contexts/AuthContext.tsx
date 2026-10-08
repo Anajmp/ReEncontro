@@ -20,6 +20,7 @@ export interface Usuario {
   role: string; // 'responsavel' | 'funcionaria'
   is_diretora?: boolean | number;
   avatar_seed?: string;
+  cadastro_completo?: boolean;
 }
 
 interface AuthContextValue {
@@ -29,6 +30,7 @@ interface AuthContextValue {
   autenticado: boolean;
   login: (email: string, senha: string) => Promise<Usuario>;
   registrar: (dados: any) => Promise<Usuario>;
+  salvarSessao: (resultado: { token: string; usuario: Usuario }) => Usuario;
   logout: () => void;
   atualizarUsuario: (parcial: Partial<Usuario>) => void;
 }
@@ -120,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         autenticado: !!usuario,
         login,
         registrar,
+        salvarSessao: guardarSessao,
         logout,
         atualizarUsuario,
       }}

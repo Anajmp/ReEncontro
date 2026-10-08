@@ -13,6 +13,9 @@ export const adminPanelClass = 'rounded-2xl border border-black/[0.05] bg-white 
 export const adminInputClass =
   'h-11 rounded-xl border border-[#E7E5E4] bg-white px-4 text-sm text-[#1C1917] placeholder:text-[#C4BFBA] focus:border-[#C8102E] focus:outline-none focus:ring-2 focus:ring-[#C8102E]/20';
 
+export const adminSearchInputClass =
+  'h-11 rounded-xl border border-[#E7E5E4] bg-white pl-10 pr-4 text-sm text-[#1C1917] placeholder:text-[#C4BFBA] focus:border-[#C8102E] focus:outline-none focus:ring-2 focus:ring-[#C8102E]/20';
+
 export const adminSelectClass =
   'h-11 rounded-xl border-[#E7E5E4] bg-white text-[#1C1917] shadow-none focus-visible:border-[#C8102E] focus-visible:ring-[#C8102E]/20';
 
@@ -31,6 +34,7 @@ export const PAGE_INFO: Record<Screen, { title: string; subtitle: string }> = {
   'parent-dashboard': { title: 'Painel', subtitle: '' },
   'my-students': { title: 'Alunos', subtitle: '' },
   'parent-profile': { title: 'Meu Perfil', subtitle: '' },
+  'completar-cadastro': { title: 'Completar cadastro', subtitle: 'Cadastre o primeiro aluno para continuar' },
   'admin-dashboard': { title: 'Dashboard', subtitle: 'Visão geral dos achados e perdidos' },
   'register-item': { title: 'Cadastrar Item', subtitle: 'Adicione um novo item encontrado ao sistema' },
   'available-items': { title: 'Itens Disponíveis', subtitle: 'Gerencie os itens aguardando retirada' },

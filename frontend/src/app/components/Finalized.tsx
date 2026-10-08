@@ -4,7 +4,7 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { StatusBadge } from './shared/StatusBadge';
 import { AdminLayout } from './shared/AdminLayout';
-import { AdminPanel, CategoryBadge, adminInputClass, adminSelectClass } from './shared/AdminChrome';
+import { AdminPanel, CategoryBadge, adminSearchInputClass, adminSelectClass } from './shared/AdminChrome';
 import type { Screen } from '../App';
 import { itensApi, reivindicacoesApi } from '../../lib/api';
 
@@ -69,9 +69,9 @@ export function Finalized({ navigate }: Props) {
       <div className="space-y-4">
         <AdminPanel className="flex flex-wrap gap-3 p-4">
           <div className="relative min-w-[160px] flex-1">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A8A29E]" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A8A29E]" />
             <Input
-              className={`pl-9 ${adminInputClass}`}
+              className={adminSearchInputClass}
               placeholder="Buscar item..."
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -90,7 +90,50 @@ export function Finalized({ navigate }: Props) {
         </AdminPanel>
 
         <AdminPanel className="overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Lista em cards — mobile */}
+          <div className="divide-y divide-[#E7E5E4] lg:hidden">
+            {filtered.map(item => (
+              <div key={item.id} className="flex gap-3 p-4">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="size-14 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-[#1C1917]">{item.name}</p>
+                      <p className="mt-0.5 truncate text-xs text-[#A8A29E]">{item.location}</p>
+                      {item.motivoDescarte && (
+                        <p className="mt-0.5 truncate text-xs text-[#C8102E]">Motivo: {item.motivoDescarte}</p>
+                      )}
+                    </div>
+                    {podeReverter(item) ? (
+                      <button
+                        type="button"
+                        onClick={() => reverter(item.id, item.name)}
+                        className="flex shrink-0 items-center gap-1 text-xs text-[#78716C] transition-colors hover:text-[#C8102E]"
+                        title="Reverter para disponível (até 24h após a entrega)"
+                      >
+                        <RotateCcw className="size-3.5" />
+                        Reverter
+                      </button>
+                    ) : null}
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <CategoryBadge category={item.category} />
+                    <StatusBadge status={item.status} />
+                  </div>
+                  <p className="mt-1.5 text-xs text-[#78716C]">
+                    {item.finalizadoEm || '—'} · {item.finalizadoPor || '—'}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tabela — desktop */}
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#E7E5E4] bg-[#F5F3F0]/60">
