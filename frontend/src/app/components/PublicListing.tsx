@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Search, MapPin, Calendar, Check,
   BookOpen, Shirt, Watch, Headphones, Package, Footprints,
@@ -469,19 +469,31 @@ export function PublicListing({ navigate }: Props) {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = items.filter(item => {
-    const q = search.trim().toLowerCase();
-    const matchSearch =
-      !q ||
-      item.name.toLowerCase().includes(q) ||
-      item.description.toLowerCase().includes(q) ||
-      item.location.toLowerCase().includes(q);
-    const matchCategory = category === 'all' || item.category === category;
-    const matchDate = !dataFiltro || dataParaIso(item.date) === dataFiltro;
-    return matchSearch && matchCategory && matchDate;
-  });
+  const itensIndexados = useMemo(
+  () =>
+    items.map(item => ({
+      item,
+      texto: [item.name, item.description, item.location].join('\n').toLowerCase(),
+      dataIso: dataParaIso(item.date),
+    })),
+  [items]
+);
 
-  const disponiveis = items.filter(i => i.status === 'Disponível').length;
+const filtered = useMemo(() => {
+  const q = search.trim().toLowerCase();
+  return itensIndexados
+    .filter(({ item, texto, dataIso }) =>
+      (!q || texto.includes(q)) &&
+      (category === 'all' || item.category === category) &&
+      (!dataFiltro || dataIso === dataFiltro)
+    )
+    .map(({ item }) => item);
+}, [itensIndexados, search, category, dataFiltro]);
+
+  const disponiveis = useMemo(
+  () => items.filter(i => i.status === 'Disponível').length,
+  [items]
+);
 
   return (
     <div className="relative min-h-screen bg-[#F5F3F0] pb-24" style={FONT}>
@@ -511,6 +523,7 @@ export function PublicListing({ navigate }: Props) {
               <WelcomeIllustration />
             </div>
           </div>
+          
         </div>
 
         <div className="mb-4 flex flex-col gap-3 sm:flex-row">
@@ -595,6 +608,7 @@ export function PublicListing({ navigate }: Props) {
           <span className="font-medium">ReEncontro — Sistema de Achados e Perdidos · SESI Nova Odessa</span>
           <span>Dúvidas? Procure a inspetora na recepção.</span>
         </div>
+        
       </main>
 
       <ClaimModal

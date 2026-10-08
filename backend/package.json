@@ -5,12 +5,14 @@
   "type": "module",
   "main": "src/server.js",
   "scripts": {
-    "dev": "node --watch src/server.js",
-    "start": "node src/server.js",
+    "start": "node --import ./instrument.js src/server.js",
+    "dev": "node --watch --import ./instrument.js src/server.js",
     "test": "vitest"
   },
   "dependencies": {
     "@getbrevo/brevo": "^6.0.3",
+    "@sentry/node": "^11.5.0",
+    "@sentry/react": "^11.5.0",
     "bcrypt": "^5.1.1",
     "cloudinary": "^1.41.3",
     "compression": "^1.7.4",
