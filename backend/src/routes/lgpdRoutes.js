@@ -1,15 +1,16 @@
 import { Router } from "express";
 import { lgpdController } from "../controllers/lgpdController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
-import { apenasFuncionaria } from "../middlewares/roleMiddleware.js";
+import { apenasDiretora } from "../middlewares/roleMiddleware.js";
 
 const router = Router();
 
-router.get("/buscar", authMiddleware, apenasFuncionaria, lgpdController.buscar);
+// LGPD (busca e anonimização de dados pessoais) — exclusivo da diretora
+router.get("/buscar", authMiddleware, apenasDiretora, lgpdController.buscar);
 router.post(
   "/anonimizar",
   authMiddleware,
-  apenasFuncionaria,
+  apenasDiretora,
   lgpdController.anonimizar,
 );
 

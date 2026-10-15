@@ -12,9 +12,11 @@ import { useAuth } from '../../contexts/AuthContext';
 interface Props {
   children: ReactNode;
   role?: 'responsavel' | 'funcionaria';
+  /** Só a diretora (funcionária com is_diretora) — inspetoras voltam ao dashboard */
+  apenasDiretora?: boolean;
 }
 
-export function RotaProtegida({ children, role }: Props) {
+export function RotaProtegida({ children, role, apenasDiretora = false }: Props) {
   const { usuario, carregando } = useAuth();
   const location = useLocation();
 
@@ -39,6 +41,10 @@ export function RotaProtegida({ children, role }: Props) {
   // Autenticado, mas com o perfil errado (ex.: responsável tentando abrir /admin)
   if (role && usuario.role !== role) {
     return <Navigate to="/" replace />;
+  }
+
+  if (apenasDiretora && !usuario.is_diretora) {
+    return <Navigate to="/admin" replace />;
   }
 
   return <>{children}</>;
