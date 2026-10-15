@@ -183,10 +183,28 @@ function traduzirItemFinalizado(i: any) {
   
 }
 
+async function buscarItensDisponiveis() {
+  const dados = await request('/api/itens');
+  return dados.map(traduzirItem);   // traduz cada item
+}
+
+// A tela de carregamento já dispara a busca da listagem; a primeira chamada
+// de itensApi.listar() reaproveita essa mesma requisição em vez de refazer.
+let listagemPrefetch: Promise<any[]> | null = null;
+
+export function prefetchListagem() {
+  if (!listagemPrefetch) listagemPrefetch = buscarItensDisponiveis();
+  return listagemPrefetch;
+}
+
 export const itensApi = {
-  async listar() {
-    const dados = await request('/api/itens');
-    return dados.map(traduzirItem);   // traduz cada item
+  listar() {
+    if (listagemPrefetch) {
+      const emAndamento = listagemPrefetch;
+      listagemPrefetch = null;
+      return emAndamento;
+    }
+    return buscarItensDisponiveis();
   },
   async detalhe(id: number) {
     const dado = await request(`/api/itens/${id}`);

@@ -1,261 +1,360 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { LupaMarca } from './shared/LupaMarca';
+// =====================================================================
+// Tela de carregamento da listagem pública.
+// Uma lupa varre uma cena de objetos perdidos (cinzas e desfocados);
+// cada objeto que passa sob a lente é "encontrado" e ganha cor. A cena
+// colorindo é o indicador de progresso. Enquanto isso, a listagem é
+// buscada de verdade (prefetchListagem): a tela só termina quando os
+// dados chegaram, e mostra quantos itens esperam seus donos.
+// =====================================================================
+import { useEffect, useRef, useState, type ElementType, type ReactNode } from 'react';
+import {
+  Backpack, BookOpen, Footprints, Glasses, IdCard, Key, Pencil, Shirt, Umbrella, Watch,
+} from 'lucide-react';
+import { getCatConfig } from './shared/AdminChrome';
+import { prefetchListagem } from '../../lib/api';
 
 const FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
-const COR_MARCA = { r: 200, g: 16, b: 46 };
-const DURACAO_PADRAO_MS = 2400;
-const FADE_SAIDA_MS = 600;
-const QTD_BOLHAS = 22;
+const VERMELHO = '#C8102E';
+
+// Cena (unidades do viewBox)
+const LARGURA = 600;
+const ALTURA = 300;
+const CENTRO_X = LARGURA / 2;
+const CENTRO_Y = ALTURA / 2;
+const RAIO_LENTE = 46;
+const DISTANCIA_ACHOU = 34;
+
+// Tempos
+const MINIMO_MS = 2200;        // deixa a busca acontecer mesmo com rede rápida
+const AVISO_LENTO_MS = 4500;   // servidor dormindo (cold start do Render)
+const MAXIMO_MS = 12000;       // depois disso abre a listagem de qualquer jeito
+const POUSO_MS = 750;          // lupa volta ao centro
+const REVELACAO_MS = 1300;     // tempo para ler a contagem
+const SAIDA_MS = 550;
+const VELOCIDADE = 1.9;        // radianos por segundo ao longo do trajeto
+
+// Trajeto da lupa: um "oito" deitado (curva de Lissajous 1:2)
+function trajeto(a: number) {
+  return {
+    x: CENTRO_X + 228 * Math.sin(a),
+    y: CENTRO_Y + 92 * Math.sin(2 * a + 0.5),
+  };
+}
+
+const OBJETOS_BASE: { Icon: ElementType; categoria: string }[] = [
+  { Icon: Glasses, categoria: 'Acessório' },
+  { Icon: Key, categoria: 'Outros' },
+  { Icon: BookOpen, categoria: 'Material Escolar' },
+  { Icon: Shirt, categoria: 'Vestuário' },
+  { Icon: Watch, categoria: 'Acessório' },
+  { Icon: Umbrella, categoria: 'Outros' },
+  { Icon: IdCard, categoria: 'Documento' },
+  { Icon: Pencil, categoria: 'Material Escolar' },
+  { Icon: Footprints, categoria: 'Calçados' },
+  { Icon: Backpack, categoria: 'Material Escolar' },
+];
+
+// Cada objeto fica sobre o trajeto (com um leve desvio), então uma volta
+// completa da lupa encontra todos
+const OBJETOS = OBJETOS_BASE.map((o, i) => {
+  const p = trajeto(0.31 + i * ((2 * Math.PI) / OBJETOS_BASE.length));
+  const cfg = getCatConfig(o.categoria);
+  return {
+    ...o,
+    id: i,
+    x: p.x,
+    y: p.y + (i % 2 ? 15 : -15),
+    giro: ((i % 3) - 1) * 14,
+    cor: cfg.color,
+    fundo: cfg.bg,
+  };
+});
+
+type Fase = 'buscando' | 'pousando' | 'saindo';
+
+function easeOutCubic(t: number) {
+  return 1 - (1 - t) ** 3;
+}
+
+function mensagemFinal(total: number | null) {
+  if (total === null) return 'Abrindo a listagem…';
+  if (total === 0) return 'Nenhum item perdido no momento';
+  if (total === 1) return '1 item esperando o dono';
+  return `${total} itens esperando seus donos`;
+}
+
+function Objeto({ obj, cor, fundo, escala = 1 }: {
+  obj: (typeof OBJETOS)[number]; cor: string; fundo?: string; escala?: number;
+}) {
+  const { Icon } = obj;
+  return (
+    <g transform={`translate(${obj.x} ${obj.y}) rotate(${obj.giro}) scale(${escala})`}>
+      {fundo && <circle r="25" fill={fundo} />}
+      <Icon x={-13} y={-13} width={26} height={26} color={cor} strokeWidth={1.7} />
+    </g>
+  );
+}
 
 export interface LoadingScreenProps {
-  duration?: number;
   onFinish?: () => void;
 }
 
-interface Bolha {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  size: number;
-  opacity: number;
-  phase: number;
-}
-
-interface PontoMouse {
-  x: number;
-  y: number;
-  ativo: boolean;
-}
-
-function aleatorio(min: number, max: number) {
-  return min + Math.random() * (max - min);
-}
-
-function criarBolhas(largura: number, altura: number): Bolha[] {
-  return Array.from({ length: QTD_BOLHAS }, () => ({
-    x: aleatorio(0, largura),
-    y: aleatorio(0, altura),
-    vx: aleatorio(-0.1, 0.1),
-    vy: aleatorio(-0.1, 0.1),
-    size: aleatorio(8, 48),
-    opacity: aleatorio(0.08, 0.22),
-    phase: aleatorio(0, Math.PI * 2),
-  }));
-}
-
-function pointerFino() {
-  return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-}
-
-export function LoadingScreen({ duration = DURACAO_PADRAO_MS, onFinish }: LoadingScreenProps) {
-  const navigate = useNavigate();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [saindo, setSaindo] = useState(false);
-  const [progresso, setProgresso] = useState(0);
+export function LoadingScreen({ onFinish }: LoadingScreenProps) {
+  const [fase, setFase] = useState<Fase>('buscando');
+  const [achados, setAchados] = useState<Set<number>>(() => new Set());
+  const [dadosProntos, setDadosProntos] = useState(false);
+  const [minimoCumprido, setMinimoCumprido] = useState(false);
+  const [lento, setLento] = useState(false);
+  const [total, setTotal] = useState<number | null>(null);
   const [entrada, setEntrada] = useState(false);
 
+  const faseRef = useRef<Fase>('buscando');
+  const achadosRef = useRef<Set<number>>(new Set());
+  const posicaoRef = useRef(trajeto(0));
+  const pousoRef = useRef({ de: trajeto(0), inicio: 0 });
+  const lenteRef = useRef<SVGGElement>(null);
+  const recorteRef = useRef<SVGCircleElement>(null);
+  const vidroRef = useRef<SVGCircleElement>(null);
+  const reduzMovimento = useRef(
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  ).current;
+
+  function marcarAchado(id: number) {
+    if (achadosRef.current.has(id)) return;
+    achadosRef.current.add(id);
+    setAchados(new Set(achadosRef.current));
+  }
+
+  // Busca real da listagem + temporizadores de mínimo, aviso e máximo
   useEffect(() => {
-    const entrar = window.setTimeout(() => setEntrada(true), 40);
-    const barra = window.setTimeout(() => setProgresso(1), 80);
+    let ativo = true;
+    prefetchListagem()
+      .then(itens => {
+        if (ativo) setTotal(itens.filter(i => i.status === 'Disponível').length);
+      })
+      .catch(() => {
+        // a listagem mostra o próprio erro; aqui só seguimos em frente
+      })
+      .finally(() => {
+        if (ativo) setDadosProntos(true);
+      });
+
+    const timers = [
+      window.setTimeout(() => setEntrada(true), 30),
+      window.setTimeout(() => setMinimoCumprido(true), reduzMovimento ? 400 : MINIMO_MS),
+      window.setTimeout(() => setLento(true), AVISO_LENTO_MS),
+      window.setTimeout(() => setDadosProntos(true), MAXIMO_MS),
+    ];
     return () => {
-      window.clearTimeout(entrar);
-      window.clearTimeout(barra);
+      ativo = false;
+      timers.forEach(t => window.clearTimeout(t));
     };
-  }, []);
+  }, [reduzMovimento]);
 
+  // Timers do encerramento ficam num ref: mudar de fase não pode cancelá-los,
+  // só desmontar a tela
+  const timersSaidaRef = useRef<number[]>([]);
+  const onFinishRef = useRef(onFinish);
+  onFinishRef.current = onFinish;
+  useEffect(() => () => timersSaidaRef.current.forEach(t => window.clearTimeout(t)), []);
+
+  // Dados chegaram e a busca já teve seu tempo: a lupa pousa no centro,
+  // os objetos restantes são encontrados em cascata (isso também cobre aba
+  // em segundo plano, onde o requestAnimationFrame fica pausado), a contagem
+  // aparece e a tela sai
   useEffect(() => {
-    const iniciarSaida = window.setTimeout(() => setSaindo(true), duration);
-    return () => window.clearTimeout(iniciarSaida);
-  }, [duration]);
+    if (faseRef.current !== 'buscando' || !dadosProntos || !minimoCumprido) return;
 
+    faseRef.current = 'pousando';
+    pousoRef.current = { de: { ...posicaoRef.current }, inicio: performance.now() };
+    setFase('pousando');
+
+    const agendar = (fn: () => void, ms: number) =>
+      timersSaidaRef.current.push(window.setTimeout(fn, ms));
+
+    OBJETOS.filter(o => !achadosRef.current.has(o.id)).forEach((o, i) =>
+      agendar(() => marcarAchado(o.id), reduzMovimento ? 0 : 120 + i * 70),
+    );
+    agendar(() => {
+      faseRef.current = 'saindo';
+      setFase('saindo');
+    }, POUSO_MS + REVELACAO_MS);
+    agendar(() => onFinishRef.current?.(), POUSO_MS + REVELACAO_MS + SAIDA_MS);
+  }, [dadosProntos, minimoCumprido, reduzMovimento]);
+
+  // Animação da lupa: atualiza o SVG direto pelos refs, sem re-render por quadro
   useEffect(() => {
-    if (!saindo) return;
+    function aplicar(p: { x: number; y: number }) {
+      posicaoRef.current = p;
+      lenteRef.current?.setAttribute('transform', `translate(${p.x} ${p.y})`);
+      recorteRef.current?.setAttribute('cx', String(p.x));
+      recorteRef.current?.setAttribute('cy', String(p.y));
+      vidroRef.current?.setAttribute('cx', String(p.x));
+      vidroRef.current?.setAttribute('cy', String(p.y));
+    }
 
-    const encerrar = window.setTimeout(() => {
-      navigate('/', { replace: true });
-      onFinish?.();
-    }, FADE_SAIDA_MS);
+    if (reduzMovimento) {
+      aplicar({ x: CENTRO_X, y: CENTRO_Y });
+      OBJETOS.forEach(o => marcarAchado(o.id));
+      return;
+    }
 
-    return () => window.clearTimeout(encerrar);
-  }, [saindo, navigate, onFinish]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) return;
-
-    const mouse: PontoMouse = { x: 0, y: 0, ativo: false };
-    const reduzMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const atracaoAtiva = pointerFino() && !reduzMovimento;
-
-    let largura = 0;
-    let altura = 0;
-    let dpr = 1;
-    let bolhas: Bolha[] = [];
-    let frame = 0;
+    let angulo = 0;
     let ultimo = performance.now();
+    let quadro = 0;
 
-    function redimensionar() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      largura = window.innerWidth;
-      altura = window.innerHeight;
-      canvas.width = Math.floor(largura * dpr);
-      canvas.height = Math.floor(altura * dpr);
-      canvas.style.width = `${largura}px`;
-      canvas.style.height = `${altura}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      if (bolhas.length === 0) {
-        bolhas = criarBolhas(largura, altura);
-      }
-    }
-
-    function onMouseMove(e: MouseEvent) {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-      mouse.ativo = true;
-    }
-
-    function onMouseLeave() {
-      mouse.ativo = false;
-    }
-
-    function desenhar(agora: number) {
-      const dt = Math.min(32, agora - ultimo) / 16.67;
+    function passo(agora: number) {
+      const dt = Math.min(50, agora - ultimo) / 1000;
       ultimo = agora;
-      const t = agora * 0.001;
 
-      ctx.clearRect(0, 0, largura, altura);
-
-      for (const b of bolhas) {
-        b.vx += Math.sin(t * 0.32 + b.phase) * 0.007 * dt;
-        b.vy += Math.cos(t * 0.26 + b.phase * 1.3) * 0.006 * dt;
-
-        if (mouse.ativo && atracaoAtiva) {
-          const dx = mouse.x - b.x;
-          const dy = mouse.y - b.y;
-          const dist = Math.hypot(dx, dy) || 1;
-          const forca = Math.min(0.012, (80 / dist) * 0.008);
-          b.vx += dx * forca * dt;
-          b.vy += dy * forca * dt;
-        }
-
-        b.vx *= 0.945;
-        b.vy *= 0.945;
-        b.x += b.vx * dt;
-        b.y += b.vy * dt;
-
-        const margem = b.size;
-        if (b.x < -margem) b.x = largura + margem;
-        if (b.x > largura + margem) b.x = -margem;
-        if (b.y < -margem) b.y = altura + margem;
-        if (b.y > altura + margem) b.y = -margem;
-
-        const raio = b.size / 2;
-        const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, raio);
-        grad.addColorStop(0, `rgba(${COR_MARCA.r}, ${COR_MARCA.g}, ${COR_MARCA.b}, ${b.opacity})`);
-        grad.addColorStop(1, `rgba(${COR_MARCA.r}, ${COR_MARCA.g}, ${COR_MARCA.b}, 0)`);
-        ctx.beginPath();
-        ctx.fillStyle = grad;
-        ctx.arc(b.x, b.y, raio, 0, Math.PI * 2);
-        ctx.fill();
+      let p: { x: number; y: number };
+      if (faseRef.current === 'buscando') {
+        angulo += VELOCIDADE * dt;
+        p = trajeto(angulo);
+      } else {
+        const { de, inicio } = pousoRef.current;
+        const t = easeOutCubic(Math.min(1, (agora - inicio) / POUSO_MS));
+        p = { x: de.x + (CENTRO_X - de.x) * t, y: de.y + (CENTRO_Y - de.y) * t };
       }
+      aplicar(p);
 
-      frame = window.requestAnimationFrame(desenhar);
+      for (const o of OBJETOS) {
+        if (!achadosRef.current.has(o.id) && Math.hypot(o.x - p.x, o.y - p.y) < DISTANCIA_ACHOU) {
+          marcarAchado(o.id);
+        }
+      }
+      quadro = window.requestAnimationFrame(passo);
     }
 
-    redimensionar();
-    frame = window.requestAnimationFrame(desenhar);
-    window.addEventListener('resize', redimensionar);
+    aplicar(trajeto(0));
+    quadro = window.requestAnimationFrame(passo);
+    return () => window.cancelAnimationFrame(quadro);
+  }, [reduzMovimento]);
 
-    if (atracaoAtiva) {
-      window.addEventListener('mousemove', onMouseMove, { passive: true });
-      document.addEventListener('mouseleave', onMouseLeave);
-    }
+  const status =
+    fase === 'buscando'
+      ? lento
+        ? 'Acordando o servidor… pode levar alguns segundos'
+        : 'Procurando os itens achados…'
+      : mensagemFinal(total);
 
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener('resize', redimensionar);
-      window.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseleave', onMouseLeave);
-    };
-  }, []);
+  const saindo = fase === 'saindo';
 
   return (
     <div
-      className={`fixed inset-0 z-[200] overflow-hidden bg-[#F5F3F0] transition-opacity ease-out ${
+      className={`fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-[#F5F3F0] px-4 transition-opacity ease-out ${
         saindo ? 'opacity-0' : 'opacity-100'
       }`}
-      style={{ ...FONT, transitionDuration: `${FADE_SAIDA_MS}ms` }}
+      style={{ ...FONT, transitionDuration: `${SAIDA_MS}ms` }}
       role="status"
-      aria-live="polite"
       aria-label="Carregando ReEncontro"
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[42%] h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full sm:h-[640px] sm:w-[640px]"
-        style={{
-          background:
-            'radial-gradient(circle, rgba(254,226,226,0.72) 0%, rgba(254,226,226,0.28) 38%, rgba(245,243,240,0) 70%)',
-        }}
+        className="pointer-events-none absolute left-1/2 top-[42%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(254,226,226,0.7) 0%, rgba(254,226,226,0.2) 40%, rgba(245,243,240,0) 70%)' }}
       />
 
-      <canvas ref={canvasRef} className="pointer-events-none absolute inset-0" />
+      {/* No celular a cena passa um pouco da tela (só as margens vazias do
+          viewBox ficam de fora) para os objetos não ficarem minúsculos */}
+      <div
+        className={`relative w-[min(112vw,640px)] shrink-0 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          entrada ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
+        } ${saindo ? 'scale-[1.06]' : 'scale-100'}`}
+      >
+        <svg viewBox={`0 0 ${LARGURA} ${ALTURA}`} className="h-auto w-full overflow-visible" aria-hidden>
+          <defs>
+            <filter id="rl-desfoque" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="1.4" />
+            </filter>
+            <clipPath id="rl-recorte">
+              <circle ref={recorteRef} r={RAIO_LENTE - 3} />
+            </clipPath>
+            <filter id="rl-sombra" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="6" stdDeviation="7" floodColor="#7F1D1D" floodOpacity="0.16" />
+            </filter>
+          </defs>
 
-      <div className="relative z-10 flex min-h-full flex-col items-center justify-center px-6">
-        <div
-          className={`flex flex-col items-center transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-            entrada ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-          }`}
-        >
-          <div
-            className="relative flex items-center justify-center"
-            style={{ animation: 'reencontro-respirar 3.2s ease-in-out infinite' }}
-          >
-            <LupaMarca size={156} />
-          </div>
+          {/* Perdidos: cinzas e fora de foco */}
+          <g filter="url(#rl-desfoque)" opacity="0.75">
+            {OBJETOS.filter(o => !achados.has(o.id)).map(o => (
+              <Objeto key={o.id} obj={o} cor="#A8A29E" />
+            ))}
+          </g>
 
-          <h1 className="mt-6 text-[1.85rem] font-extrabold tracking-tight text-[#1C1917] sm:text-[2.15rem]">
-            Re<span className="text-[#C8102E]">Encontro</span>
-          </h1>
-          <p className="mt-1.5 text-[11px] font-medium uppercase tracking-[0.22em] text-[#A8A29E]">
-            SESI Nova Odessa
-          </p>
+          {/* Encontrados: ganham cor e um selo de confirmação */}
+          {OBJETOS.filter(o => achados.has(o.id)).map(o => (
+            <g key={o.id} transform={`translate(${o.x} ${o.y})`}>
+              <g className="rl-achado">
+                <g transform={`rotate(${o.giro})`}>
+                  <circle r="25" fill={o.fundo} />
+                  <o.Icon x={-13} y={-13} width={26} height={26} color={o.cor} strokeWidth={1.7} />
+                </g>
+                <g transform="translate(18 -18)">
+                  <circle r="8" fill="#047857" stroke="#F5F3F0" strokeWidth="2.5" />
+                  <path d="M-3.4 0.2 L-1 2.6 L3.6 -2.2" stroke="white" strokeWidth="1.9" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </g>
+              </g>
+            </g>
+          ))}
 
-          <div className="mt-8 inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-bold text-[#C8102E]">
-            <span className="size-1.5 animate-pulse rounded-full bg-[#C8102E]" />
-            Preparando o sistema
-          </div>
+          {/* Vidro da lupa: fundo claro e tudo nítido, colorido e ampliado */}
+          <circle ref={vidroRef} r={RAIO_LENTE - 3} fill="white" fillOpacity="0.92" />
+          <g clipPath="url(#rl-recorte)">
+            {OBJETOS.map(o => (
+              <Objeto key={o.id} obj={o} cor={o.cor} fundo={o.fundo} escala={1.18} />
+            ))}
+          </g>
 
-          <div className="mt-8 w-44 sm:w-52">
-            <div className="h-[3px] overflow-hidden rounded-full bg-[#E7E5E4]">
-              <div
-                className="h-full origin-left rounded-full bg-[#C8102E]"
-                style={{
-                  transform: `scaleX(${progresso})`,
-                  transition: `transform ${duration}ms cubic-bezier(0.22, 1, 0.36, 1)`,
-                }}
-              />
-            </div>
-          </div>
-        </div>
+          {/* Armação da lupa */}
+          <g ref={lenteRef} filter="url(#rl-sombra)">
+            <path d="M33 33 L64 64" stroke={VERMELHO} strokeWidth="10" strokeLinecap="round" />
+            <circle r={RAIO_LENTE} fill="none" stroke={VERMELHO} strokeWidth="5" />
+            <path d="M-30 -14 A33 33 0 0 1 -12 -31" stroke="white" strokeWidth="4" strokeLinecap="round" fill="none" opacity="0.9" />
+          </g>
+        </svg>
       </div>
 
-      <p className="pointer-events-none absolute bottom-8 left-0 right-0 text-center text-[11px] font-medium tracking-wide text-[#A8A29E]">
-        Achados e perdidos escolar
+      <div
+        className={`relative mt-4 flex flex-col items-center text-center transition-all delay-150 duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          entrada ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
+        }`}
+      >
+        <h1 className="text-[1.7rem] font-extrabold tracking-tight text-[#1C1917] sm:text-[2rem]">
+          Re<span className="text-[#C8102E]">Encontro</span>
+        </h1>
+        <p
+          key={status}
+          aria-live="polite"
+          className={`rl-status mt-2 min-h-[1.5rem] text-sm font-semibold ${
+            fase === 'buscando' ? 'text-[#78716C]' : 'text-[#C8102E]'
+          }`}
+        >
+          {status}
+        </p>
+      </div>
+
+      <p className="pointer-events-none absolute right-0 bottom-8 left-0 text-center text-[11px] font-medium tracking-[0.18em] text-[#A8A29E] uppercase">
+        SESI Nova Odessa · Achados e perdidos
       </p>
 
       <style>{`
-        @keyframes reencontro-respirar {
-          0%, 100% { transform: scale(0.97); opacity: 0.88; }
-          50% { transform: scale(1.03); opacity: 1; }
+        .rl-achado {
+          transform-box: fill-box;
+          transform-origin: center;
+          animation: rl-achou 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        @keyframes rl-achou {
+          from { transform: scale(0.4); opacity: 0; }
+          to   { transform: scale(1);   opacity: 1; }
+        }
+        .rl-status { animation: rl-status 420ms ease-out both; }
+        @keyframes rl-status {
+          from { transform: translateY(6px); opacity: 0; }
+          to   { transform: translateY(0);   opacity: 1; }
         }
         @media (prefers-reduced-motion: reduce) {
-          [style*="reencontro-respirar"] { animation: none !important; }
+          .rl-achado, .rl-status { animation: none; }
         }
       `}</style>
     </div>
