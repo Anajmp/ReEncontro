@@ -1,23 +1,48 @@
-import type { ElementType, ReactNode } from 'react';
+import { useId, type ElementType, type ReactNode } from 'react';
 
-/** Desenho decorativo do banner: manchas rosadas, brilhos e o ícone da página num círculo. */
-export function BannerIlustracao({ Icon }: { Icon: ElementType }) {
+const VERMELHO = '#C8102E';
+const RAIO_LENTE = 44;
+
+/**
+ * Desenho decorativo do banner: manchas rosadas, brilhos e a mesma lupa da
+ * tela de carregamento (armação grossa, reflexo no vidro, cabo e sombra).
+ * Dentro do vidro vai o ícone da página num chip, ou um conteúdo próprio
+ * (`children`, em coordenadas relativas ao centro da lente).
+ */
+export function BannerIlustracao({ Icon, children }: { Icon?: ElementType; children?: ReactNode }) {
+  const id = useId().replace(/:/g, '');
   return (
-    <div className="relative h-[148px] w-[210px] shrink-0" aria-hidden>
-      <svg width="210" height="148" viewBox="0 0 210 148" fill="none" className="absolute inset-0">
-        <ellipse cx="105" cy="74" rx="94" ry="66" fill="#FEE2E2" fillOpacity="0.45" />
-        <ellipse cx="112" cy="68" rx="58" ry="44" fill="#FEE2E2" fillOpacity="0.28" />
-        <circle cx="105" cy="74" r="43" fill="white" fillOpacity="0.84" />
-        <circle cx="105" cy="74" r="43" stroke="#C8102E" strokeWidth="2.4" fill="none" />
-        <path d="M28 27 L30.8 18.5 L33.5 27 L42 29.8 L33.5 32.5 L30.8 41 L28 32.5 L19.5 29.8Z" fill="#C8102E" fillOpacity="0.17" />
-        <path d="M170 40 L172 35 L174 40 L179 42 L174 44 L172 49 L170 44 L165 42Z" fill="#C8102E" fillOpacity="0.14" />
-        <circle cx="46" cy="122" r="5.5" fill="#FCA5A5" fillOpacity="0.52" />
-        <circle cx="174" cy="117" r="3.8" fill="#FCA5A5" fillOpacity="0.44" />
-      </svg>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#9CA3AF]">
-        <Icon size={38} strokeWidth={1.5} />
-      </div>
-    </div>
+    <svg width="210" height="148" viewBox="0 0 210 148" fill="none" aria-hidden className="shrink-0">
+      <defs>
+        <filter id={`sombra-${id}`} x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="5" stdDeviation="6" floodColor="#7F1D1D" floodOpacity="0.16" />
+        </filter>
+      </defs>
+      <ellipse cx="105" cy="74" rx="94" ry="66" fill="#FEE2E2" fillOpacity="0.45" />
+      <ellipse cx="112" cy="68" rx="58" ry="44" fill="#FEE2E2" fillOpacity="0.28" />
+      <path d="M28 27 L30.8 18.5 L33.5 27 L42 29.8 L33.5 32.5 L30.8 41 L28 32.5 L19.5 29.8Z" fill={VERMELHO} fillOpacity="0.17" />
+      <path d="M170 40 L172 35 L174 40 L179 42 L174 44 L172 49 L170 44 L165 42Z" fill={VERMELHO} fillOpacity="0.14" />
+      <circle cx="46" cy="122" r="5.5" fill="#FCA5A5" fillOpacity="0.52" />
+      <circle cx="174" cy="117" r="3.8" fill="#FCA5A5" fillOpacity="0.44" />
+
+      <g transform="translate(96 66)">
+        {/* Vidro e conteúdo */}
+        <circle r={RAIO_LENTE - 3} fill="white" fillOpacity="0.92" />
+        {children ?? (Icon && (
+          <>
+            <circle r="25" fill="#FEE2E2" />
+            <Icon x={-15} y={-15} width={30} height={30} color={VERMELHO} strokeWidth={1.7} />
+          </>
+        ))}
+
+        {/* Armação */}
+        <g filter={`url(#sombra-${id})`}>
+          <path d="M32 32 L62 62" stroke={VERMELHO} strokeWidth="10" strokeLinecap="round" />
+          <circle r={RAIO_LENTE} fill="none" stroke={VERMELHO} strokeWidth="5" />
+          <path d="M-29 -13 A32 32 0 0 1 -12 -30" stroke="white" strokeWidth="4" strokeLinecap="round" fill="none" opacity="0.9" />
+        </g>
+      </g>
+    </svg>
   );
 }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  Search, MapPin, Calendar, Check, X, SlidersHorizontal, ListFilter,
+  Search, MapPin, Calendar, Check, X, SlidersHorizontal, ListFilter, Glasses, Key,
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -14,7 +14,7 @@ import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { getUsuario } from '../../lib/auth';
 import { SiteFooter, SiteHeader } from './shared/SiteHeader';
-import { PageBanner } from './shared/PageBanner';
+import { BannerIlustracao, PageBanner } from './shared/PageBanner';
 import { getCatConfig } from './shared/AdminChrome';
 
 interface Props {
@@ -25,28 +25,21 @@ const FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
 
 type Ordem = 'recentes' | 'antigos' | 'nome';
 
+// Lupa da tela de carregamento "encontrando" uma chave e uns óculos
 function WelcomeIllustration() {
+  const oculos = getCatConfig('Acessório');
+  const chave = getCatConfig('Outros');
   return (
-    <svg width="210" height="148" viewBox="0 0 210 148" fill="none" aria-hidden className="flex-shrink-0">
-      <ellipse cx="105" cy="74" rx="94" ry="66" fill="#FEE2E2" fillOpacity="0.45" />
-      <ellipse cx="112" cy="68" rx="58" ry="44" fill="#FEE2E2" fillOpacity="0.28" />
-      <path d="M122 106 L152 136" stroke="#C8102E" strokeWidth="3.2" strokeLinecap="round" />
-      <circle cx="88" cy="71" r="43" fill="white" fillOpacity="0.84" />
-      <circle cx="88" cy="71" r="43" stroke="#C8102E" strokeWidth="2.4" fill="none" />
-      <circle cx="74" cy="59" r="10.5" stroke="#9CA3AF" strokeWidth="1.8" fill="none" />
-      <path d="M83 59 H103" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M99 59 V65.5" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M93 59 V64.5" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" />
-      <circle cx="76" cy="86" r="10" stroke="#9CA3AF" strokeWidth="1.6" fill="none" />
-      <circle cx="98" cy="86" r="10" stroke="#9CA3AF" strokeWidth="1.6" fill="none" />
-      <path d="M86 86 H88" stroke="#9CA3AF" strokeWidth="1.6" />
-      <path d="M66 82 L61.5 81" stroke="#9CA3AF" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M108 82 L112.5 81" stroke="#9CA3AF" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M28 27 L30.8 18.5 L33.5 27 L42 29.8 L33.5 32.5 L30.8 41 L28 32.5 L19.5 29.8Z" fill="#C8102E" fillOpacity="0.17" />
-      <path d="M170 40 L172 35 L174 40 L179 42 L174 44 L172 49 L170 44 L165 42Z" fill="#C8102E" fillOpacity="0.14" />
-      <circle cx="46" cy="122" r="5.5" fill="#FCA5A5" fillOpacity="0.52" />
-      <circle cx="174" cy="117" r="3.8" fill="#FCA5A5" fillOpacity="0.44" />
-    </svg>
+    <BannerIlustracao>
+      <g transform="translate(-12 -12) rotate(-12)">
+        <circle r="17" fill={oculos.bg} />
+        <Glasses x={-11} y={-11} width={22} height={22} color={oculos.color} strokeWidth={1.8} />
+      </g>
+      <g transform="translate(14 14) rotate(14)">
+        <circle r="15" fill={chave.bg} />
+        <Key x={-10} y={-10} width={20} height={20} color={chave.color} strokeWidth={1.8} />
+      </g>
+    </BannerIlustracao>
   );
 }
 
