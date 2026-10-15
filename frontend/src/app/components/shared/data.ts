@@ -1,5 +1,5 @@
 export type Status = 'Disponível' | 'Pendente' | 'Em Processo' | 'Entregue' | 'Descartado' | 'Rejeitada' | 'Cancelada';
-export type Category = 'Vestuário' | 'Acessórios' | 'Material Escolar' | 'Eletrônicos' | 'Calçados' | 'Outros';
+export type Category = 'Vestuário' | 'Acessórios' | 'Material Escolar' | 'Calçados' | 'Outros';
 export type Period = 'Manhã' | 'Tarde' | 'Noite';
 export type Role = 'Inspetora' | 'Diretora';
 
@@ -156,7 +156,7 @@ export const items: Item[] = [
   {
     id: 9,
     name: 'Fone de ouvido preto',
-    category: 'Eletrônicos',
+    category: 'Outros',
     location: 'Laboratório de Informática',
     date: '05/12/2023',
     status: 'Descartado',

@@ -314,12 +314,11 @@ CREATE TABLE notificacoes (
 -- =====================================================================
 
 INSERT INTO categorias (nome, icone, ordem) VALUES
-  ('Eletrônico',       'smartphone', 1),
-  ('Vestuário',        'shirt',      2),
-  ('Acessório',        'watch',      3),
-  ('Material Escolar', 'book-open',  4),
-  ('Documento',        'file-text',  5),
-  ('Outros',           'package',    6);
+  ('Vestuário',        'shirt',      1),
+  ('Acessório',        'watch',      2),
+  ('Material Escolar', 'book-open',  3),
+  ('Documento',        'file-text',  4),
+  ('Outros',           'package',    5);
 
 INSERT INTO pontos_coleta (nome, descricao) VALUES
   ('Mesa das Inspetoras', 'Recepção / inspetoria principal'),

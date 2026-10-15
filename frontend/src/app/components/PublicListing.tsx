@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   Search, MapPin, Calendar, Check,
-  BookOpen, Shirt, Watch, Headphones, Package, Footprints,
+  BookOpen, Shirt, Watch, Package, Footprints,
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -26,7 +26,6 @@ const CAT_CONFIG: Record<string, { color: string; bg: string; Icon: typeof BookO
   'Material Escolar': { color: '#D97706', bg: '#FEF3C7', Icon: BookOpen },
   'Vestuário': { color: '#059669', bg: '#D1FAE5', Icon: Shirt },
   'Acessórios': { color: '#7C3AED', bg: '#EDE9FE', Icon: Watch },
-  'Eletrônicos': { color: '#4F46E5', bg: '#E0E7FF', Icon: Headphones },
   'Calçados': { color: '#B45309', bg: '#FEF9C3', Icon: Footprints },
   'Outros': { color: '#B45309', bg: '#FEF9C3', Icon: Package },
 };
@@ -36,7 +35,6 @@ const CATEGORIAS = [
   { id: 'Material Escolar', label: 'Material Escolar' },
   { id: 'Vestuário', label: 'Vestuário' },
   { id: 'Acessórios', label: 'Acessórios' },
-  { id: 'Eletrônicos', label: 'Eletrônicos' },
   { id: 'Calçados', label: 'Calçados' },
   { id: 'Outros', label: 'Outros' },
 ];

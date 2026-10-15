@@ -8,7 +8,7 @@ import { AdminLayout } from './shared/AdminLayout';
 import {
   AdminPanel, CategoryBadge, adminBtnPrimary, adminInputClass, adminSearchInputClass, adminSelectClass,
 } from './shared/AdminChrome';
-import { itensApi, reivindicacoesApi } from '../../lib/api';
+import { itensApi, reivindicacoesApi, referenciasApi } from '../../lib/api';
 import type { Screen } from '../App';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Label } from './ui/label';
@@ -27,6 +27,11 @@ function EditItemModal({ item, open, onClose, onSaved }: {
   const [pontoColetaId, setPontoColetaId] = useState('');
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
+  const [categorias, setCategorias] = useState<any[]>([]);
+
+  useEffect(() => {
+    referenciasApi.categorias().then(setCategorias).catch(console.error);
+  }, []);
 
   // Preenche com os dados atuais quando abre
   useEffect(() => {
@@ -87,12 +92,9 @@ function EditItemModal({ item, open, onClose, onSaved }: {
             <Select value={categoriaId} onValueChange={setCategoriaId}>
               <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Vestuário</SelectItem>
-                <SelectItem value="2">Acessórios</SelectItem>
-                <SelectItem value="3">Material Escolar</SelectItem>
-                <SelectItem value="4">Eletrônicos</SelectItem>
-                <SelectItem value="5">Calçados</SelectItem>
-                <SelectItem value="6">Outros</SelectItem>
+                {categorias.map(c => (
+                  <SelectItem key={c.id} value={String(c.id)}>{c.nome}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -189,7 +191,6 @@ export function AvailableItems({ navigate }: Props) {
               <SelectItem value="Vestuário">Vestuário</SelectItem>
               <SelectItem value="Acessórios">Acessórios</SelectItem>
               <SelectItem value="Material Escolar">Material Escolar</SelectItem>
-              <SelectItem value="Eletrônicos">Eletrônicos</SelectItem>
               <SelectItem value="Calçados">Calçados</SelectItem>
               <SelectItem value="Outros">Outros</SelectItem>
             </SelectContent>
