@@ -133,7 +133,8 @@ export function RegisterItem({ navigate }: Props) {
 
   return (
     <AdminLayout current="register-item" navigate={navigate}>
-      <div className="mx-auto max-w-3xl space-y-5">
+      {/* Mesma largura das demais páginas: fotos e informações lado a lado no desktop */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[2fr_3fr] lg:items-start">
         <AdminPanel className="p-5">
           <h3 className="mb-3 text-base font-bold text-[#1C1917]">Fotos do item</h3>
           <div
@@ -249,19 +250,19 @@ export function RegisterItem({ navigate }: Props) {
           </div>
         </AdminPanel>
 
-        <div className="flex justify-end gap-3">
-                  {erro && (
-          <p className="rounded-xl bg-[#FFF1F2] px-4 py-3 text-sm text-[#C8102E]">{erro}</p>
-        )}
+        <div className="space-y-3 lg:col-span-2">
+          {erro && (
+            <p className="rounded-xl bg-[#FFF1F2] px-4 py-3 text-sm text-[#C8102E]">{erro}</p>
+          )}
 
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" className={adminBtnOutline} onClick={() => navigate('available-items')} disabled={salvando}>
-            Cancelar
-          </Button>
-          <Button className={adminBtnPrimary} onClick={cadastrar} disabled={salvando}>
-            {salvando ? 'Cadastrando...' : 'Cadastrar item'}
-          </Button>
-        </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" className={adminBtnOutline} onClick={() => navigate('available-items')} disabled={salvando}>
+              Cancelar
+            </Button>
+            <Button className={adminBtnPrimary} onClick={cadastrar} disabled={salvando}>
+              {salvando ? 'Cadastrando...' : 'Cadastrar item'}
+            </Button>
+          </div>
         </div>
       </div>
     </AdminLayout>
