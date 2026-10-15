@@ -2,10 +2,8 @@
 // Inicialização do Sentry (monitoramento de erros em produção).
 // Carregado antes de qualquer outro módulo, via flag --import.
 // =====================================================================
+import "./src/config/env.js";
 import * as Sentry from "@sentry/node";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 // Só ativa se o DSN estiver configurado — em desenvolvimento local
 // sem a variável, o Sentry simplesmente não envia nada.

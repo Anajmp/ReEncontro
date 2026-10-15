@@ -1,11 +1,9 @@
 // =====================================================================
 // Ponto de entrada — sobe o servidor
 // =====================================================================
-import app from './app.js';
-import { testConnection } from './config/database.js';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import "./config/env.js";
+import app from "./app.js";
+import { testConnection } from "./config/database.js";
 
 const PORT = process.env.PORT || 3000;
 

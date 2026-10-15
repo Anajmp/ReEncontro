@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, type MouseEvent } from 'react';
 import {
-  Search, MapPin, Calendar, Check, X, SlidersHorizontal, ListFilter, Glasses, Key,
+  Search, MapPin, Calendar, Check, ListFilter, Glasses, Key,
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -8,7 +8,7 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { StatusBadge } from './shared/StatusBadge';
-import { itensApi, reivindicacoesApi, alunosApi,referenciasApi } from '../../lib/api';
+import { itensApi, reivindicacoesApi, alunosApi, referenciasApi } from '../../lib/api';
 import type { Item } from './shared/data';
 import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
@@ -376,8 +376,6 @@ function ItemCard({
 
       <div className="flex flex-1 flex-col p-4">
         <span
-          className="mb-2.5 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
-
           className="mb-2 inline-flex w-fit max-w-full items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold sm:mb-2.5 sm:px-2.5 sm:py-1 sm:text-[11px]"
           style={{ backgroundColor: cfg.bg, color: cfg.color }}
         >
@@ -435,7 +433,6 @@ export function PublicListing({ navigate }: Props) {
   const routerNavigate = useNavigate();
   const { playCadastroTransition } = useLoginSplash();
 
-
   useEffect(() => {
     referenciasApi.categorias().then(setCategorias).catch(console.error);
   }, []);
@@ -448,32 +445,37 @@ export function PublicListing({ navigate }: Props) {
   }, []);
 
   const itensIndexados = useMemo(
-  () =>
-    items.map(item => ({
-      item,
-      texto: [item.name, item.description, item.location].join('\n').toLowerCase(),
-      dataIso: dataParaIso(item.date),
-    })),
-  [items]
-);
+    () =>
+      items.map(item => ({
+        item,
+        texto: [item.name, item.description, item.location].join('\n').toLowerCase(),
+        dataIso: dataParaIso(item.date),
+      })),
+    [items]
+  );
 
-const filtered = useMemo(() => {
-  const q = search.trim().toLowerCase();
-  return itensIndexados
-    .filter(({ item, texto, dataIso }) =>
-      (!q || texto.includes(q)) &&
-      (category === 'all' || item.category === category) &&
-      (!dataFiltro || dataIso === dataFiltro)
-    )
-    .sort((a, b) => {
-      if (ordem === 'nome') return a.item.name.localeCompare(b.item.name, 'pt-BR');
-      // Itens sem data vão sempre para o final
-      if (!a.dataIso || !b.dataIso) return Number(!a.dataIso) - Number(!b.dataIso);
-      const cmp = a.dataIso.localeCompare(b.dataIso);
-      return ordem === 'recentes' ? -cmp : cmp;
-    })
-    .map(({ item }) => item);
-}, [itensIndexados, search, category, dataFiltro, ordem]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return itensIndexados
+      .filter(({ item, texto, dataIso }) =>
+        (!q || texto.includes(q)) &&
+        (category === 'all' || item.category === category) &&
+        (!dataFiltro || dataIso === dataFiltro)
+      )
+      .sort((a, b) => {
+        if (ordem === 'nome') return a.item.name.localeCompare(b.item.name, 'pt-BR');
+        // Itens sem data vão sempre para o final
+        if (!a.dataIso || !b.dataIso) return Number(!a.dataIso) - Number(!b.dataIso);
+        const cmp = a.dataIso.localeCompare(b.dataIso);
+        return ordem === 'recentes' ? -cmp : cmp;
+      })
+      .map(({ item }) => item);
+  }, [itensIndexados, search, category, dataFiltro, ordem]);
+
+  const disponiveis = useMemo(
+    () => items.filter(i => i.status === 'Disponível').length,
+    [items]
+  );
 
   const temFiltro = Boolean(search || dataFiltro || category !== 'all');
 
@@ -483,14 +485,7 @@ const filtered = useMemo(() => {
     setCategory('all');
   }
 
-  const disponiveis = useMemo(
-  () => items.filter(i => i.status === 'Disponível').length,
-  [items]
-);
-
   return (
-    <div className="relative min-h-screen bg-[#F5F3F0] pb-24" style={FONT}>
-
     <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#F5F3F0]" style={FONT}>
       <SiteHeader navigate={navigate} />
 
@@ -526,7 +521,7 @@ const filtered = useMemo(() => {
           />
         </div>
 
-                <div className="mb-7 flex flex-wrap gap-2" role="tablist" aria-label="Categorias">
+        <div className="mb-7 flex flex-wrap gap-2" role="tablist" aria-label="Categorias">
           {[{ id: 'all', label: 'Todas' }, ...categorias.map(c => ({ id: c.nome, label: c.nome }))].map(cat => {
             const ativo = category === cat.id;
             return (
@@ -576,6 +571,15 @@ const filtered = useMemo(() => {
             </div>
             <p className="mb-1 text-base font-bold text-[#1C1917]">Nenhum item encontrado</p>
             <p className="text-sm text-[#A8A29E]">Tente outro termo, categoria ou data.</p>
+            {temFiltro && (
+              <button
+                type="button"
+                onClick={limparFiltros}
+                className="mt-5 rounded-full border border-[#E7E5E4] bg-white px-4 py-1.5 text-sm font-semibold text-[#78716C] transition-colors hover:border-[#C8102E]/30 hover:text-[#C8102E]"
+              >
+                Limpar filtros
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -592,7 +596,6 @@ const filtered = useMemo(() => {
             ))}
           </div>
         )}
-
       </main>
 
       <SiteFooter />
@@ -607,6 +610,5 @@ const filtered = useMemo(() => {
         }}
       />
     </div>
-    
   );
 }
