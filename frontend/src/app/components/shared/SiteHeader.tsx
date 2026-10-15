@@ -37,12 +37,21 @@ const ABAS_RESPONSAVEL: { id: Screen; label: string; Icon: ElementType; ativa: (
   { id: 'parent-profile', label: 'Meu perfil', Icon: UserRound, ativa: p => p.startsWith('/responsavel/perfil') },
 ];
 
-/** Abas de navegação exibidas para o responsável logado. */
-function AbasResponsavel({ navigate }: { navigate: (s: Screen) => void }) {
+/**
+ * Abas de navegação exibidas para o responsável logado.
+ * `inline`: dentro da linha do header (telas médias+), com altura cheia
+ * para o sublinhado encostar na borda; senão, linha própria (celular).
+ */
+function AbasResponsavel({ navigate, inline = false }: { navigate: (s: Screen) => void; inline?: boolean }) {
   const { pathname } = useLocation();
 
   return (
-    <nav className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-3 scrollbar-hide sm:px-6" aria-label="Navegação do responsável">
+    <nav
+      className={inline
+        ? 'flex h-full items-stretch gap-1'
+        : 'mx-auto flex max-w-6xl gap-1 overflow-x-auto px-3 scrollbar-hide sm:px-6'}
+      aria-label="Navegação do responsável"
+    >
       {ABAS_RESPONSAVEL.map(({ id, label, Icon, ativa }) => {
         const ativo = ativa(pathname);
         return (
@@ -51,7 +60,7 @@ function AbasResponsavel({ navigate }: { navigate: (s: Screen) => void }) {
             type="button"
             onClick={() => navigate(id)}
             aria-current={ativo ? 'page' : undefined}
-            className={`relative flex shrink-0 items-center gap-2 px-3 py-3 text-sm font-semibold transition-colors ${
+            className={`relative flex shrink-0 items-center gap-2 px-3 text-sm font-semibold transition-colors ${inline ? '' : 'py-3'} ${
               ativo ? 'text-[#C8102E]' : 'text-[#78716C] hover:text-[#1C1917]'
             }`}
           >
@@ -73,18 +82,23 @@ export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
 
   return (
     <header className="sticky top-0 z-20 border-b border-[#E7E5E4] bg-white">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-5 sm:px-8">
+      {/* Três colunas (1fr · auto · 1fr): as abas ficam no centro exato do header */}
+      <div className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto] items-center gap-3 px-5 sm:px-8 md:grid-cols-[1fr_auto_1fr]">
         <button
           type="button"
           onClick={() => navigate('public-listing')}
-          className="min-w-0 text-left transition-opacity hover:opacity-80"
+          className="min-w-0 justify-self-start text-left transition-opacity hover:opacity-80"
           aria-label="Ir para a listagem"
         >
           <SiteLogo />
         </button>
 
+        <div className="hidden h-full md:block">
+          {ehResponsavel && <AbasResponsavel navigate={navigate} inline />}
+        </div>
+
         {usuario ? (
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2 justify-self-end">
             <button
               type="button"
               onClick={() => navigate(usuario.role === 'funcionaria' ? 'admin-dashboard' : 'parent-dashboard')}
@@ -114,7 +128,7 @@ export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
           <button
             type="button"
             onClick={playLoginTransition}
-            className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold text-[#78716C] transition-colors hover:bg-[#F5F3F0] hover:text-[#C8102E]"
+            className="flex items-center gap-2 justify-self-end rounded-full px-3.5 py-2 text-sm font-semibold text-[#78716C] transition-colors hover:bg-[#F5F3F0] hover:text-[#C8102E]"
           >
             <LogIn className="size-4" />
             Entrar
@@ -122,7 +136,7 @@ export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
         )}
       </div>
       {ehResponsavel && (
-        <div className="border-t border-[#F5F3F0]">
+        <div className="border-t border-[#F5F3F0] md:hidden">
           <AbasResponsavel navigate={navigate} />
         </div>
       )}
