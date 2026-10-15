@@ -3,6 +3,7 @@ import { Plus, Pencil, GraduationCap, FileText, User, Clock, ChevronDown } from 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { ParentLayout } from './shared/ParentLayout';
 import { ClaimCard, ParentInputField } from './shared/ParentChrome';
+import { BannerIlustracao, BOTAO_PRIMARIO, CARD, chipClasses, EstadoVazio, PageBanner } from './shared/PageBanner';
 import { myStudents } from './shared/data';
 import { reivindicacoesApi } from '../../lib/api';
 import type { Student } from './shared/data';
@@ -207,91 +208,102 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
   return (
     <ParentLayout current={current} navigate={navigate}>
       {!showStudents ? (
-        <div>
-          <div className="mb-6">
-            <h1 className="mb-1 text-xl font-extrabold text-[#1C1917]">Minhas Reivindicações</h1>
-            <p className="text-sm text-[#78716C]">Acompanhe o status dos seus pedidos de retirada.</p>
+        <>
+          <PageBanner
+            selo={`${currentClaims.length} ${currentClaims.length === 1 ? 'pedido em andamento' : 'pedidos em andamento'}`}
+            titulo="Minhas reivindicações"
+            ilustracao={<BannerIlustracao Icon={FileText} />}
+          >
+            Acompanhe o status dos seus pedidos de retirada. Assim que a equipe confirmar,
+            você recebe um e-mail com as instruções.
+          </PageBanner>
+
+          <div className={`mb-4 ${CARD}`}>
+            <div className="flex flex-nowrap gap-2" role="tablist" aria-label="Situação das reivindicações">
+              {([
+                { key: 'claims', label: 'Em andamento', count: currentClaims.length },
+                { key: 'history', label: 'Histórico', count: historyClaims.length },
+              ] as const).map(({ key, label, count }) => {
+                const ativo = claimsSubTab === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={ativo}
+                    onClick={() => setClaimsSubTab(key)}
+                    className={`flex items-center gap-2 ${chipClasses(ativo)}`}
+                  >
+                    {label}
+                    <span
+                      className={`rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
+                        ativo ? 'bg-white/25 text-white' : 'bg-[#F5F3F0] text-[#78716C]'
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="mb-6 flex w-fit gap-1 rounded-xl border border-[#E7E5E4] bg-white p-1">
-            {([
-              { key: 'claims', label: 'Em andamento', count: currentClaims.length },
-              { key: 'history', label: 'Histórico', count: historyClaims.length },
-            ] as const).map(({ key, label, count }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setClaimsSubTab(key)}
-                className={`flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-150 ${
-                  claimsSubTab === key
-                    ? 'bg-[#C8102E] text-white shadow-sm'
-                    : 'text-[#78716C] hover:text-[#1C1917]'
-                }`}
-              >
-                {label}
-                <span
-                  className={`rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
-                    claimsSubTab === key ? 'bg-white/25 text-white' : 'bg-[#F5F3F0] text-[#78716C]'
-                  }`}
-                >
-                  {count}
-                </span>
-              </button>
-            ))}
-          </div>
+          <p className="mb-5 text-sm text-[#78716C]">
+            {claimsList.length} {claimsList.length === 1 ? 'reivindicação' : 'reivindicações'}
+          </p>
 
           {claimsList.length > 0 ? (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 sm:gap-5 lg:grid-cols-2">
               {claimsList.map(claim => (
                 <ClaimCard key={claim.id} claim={claim} />
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#E7E5E4] bg-white py-20 text-center">
-              <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-[#FEE2E2]">
-                <FileText size={24} strokeWidth={1.4} className="text-[#C8102E]" />
-              </div>
-              <p className="mb-1.5 font-bold text-[#1C1917]">Nenhuma reivindicação aqui</p>
-              <p className="mb-6 max-w-xs text-sm leading-relaxed text-[#A8A29E]">
-                {claimsSubTab === 'history'
-                  ? 'Seu histórico de reivindicações aparecerá aqui.'
-                  : 'Você não tem reivindicações em andamento. Acesse a listagem de itens para iniciar uma.'}
-              </p>
-              {claimsSubTab !== 'history' && (
-                <button
-                  type="button"
-                  onClick={() => navigate('public-listing')}
-                  className="rounded-xl bg-[#C8102E] px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#A50D26] active:scale-[0.98]"
-                >
+            <EstadoVazio
+              Icon={FileText}
+              titulo="Nenhuma reivindicação aqui"
+              acao={claimsSubTab !== 'history' && (
+                <button type="button" onClick={() => navigate('public-listing')} className={BOTAO_PRIMARIO}>
                   Ver itens disponíveis
                 </button>
               )}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div>
-          <div className="mb-6 flex items-start justify-between gap-4">
-            <div>
-              <h1 className="mb-1 text-xl font-extrabold text-[#1C1917]">Meus Alunos</h1>
-              <p className="text-sm text-[#78716C]">Alunos vinculados à sua conta.</p>
-            </div>
-            <button
-              type="button"
-              className="flex shrink-0 items-center gap-2 rounded-xl bg-[#C8102E] px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#A50D26] active:scale-[0.98]"
-              onClick={() => { setEditingStudent(undefined); setModalOpen(true); }}
             >
-              <Plus size={15} strokeWidth={2.2} />
-              Adicionar aluno
-            </button>
-          </div>
+              {claimsSubTab === 'history'
+                ? 'Seu histórico de reivindicações aparecerá aqui.'
+                : 'Você não tem reivindicações em andamento. Acesse a listagem de itens para iniciar uma.'}
+            </EstadoVazio>
+          )}
+        </>
+      ) : (
+        <>
+          <PageBanner
+            selo={`${myStudents.length} ${myStudents.length === 1 ? 'aluno vinculado' : 'alunos vinculados'}`}
+            titulo="Meus alunos"
+            ilustracao={<BannerIlustracao Icon={GraduationCap} />}
+            acao={
+              <button
+                type="button"
+                className={BOTAO_PRIMARIO}
+                onClick={() => { setEditingStudent(undefined); setModalOpen(true); }}
+              >
+                <Plus size={15} strokeWidth={2.2} />
+                Adicionar aluno
+              </button>
+            }
+          >
+            Cadastre os alunos da sua família para preencher as reivindicações mais rápido.
+          </PageBanner>
+
+          <p className="mb-5 text-sm text-[#78716C]">
+            {myStudents.length} {myStudents.length === 1 ? 'aluno cadastrado' : 'alunos cadastrados'}
+          </p>
 
           {myStudents.length > 0 ? (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
               {myStudents.map(student => (
                 <div
                   key={student.id}
-                  className="flex items-center gap-4 rounded-2xl border border-black/[0.05] bg-white p-4 shadow-sm"
+                  className="flex items-center gap-4 rounded-2xl border border-black/[0.05] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:p-5"
                 >
                   <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FEE2E2]">
                     <span className="text-sm font-extrabold text-[#C8102E]">{studentInitials(student.name)}</span>
@@ -316,8 +328,8 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
                   </div>
                   <button
                     type="button"
-                    className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#F5F3F0] text-[#78716C] transition-colors hover:bg-[#EDE9E4]"
-                    aria-label="Editar aluno"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#F5F3F0] text-[#78716C] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
+                    aria-label={`Editar ${student.name}`}
                     onClick={() => { setEditingStudent(student); setModalOpen(true); }}
                   >
                     <Pencil size={13} strokeWidth={1.8} />
@@ -326,27 +338,26 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#E7E5E4] bg-white py-20 text-center">
-              <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-[#FEE2E2]">
-                <GraduationCap size={24} strokeWidth={1.4} className="text-[#C8102E]" />
-              </div>
-              <p className="mb-1.5 font-bold text-[#1C1917]">Nenhum aluno cadastrado</p>
-              <p className="mb-6 max-w-xs text-sm text-[#A8A29E]">
-                Adicione os alunos da sua família para gerenciar reivindicações.
-              </p>
-              <button
-                type="button"
-                onClick={() => { setEditingStudent(undefined); setModalOpen(true); }}
-                className="rounded-xl bg-[#C8102E] px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#A50D26] active:scale-[0.98]"
-              >
-                Adicionar primeiro aluno
-              </button>
-            </div>
+            <EstadoVazio
+              Icon={GraduationCap}
+              titulo="Nenhum aluno cadastrado"
+              acao={
+                <button
+                  type="button"
+                  onClick={() => { setEditingStudent(undefined); setModalOpen(true); }}
+                  className={BOTAO_PRIMARIO}
+                >
+                  Adicionar primeiro aluno
+                </button>
+              }
+            >
+              Adicione os alunos da sua família para gerenciar reivindicações.
+            </EstadoVazio>
           )}
-        </div>
+        </>
       )}
 
-            <StudentModal
+      <StudentModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         student={editingStudent}

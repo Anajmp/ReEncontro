@@ -14,6 +14,7 @@ import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { getUsuario } from '../../lib/auth';
 import { SiteFooter, SiteHeader } from './shared/SiteHeader';
+import { PageBanner } from './shared/PageBanner';
 import { getCatConfig } from './shared/AdminChrome';
 
 interface Props {
@@ -496,32 +497,16 @@ const filtered = useMemo(() => {
       <SiteHeader navigate={navigate} />
 
       <main className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-8 sm:py-8">
-        <div className="relative mb-5 overflow-hidden rounded-2xl border sm:mb-8 sm:rounded-3xl border-black/[0.05] bg-white shadow-sm">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{ background: 'linear-gradient(to left, rgba(254,226,226,0.4) 0%, transparent 55%)' }}
-          />
-          <div className="relative flex items-center justify-between gap-6 px-5 py-5 sm:px-8 sm:py-7">
-            <div className="min-w-0 flex-1">
-              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] sm:mb-4 px-3 py-1 text-xs font-bold text-[#C8102E]">
-                <span className="size-1.5 animate-pulse rounded-full bg-[#C8102E]" />
-                {loading
-                  ? 'Carregando itens…'
-                  : `${disponiveis} ${disponiveis === 1 ? 'item disponível' : 'itens disponíveis'}`}
-              </div>
-              <h1 className="mb-2 text-xl font-extrabold sm:text-2xl leading-tight text-[#1C1917]">
-                Encontrou algo que é seu?
-              </h1>
-              <p className="max-w-sm text-sm leading-relaxed text-[#78716C]">
-                Aqui estão todos os itens encontrados no SESI Nova Odessa. Reconheceu algo? Clique em{' '}
-                <span className="font-bold text-[#C8102E]">“É meu!”</span> para iniciar a reivindicação.
-              </p>
-            </div>
-            <div className="hidden md:block">
-              <WelcomeIllustration />
-            </div>
-          </div>
-        </div>
+        <PageBanner
+          selo={loading
+            ? 'Carregando itens…'
+            : `${disponiveis} ${disponiveis === 1 ? 'item disponível' : 'itens disponíveis'}`}
+          titulo="Encontrou algo que é seu?"
+          ilustracao={<WelcomeIllustration />}
+        >
+          Aqui estão todos os itens encontrados no SESI Nova Odessa. Reconheceu algo? Clique em{' '}
+          <span className="font-bold text-[#C8102E]">“É meu!”</span> para iniciar a reivindicação.
+        </PageBanner>
 
         <div className="mb-4 rounded-2xl border border-black/[0.05] bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row">

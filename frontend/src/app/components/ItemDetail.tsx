@@ -140,7 +140,7 @@ export function ItemDetail({ navigate }: Props) {
     <div className="flex min-h-screen flex-col bg-[#F5F3F0]" style={FONT}>
       <SiteHeader navigate={navigate} />
 
-      <main className="relative z-10 mx-auto w-full max-w-5xl flex-1 px-4 py-5 sm:px-8 sm:py-8">
+      <main className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-8 sm:py-8">
         <button
           onClick={() => navigate('public-listing')}
           className="mb-6 flex items-center gap-2 text-sm text-[#78716C] transition-colors hover:text-[#1C1917]"
