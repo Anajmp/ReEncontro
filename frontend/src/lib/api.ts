@@ -177,10 +177,28 @@ function traduzirItemFinalizado(i: any) {
   
 }
 
+async function buscarItensDisponiveis() {
+  const dados = await request('/api/itens');
+  return dados.map(traduzirItem);   // traduz cada item
+}
+
+// A tela de carregamento já dispara a busca da listagem; a primeira chamada
+// de itensApi.listar() reaproveita essa mesma requisição em vez de refazer.
+let listagemPrefetch: Promise<any[]> | null = null;
+
+export function prefetchListagem() {
+  if (!listagemPrefetch) listagemPrefetch = buscarItensDisponiveis();
+  return listagemPrefetch;
+}
+
 export const itensApi = {
-  async listar() {
-    const dados = await request('/api/itens');
-    return dados.map(traduzirItem);   // traduz cada item
+  listar() {
+    if (listagemPrefetch) {
+      const emAndamento = listagemPrefetch;
+      listagemPrefetch = null;
+      return emAndamento;
+    }
+    return buscarItensDisponiveis();
   },
   async detalhe(id: number) {
     const dado = await request(`/api/itens/${id}`);
@@ -389,6 +407,27 @@ export const usuariosApi = {
 // ===== RELATÓRIOS =====
 export const relatoriosApi = {
   gerar: (dias: number) => request(`/api/relatorios?dias=${dias}`),
+
+  async dashboard() {
+    const dados = await request('/api/relatorios/dashboard');
+    const statusMap: Record<string, string> = {
+      pendente: 'Pendente',
+      aprovada: 'Em Processo',
+    };
+    return {
+      ...dados,
+      reivindicacoes_recentes: dados.reivindicacoes_recentes.map((r: any) => ({
+        id: r.id,
+        itemName: r.item_nome,
+        itemImage: r.item_foto || 'https://via.placeholder.com/200?text=Sem+foto',
+        claimantName: r.nome_requerente,
+        studentName: r.nome_aluno,
+        room: r.sala_aluno,
+        date: r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '',
+        status: statusMap[r.status] || r.status,
+      })),
+    };
+  },
 };
 
 // ===== LGPD =====

@@ -8,7 +8,7 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { StatusBadge } from './shared/StatusBadge';
-import { SiteHeader } from './shared/SiteHeader';
+import { SiteFooter, SiteHeader } from './shared/SiteHeader';
 import type { Screen } from '../App';
 
 const FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
@@ -137,10 +137,10 @@ export function ItemDetail({ navigate }: Props) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F5F3F0] pb-24" style={FONT}>
+    <div className="flex min-h-screen flex-col bg-[#F5F3F0]" style={FONT}>
       <SiteHeader navigate={navigate} />
 
-      <main className="relative z-10 mx-auto max-w-5xl px-5 py-8 sm:px-8">
+      <main className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-8 sm:py-8">
         <button
           onClick={() => navigate('public-listing')}
           className="mb-6 flex items-center gap-2 text-sm text-[#78716C] transition-colors hover:text-[#1C1917]"
@@ -220,6 +220,8 @@ export function ItemDetail({ navigate }: Props) {
           </div>
         </div>
       </main>
+
+      <SiteFooter />
 
       <ClaimModal open={claimOpen} onClose={() => setClaimOpen(false)} itemName={item.name} />
     </div>

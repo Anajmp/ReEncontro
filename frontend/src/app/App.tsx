@@ -100,9 +100,9 @@ export default function App() {
           <Route path="/admin/pendentes" element={<RotaProtegida role="funcionaria"><PendingClaims navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin/em-processo" element={<RotaProtegida role="funcionaria"><InProcess navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin/finalizados" element={<RotaProtegida role="funcionaria"><Finalized navigate={navigate} /></RotaProtegida>} />
-          <Route path="/admin/relatorios" element={<RotaProtegida role="funcionaria"><Reports navigate={navigate} /></RotaProtegida>} />
-          <Route path="/admin/funcionarias" element={<RotaProtegida role="funcionaria"><StaffManagement navigate={navigate} /></RotaProtegida>} />
-          <Route path="/admin/privacidade" element={<Lgpd navigate={navigate} />} />
+          <Route path="/admin/relatorios" element={<RotaProtegida role="funcionaria" apenasDiretora><Reports navigate={navigate} /></RotaProtegida>} />
+          <Route path="/admin/funcionarias" element={<RotaProtegida role="funcionaria" apenasDiretora><StaffManagement navigate={navigate} /></RotaProtegida>} />
+          <Route path="/admin/privacidade" element={<RotaProtegida role="funcionaria" apenasDiretora><Lgpd navigate={navigate} /></RotaProtegida>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { User, Mail, Phone, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, UserRound, Mail, Phone, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 import { ParentLayout } from './shared/ParentLayout';
 import { ParentInputField } from './shared/ParentChrome';
+import { BannerIlustracao, BOTAO_PRIMARIO, CARD, PageBanner } from './shared/PageBanner';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Screen } from '../App';
 import { AvatarPicker } from './shared/AvatarPicker';
@@ -78,21 +79,24 @@ export function ParentProfile({ navigate }: Props) {
 
   return (
     <ParentLayout current="parent-profile" navigate={navigate}>
-      <div className="max-w-xl">
-        <div className="mb-6">
-          <h1 className="mb-1 text-xl font-extrabold text-[#1C1917]">Meu Perfil</h1>
-          <p className="text-sm text-[#78716C]">Gerencie seus dados e senha de acesso.</p>
-        </div>
+      <PageBanner
+        selo="Conta de responsável"
+        titulo={`Olá, ${(nome || usuario?.nome || '').split(' ')[0] || 'responsável'}!`}
+        ilustracao={<BannerIlustracao Icon={UserRound} />}
+      >
+        Gerencie seus dados de contato, escolha seu personagem e altere a senha de acesso.
+      </PageBanner>
 
-        <div className="mb-4 rounded-2xl border border-black/[0.05] bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-center gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
+        <section className={CARD}>
+          <div className="mb-5 flex items-center gap-4">
             <UserAvatar
               usuario={usuario ? { ...usuario, avatar_seed: avatarSeed || usuario.avatar_seed } : null}
               size={56}
             />
-            <div>
-              <p className="font-extrabold text-[#1C1917]">{nome || '—'}</p>
-              <p className="text-sm text-[#78716C]">{email}</p>
+            <div className="min-w-0">
+              <p className="truncate font-extrabold text-[#1C1917]">{nome || '—'}</p>
+              <p className="truncate text-sm text-[#78716C]">{email}</p>
             </div>
           </div>
 
@@ -127,32 +131,20 @@ export function ParentProfile({ navigate }: Props) {
                   Dados salvos com sucesso!
                 </div>
               )}
-              <button
-                type="submit"
-                className="w-full rounded-xl bg-[#C8102E] py-3 text-sm font-bold text-white transition-all hover:bg-[#A50D26] active:scale-[0.98]"
-              >
+              <button type="submit" className={`w-full ${BOTAO_PRIMARIO} py-3`}>
                 Salvar alterações
               </button>
             </div>
           </form>
-        </div>
+        </section>
 
-        <div className="mb-4 rounded-2xl border border-black/[0.05] bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-base font-bold text-[#1C1917]">Personagem</h3>
-          <AvatarPicker
-            seedAtual={avatarSeed}
-            onSelecionar={salvarAvatar}
-            salvando={salvandoAvatar}
-          />
-        </div>
-
-        <div className="rounded-2xl border border-black/[0.05] bg-white p-6 shadow-sm">
+        <section className={CARD}>
           <div className="mb-5 flex items-center gap-3">
             <div className="flex size-9 items-center justify-center rounded-xl bg-[#FEE2E2]">
               <Lock size={16} strokeWidth={1.7} className="text-[#C8102E]" />
             </div>
             <div>
-              <p className="text-sm font-bold text-[#1C1917]">Alterar senha</p>
+              <h2 className="text-sm font-bold text-[#1C1917]">Alterar senha</h2>
               <p className="text-xs text-[#A8A29E]">Escolha uma senha segura</p>
             </div>
           </div>
@@ -211,14 +203,20 @@ export function ParentProfile({ navigate }: Props) {
               </div>
             )}
 
-            <button
-              type="submit"
-              className="w-full rounded-xl bg-[#C8102E] py-3 text-sm font-bold text-white transition-all hover:bg-[#A50D26] active:scale-[0.98]"
-            >
+            <button type="submit" className={`w-full ${BOTAO_PRIMARIO} py-3`}>
               Alterar senha
             </button>
           </form>
-        </div>
+        </section>
+
+        <section className={`${CARD} lg:col-span-2`}>
+          <h2 className="mb-4 text-base font-bold text-[#1C1917]">Personagem</h2>
+          <AvatarPicker
+            seedAtual={avatarSeed}
+            onSelecionar={salvarAvatar}
+            salvando={salvandoAvatar}
+          />
+        </section>
       </div>
     </ParentLayout>
   );
