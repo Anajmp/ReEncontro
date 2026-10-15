@@ -24,16 +24,6 @@ const FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
 
 type Ordem = 'recentes' | 'antigos' | 'nome';
 
-const BANNER_OCULTO_KEY = 'reencontro:banner-oculto';
-
-function bannerFoiOcultado() {
-  try {
-    return localStorage.getItem(BANNER_OCULTO_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
 function WelcomeIllustration() {
   return (
     <svg width="210" height="148" viewBox="0 0 210 148" fill="none" aria-hidden className="flex-shrink-0">
@@ -447,16 +437,6 @@ export function PublicListing({ navigate }: Props) {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const routerNavigate = useNavigate();
-  const [bannerVisivel, setBannerVisivel] = useState(() => !bannerFoiOcultado());
-
-  function ocultarBanner() {
-    setBannerVisivel(false);
-    try {
-      localStorage.setItem(BANNER_OCULTO_KEY, '1');
-    } catch {
-      // sem localStorage (aba anônima etc.): oculta só nesta visita
-    }
-  }
 
 
   useEffect(() => {
@@ -490,6 +470,8 @@ const filtered = useMemo(() => {
     )
     .sort((a, b) => {
       if (ordem === 'nome') return a.item.name.localeCompare(b.item.name, 'pt-BR');
+      // Itens sem data vão sempre para o final
+      if (!a.dataIso || !b.dataIso) return Number(!a.dataIso) - Number(!b.dataIso);
       const cmp = a.dataIso.localeCompare(b.dataIso);
       return ordem === 'recentes' ? -cmp : cmp;
     })
@@ -514,21 +496,11 @@ const filtered = useMemo(() => {
       <SiteHeader navigate={navigate} />
 
       <main className="relative z-10 mx-auto max-w-6xl px-5 py-8 sm:px-8">
-        {bannerVisivel && (
         <div className="relative mb-8 overflow-hidden rounded-3xl border border-black/[0.05] bg-white shadow-sm">
           <div
             className="pointer-events-none absolute inset-0"
             style={{ background: 'linear-gradient(to left, rgba(254,226,226,0.4) 0%, transparent 55%)' }}
           />
-          <button
-            type="button"
-            onClick={ocultarBanner}
-            className="absolute top-3 right-3 z-10 flex size-8 items-center justify-center rounded-full text-[#78716C] transition-colors hover:bg-[#F5F3F0] hover:text-[#1C1917]"
-            aria-label="Ocultar mensagem de boas-vindas"
-            title="Ocultar"
-          >
-            <X className="size-4" strokeWidth={1.8} />
-          </button>
           <div className="relative flex items-center justify-between gap-6 px-5 py-6 sm:px-8 sm:py-7">
             <div className="min-w-0 flex-1">
               <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-bold text-[#C8102E]">
@@ -550,7 +522,6 @@ const filtered = useMemo(() => {
             </div>
           </div>
         </div>
-        )}
 
         <div className="mb-4 rounded-2xl border border-black/[0.05] bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row">
