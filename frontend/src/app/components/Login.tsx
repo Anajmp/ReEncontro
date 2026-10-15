@@ -11,6 +11,7 @@ import {
   AuthSubmitButton,
 } from './shared/AuthChrome';
 import { BotaoGoogle } from './shared/BotaoGoogle';
+import { useLoginSplash } from './LoginSplash';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -18,6 +19,7 @@ interface Props {
 
 export function Login({ navigate }: Props) {
   const { login, salvarSessao } = useAuth();
+  const { playCadastroTransition } = useLoginSplash();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -145,7 +147,7 @@ export function Login({ navigate }: Props) {
           <button
             type="button"
             className="font-bold text-[#C8102E] underline-offset-2 transition-colors hover:underline"
-            onClick={() => navigate('register')}
+            onClick={playCadastroTransition}
           >
             Criar conta
           </button>

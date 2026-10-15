@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type MouseEvent } from 'react';
 import {
   Search, MapPin, Calendar, Check, X, SlidersHorizontal, ListFilter, Glasses, Key,
 } from 'lucide-react';
@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { getUsuario } from '../../lib/auth';
 import { SiteFooter, SiteHeader } from './shared/SiteHeader';
 import { BannerIlustracao, PageBanner } from './shared/PageBanner';
+import { useLoginSplash } from './LoginSplash';
 import { getCatConfig } from './shared/AdminChrome';
 
 interface Props {
@@ -59,7 +60,7 @@ function ClaimModal({
   item: Item | null;
   open: boolean;
   onClose: () => void;
-  onCadastrar: () => void;
+  onCadastrar: (e: MouseEvent<HTMLButtonElement>) => void;
 }) {
   const usuario = getUsuario();
   const [submitted, setSubmitted] = useState(false);
@@ -431,6 +432,7 @@ export function PublicListing({ navigate }: Props) {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const routerNavigate = useNavigate();
+  const { playCadastroTransition } = useLoginSplash();
 
 
   useEffect(() => {
@@ -642,9 +644,9 @@ const filtered = useMemo(() => {
         item={selectedItem}
         open={claimOpen}
         onClose={() => setClaimOpen(false)}
-        onCadastrar={() => {
+        onCadastrar={e => {
           setClaimOpen(false);
-          navigate('register');
+          playCadastroTransition(e);
         }}
       />
     </div>
