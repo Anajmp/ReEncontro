@@ -13,7 +13,7 @@ import type { Item } from './shared/data';
 import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { getUsuario } from '../../lib/auth';
-import { SiteHeader } from './shared/SiteHeader';
+import { SiteFooter, SiteHeader } from './shared/SiteHeader';
 import { getCatConfig } from './shared/AdminChrome';
 
 interface Props {
@@ -492,24 +492,24 @@ const filtered = useMemo(() => {
 );
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#F5F3F0] pb-24" style={FONT}>
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#F5F3F0]" style={FONT}>
       <SiteHeader navigate={navigate} />
 
-      <main className="relative z-10 mx-auto max-w-6xl px-5 py-8 sm:px-8">
-        <div className="relative mb-8 overflow-hidden rounded-3xl border border-black/[0.05] bg-white shadow-sm">
+      <main className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-8 sm:py-8">
+        <div className="relative mb-5 overflow-hidden rounded-2xl border sm:mb-8 sm:rounded-3xl border-black/[0.05] bg-white shadow-sm">
           <div
             className="pointer-events-none absolute inset-0"
             style={{ background: 'linear-gradient(to left, rgba(254,226,226,0.4) 0%, transparent 55%)' }}
           />
-          <div className="relative flex items-center justify-between gap-6 px-5 py-6 sm:px-8 sm:py-7">
+          <div className="relative flex items-center justify-between gap-6 px-5 py-5 sm:px-8 sm:py-7">
             <div className="min-w-0 flex-1">
-              <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-bold text-[#C8102E]">
+              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] sm:mb-4 px-3 py-1 text-xs font-bold text-[#C8102E]">
                 <span className="size-1.5 animate-pulse rounded-full bg-[#C8102E]" />
                 {loading
                   ? 'Carregando itens…'
                   : `${disponiveis} ${disponiveis === 1 ? 'item disponível' : 'itens disponíveis'}`}
               </div>
-              <h1 className="mb-2 text-2xl font-extrabold leading-tight text-[#1C1917]">
+              <h1 className="mb-2 text-xl font-extrabold sm:text-2xl leading-tight text-[#1C1917]">
                 Encontrou algo que é seu?
               </h1>
               <p className="max-w-sm text-sm leading-relaxed text-[#78716C]">
@@ -529,7 +529,7 @@ const filtered = useMemo(() => {
               <Search className="pointer-events-none absolute top-1/2 left-3.5 size-[17px] -translate-y-1/2 text-[#A8A29E]" strokeWidth={1.8} />
               <Input
                 className="h-11 rounded-xl border-[#E7E5E4] bg-white pr-10 pl-10 text-[#1C1917] placeholder:text-[#A8A29E] focus-visible:border-[#C8102E] focus-visible:ring-[#C8102E]/20"
-                placeholder="Buscar por nome, descrição ou local"
+                placeholder="Buscar por nome ou local"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 aria-label="Buscar itens"
@@ -571,8 +571,8 @@ const filtered = useMemo(() => {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="-mx-4 overflow-x-auto px-4 scrollbar-hide sm:mx-0 sm:overflow-visible sm:px-0">
+          <div className="mt-4 flex items-center gap-2 sm:justify-between sm:gap-3">
+            <div className="-ml-4 min-w-0 flex-1 overflow-x-auto pl-4 scrollbar-hide sm:ml-0 sm:overflow-visible sm:pl-0">
               <div className="flex flex-nowrap gap-2 sm:flex-wrap" role="tablist" aria-label="Categorias">
                 {[{ id: 'all', label: 'Todos' }, ...categorias.map(c => ({ id: c.nome, label: c.nome }))].map(cat => {
                   const ativo = category === cat.id;
@@ -599,10 +599,12 @@ const filtered = useMemo(() => {
               type="button"
               onClick={limparFiltros}
               disabled={!temFiltro}
-              className="flex shrink-0 items-center gap-2 self-end rounded-lg px-2 py-1.5 text-sm font-medium text-[#57534E] transition-colors hover:text-[#C8102E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#57534E] sm:self-auto"
+              className="flex size-9 shrink-0 items-center justify-center gap-2 rounded-full border border-[#E7E5E4] text-sm font-medium text-[#57534E] transition-colors hover:text-[#C8102E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#57534E] sm:size-auto sm:rounded-lg sm:border-0 sm:px-2 sm:py-1.5"
+              aria-label="Limpar filtros"
+              title="Limpar filtros"
             >
               <SlidersHorizontal className="size-4" strokeWidth={1.8} />
-              Limpar filtros
+              <span className="hidden sm:inline">Limpar filtros</span>
             </button>
           </div>
         </div>
@@ -625,7 +627,7 @@ const filtered = useMemo(() => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {Array.from({ length: 8 }, (_, i) => (
               <CardEsqueleto key={i} />
             ))}
@@ -639,7 +641,7 @@ const filtered = useMemo(() => {
             <p className="text-sm text-[#A8A29E]">Tente outro termo, categoria ou data.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {filtered.map(item => (
               <ItemCard
                 key={item.id}
@@ -654,12 +656,9 @@ const filtered = useMemo(() => {
           </div>
         )}
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-[#E7E5E4] pt-5 text-xs text-[#A8A29E] sm:flex-row">
-          <span className="font-medium">ReEncontro — Sistema de Achados e Perdidos · SESI Nova Odessa</span>
-          <span>Dúvidas? Procure a inspetora na recepção.</span>
-        </div>
-        
       </main>
+
+      <SiteFooter />
 
       <ClaimModal
         item={selectedItem}
