@@ -391,7 +391,7 @@ function ItemCard({
 
       <div className="flex flex-1 flex-col p-3 sm:p-4">
         <span
-          className="mb-2 inline-flex w-fit items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold sm:mb-2.5 sm:px-2 sm:text-[11px]"
+          className="mb-2 inline-flex w-fit max-w-full items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold sm:mb-2.5 sm:px-2.5 sm:py-1 sm:text-[11px]"
           style={{ backgroundColor: cfg.bg, color: cfg.color }}
         >
           <CatIcon size={10} strokeWidth={2} className="sm:hidden" />
@@ -447,6 +447,16 @@ export function PublicListing({ navigate }: Props) {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const routerNavigate = useNavigate();
+  const [bannerVisivel, setBannerVisivel] = useState(() => !bannerFoiOcultado());
+
+  function ocultarBanner() {
+    setBannerVisivel(false);
+    try {
+      localStorage.setItem(BANNER_OCULTO_KEY, '1');
+    } catch {
+      // sem localStorage (aba anônima etc.): oculta só nesta visita
+    }
+  }
 
 
   useEffect(() => {
@@ -504,12 +514,22 @@ const filtered = useMemo(() => {
       <SiteHeader navigate={navigate} />
 
       <main className="relative z-10 mx-auto max-w-6xl px-5 py-8 sm:px-8">
+        {bannerVisivel && (
         <div className="relative mb-8 overflow-hidden rounded-3xl border border-black/[0.05] bg-white shadow-sm">
           <div
             className="pointer-events-none absolute inset-0"
             style={{ background: 'linear-gradient(to left, rgba(254,226,226,0.4) 0%, transparent 55%)' }}
           />
-          <div className="relative flex items-center justify-between gap-6 px-8 py-7">
+          <button
+            type="button"
+            onClick={ocultarBanner}
+            className="absolute top-3 right-3 z-10 flex size-8 items-center justify-center rounded-full text-[#78716C] transition-colors hover:bg-[#F5F3F0] hover:text-[#1C1917]"
+            aria-label="Ocultar mensagem de boas-vindas"
+            title="Ocultar"
+          >
+            <X className="size-4" strokeWidth={1.8} />
+          </button>
+          <div className="relative flex items-center justify-between gap-6 px-5 py-6 sm:px-8 sm:py-7">
             <div className="min-w-0 flex-1">
               <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-bold text-[#C8102E]">
                 <span className="size-1.5 animate-pulse rounded-full bg-[#C8102E]" />
@@ -529,8 +549,8 @@ const filtered = useMemo(() => {
               <WelcomeIllustration />
             </div>
           </div>
-          
         </div>
+        )}
 
         <div className="mb-4 rounded-2xl border border-black/[0.05] bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -555,14 +575,28 @@ const filtered = useMemo(() => {
               )}
             </div>
             <div className="relative w-full sm:w-60">
-              <Calendar className="pointer-events-none absolute top-1/2 left-3.5 size-[17px] -translate-y-1/2 text-[#A8A29E]" strokeWidth={1.8} />
+              <Calendar className="pointer-events-none absolute top-1/2 left-3.5 z-10 size-[17px] -translate-y-1/2 text-[#A8A29E]" strokeWidth={1.8} />
+              {/* O ícone nativo do calendário fica invisível cobrindo o campo todo:
+                  clicar em qualquer ponto abre o seletor, e o visual segue o da busca */}
               <Input
                 type="date"
-                className="h-11 w-full rounded-xl border-[#E7E5E4] bg-white pl-10 text-[#1C1917] focus-visible:border-[#C8102E] focus-visible:ring-[#C8102E]/20"
+                className={`relative h-11 w-full rounded-xl border-[#E7E5E4] bg-white pr-10 pl-10 focus-visible:border-[#C8102E] focus-visible:ring-[#C8102E]/20 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 ${
+                  dataFiltro ? 'text-[#1C1917]' : 'text-[#A8A29E]'
+                }`}
                 value={dataFiltro}
                 onChange={e => setDataFiltro(e.target.value)}
-                aria-label="Filtrar por data"
+                aria-label="Filtrar por data em que o item foi encontrado"
               />
+              {dataFiltro && (
+                <button
+                  type="button"
+                  onClick={() => setDataFiltro('')}
+                  className="absolute top-1/2 right-3 z-10 flex size-6 -translate-y-1/2 items-center justify-center rounded-full text-[#78716C] transition-colors hover:bg-[#F5F3F0] hover:text-[#1C1917]"
+                  aria-label="Limpar data"
+                >
+                  <X className="size-4" strokeWidth={1.8} />
+                </button>
+              )}
             </div>
           </div>
 
