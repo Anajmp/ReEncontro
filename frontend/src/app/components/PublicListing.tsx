@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  Search, MapPin, Calendar, Check,
-  BookOpen, Shirt, Watch, Package, Footprints,
+  Search, MapPin, Calendar, Check, X, SlidersHorizontal, ListFilter,
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -15,6 +14,7 @@ import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { getUsuario } from '../../lib/auth';
 import { SiteHeader } from './shared/SiteHeader';
+import { getCatConfig } from './shared/AdminChrome';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -22,25 +22,16 @@ interface Props {
 
 const FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
 
-const CAT_CONFIG: Record<string, { color: string; bg: string; Icon: typeof BookOpen }> = {
-  'Material Escolar': { color: '#D97706', bg: '#FEF3C7', Icon: BookOpen },
-  'Vestuário': { color: '#059669', bg: '#D1FAE5', Icon: Shirt },
-  'Acessórios': { color: '#7C3AED', bg: '#EDE9FE', Icon: Watch },
-  'Calçados': { color: '#B45309', bg: '#FEF9C3', Icon: Footprints },
-  'Outros': { color: '#B45309', bg: '#FEF9C3', Icon: Package },
-};
+type Ordem = 'recentes' | 'antigos' | 'nome';
 
-const CATEGORIAS = [
-  { id: 'all', label: 'Todos' },
-  { id: 'Material Escolar', label: 'Material Escolar' },
-  { id: 'Vestuário', label: 'Vestuário' },
-  { id: 'Acessórios', label: 'Acessórios' },
-  { id: 'Calçados', label: 'Calçados' },
-  { id: 'Outros', label: 'Outros' },
-];
+const BANNER_OCULTO_KEY = 'reencontro:banner-oculto';
 
-function getCatConfig(category: string) {
-  return CAT_CONFIG[category] ?? { color: '#78716C', bg: '#F5F5F4', Icon: Package };
+function bannerFoiOcultado() {
+  try {
+    return localStorage.getItem(BANNER_OCULTO_KEY) === '1';
+  } catch {
+    return false;
+  }
 }
 
 function WelcomeIllustration() {
@@ -452,6 +443,7 @@ export function PublicListing({ navigate }: Props) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [dataFiltro, setDataFiltro] = useState('');
+  const [ordem, setOrdem] = useState<Ordem>('recentes');
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const routerNavigate = useNavigate();
@@ -486,8 +478,21 @@ const filtered = useMemo(() => {
       (category === 'all' || item.category === category) &&
       (!dataFiltro || dataIso === dataFiltro)
     )
+    .sort((a, b) => {
+      if (ordem === 'nome') return a.item.name.localeCompare(b.item.name, 'pt-BR');
+      const cmp = a.dataIso.localeCompare(b.dataIso);
+      return ordem === 'recentes' ? -cmp : cmp;
+    })
     .map(({ item }) => item);
-}, [itensIndexados, search, category, dataFiltro]);
+}, [itensIndexados, search, category, dataFiltro, ordem]);
+
+  const temFiltro = Boolean(search || dataFiltro || category !== 'all');
+
+  function limparFiltros() {
+    setSearch('');
+    setDataFiltro('');
+    setCategory('all');
+  }
 
   const disponiveis = useMemo(
   () => items.filter(i => i.status === 'Disponível').length,
@@ -508,7 +513,9 @@ const filtered = useMemo(() => {
             <div className="min-w-0 flex-1">
               <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-bold text-[#C8102E]">
                 <span className="size-1.5 animate-pulse rounded-full bg-[#C8102E]" />
-                {loading ? 'Carregando itens…' : `${disponiveis} itens disponíveis`}
+                {loading
+                  ? 'Carregando itens…'
+                  : `${disponiveis} ${disponiveis === 1 ? 'item disponível' : 'itens disponíveis'}`}
               </div>
               <h1 className="mb-2 text-2xl font-extrabold leading-tight text-[#1C1917]">
                 Encontrou algo que é seu?
@@ -525,55 +532,92 @@ const filtered = useMemo(() => {
           
         </div>
 
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row">
-          <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-3.5 size-[15px] -translate-y-1/2 text-[#A8A29E]" strokeWidth={1.8} />
-            <Input
-              className="h-11 rounded-xl border-[#E7E5E4] bg-white pl-10 text-[#1C1917] placeholder:text-[#C4BFBA] focus-visible:border-[#C8102E] focus-visible:ring-[#C8102E]/20"
-              placeholder="Buscar por nome, descrição ou local"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              aria-label="Buscar itens"
-            />
+        <div className="mb-4 rounded-2xl border border-black/[0.05] bg-white p-4 shadow-sm sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute top-1/2 left-3.5 size-[17px] -translate-y-1/2 text-[#A8A29E]" strokeWidth={1.8} />
+              <Input
+                className="h-11 rounded-xl border-[#E7E5E4] bg-white pr-10 pl-10 text-[#1C1917] placeholder:text-[#A8A29E] focus-visible:border-[#C8102E] focus-visible:ring-[#C8102E]/20"
+                placeholder="Buscar por nome, descrição ou local"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                aria-label="Buscar itens"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="absolute top-1/2 right-3 flex size-6 -translate-y-1/2 items-center justify-center rounded-full text-[#78716C] transition-colors hover:bg-[#F5F3F0] hover:text-[#1C1917]"
+                  aria-label="Limpar busca"
+                >
+                  <X className="size-4" strokeWidth={1.8} />
+                </button>
+              )}
+            </div>
+            <div className="relative w-full sm:w-60">
+              <Calendar className="pointer-events-none absolute top-1/2 left-3.5 size-[17px] -translate-y-1/2 text-[#A8A29E]" strokeWidth={1.8} />
+              <Input
+                type="date"
+                className="h-11 w-full rounded-xl border-[#E7E5E4] bg-white pl-10 text-[#1C1917] focus-visible:border-[#C8102E] focus-visible:ring-[#C8102E]/20"
+                value={dataFiltro}
+                onChange={e => setDataFiltro(e.target.value)}
+                aria-label="Filtrar por data"
+              />
+            </div>
           </div>
-          <Input
-            type="date"
-            className="h-11 w-full rounded-xl border-[#E7E5E4] bg-white sm:w-44"
-            value={dataFiltro}
-            onChange={e => setDataFiltro(e.target.value)}
-            aria-label="Filtrar por data"
-          />
+
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="-mx-4 overflow-x-auto px-4 scrollbar-hide sm:mx-0 sm:overflow-visible sm:px-0">
+              <div className="flex flex-nowrap gap-2 sm:flex-wrap" role="tablist" aria-label="Categorias">
+                {[{ id: 'all', label: 'Todos' }, ...categorias.map(c => ({ id: c.nome, label: c.nome }))].map(cat => {
+                  const ativo = category === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={ativo}
+                      onClick={() => setCategory(cat.id)}
+                      className={`shrink-0 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-150 ${
+                        ativo
+                          ? 'bg-[#C8102E] text-white shadow-sm shadow-[#C8102E]/20'
+                          : 'border border-[#E7E5E4] bg-white text-[#57534E] hover:border-[#C8102E]/30 hover:text-[#C8102E]'
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={limparFiltros}
+              disabled={!temFiltro}
+              className="flex shrink-0 items-center gap-2 self-end rounded-lg px-2 py-1.5 text-sm font-medium text-[#57534E] transition-colors hover:text-[#C8102E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#57534E] sm:self-auto"
+            >
+              <SlidersHorizontal className="size-4" strokeWidth={1.8} />
+              Limpar filtros
+            </button>
+          </div>
         </div>
 
-                <div className="-mx-5 mb-7 overflow-x-auto px-5 scrollbar-hide sm:mx-0 sm:overflow-visible sm:px-0">
-          <div className="flex flex-nowrap gap-2 sm:flex-wrap" role="tablist" aria-label="Categorias">
-          {[{ id: 'all', label: 'Todas' }, ...categorias.map(c => ({ id: c.nome, label: c.nome }))].map(cat => {
-            const ativo = category === cat.id;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setCategory(cat.id)}
-                className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-150 ${
-                  ativo
-                    ? 'bg-[#C8102E] text-white shadow-sm shadow-[#C8102E]/20'
-                    : 'border border-[#E7E5E4] bg-white text-[#78716C] hover:border-[#C8102E]/30 hover:text-[#C8102E]'
-                }`}
-              >
-                {cat.label}
-              </button>
-            );
-          })}
-          </div>
-        </div>
-
-        {!loading && (
-          <p className="mb-5 text-xs text-[#A8A29E]">
-            {filtered.length} {filtered.length === 1 ? 'item' : 'itens'}
-            {category !== 'all' ? ` em “${category}”` : ''}
-            {search.trim() ? ` para “${search}”` : ''}
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <p className="text-sm text-[#78716C]">
+            {loading ? 'Carregando…' : `${filtered.length} ${filtered.length === 1 ? 'item encontrado' : 'itens encontrados'}`}
           </p>
-        )}
+          <Select value={ordem} onValueChange={v => setOrdem(v as Ordem)}>
+            <SelectTrigger className="h-10 w-auto gap-2 rounded-xl border-[#E7E5E4] bg-white px-3.5 text-sm font-medium text-[#1C1917] shadow-sm" aria-label="Ordenar itens">
+              <ListFilter className="size-4 text-[#78716C]" strokeWidth={1.8} />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recentes">Mais recentes</SelectItem>
+              <SelectItem value="antigos">Mais antigos</SelectItem>
+              <SelectItem value="nome">Nome (A–Z)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {loading ? (
           <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">

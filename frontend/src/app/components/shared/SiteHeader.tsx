@@ -1,4 +1,6 @@
-import { LogIn, LogOut } from 'lucide-react';
+import type { ElementType } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Home, LogIn, LogOut, Package, UserRound } from 'lucide-react';
 import type { Screen } from '../../App';
 import { getUsuario, logout } from '../../../lib/auth';
 import { useLoginSplash } from '../LoginSplash';
@@ -29,10 +31,45 @@ export function SiteLogo() {
   );
 }
 
+const ABAS_RESPONSAVEL: { id: Screen; label: string; Icon: ElementType; ativa: (path: string) => boolean }[] = [
+  { id: 'public-listing', label: 'Início', Icon: Home, ativa: p => p === '/' || p.startsWith('/item') },
+  { id: 'parent-dashboard', label: 'Meus pedidos', Icon: Package, ativa: p => p.startsWith('/responsavel/reivindicacoes') || p.startsWith('/responsavel/alunos') },
+  { id: 'parent-profile', label: 'Meu perfil', Icon: UserRound, ativa: p => p.startsWith('/responsavel/perfil') },
+];
+
+/** Abas de navegação exibidas para o responsável logado. */
+function AbasResponsavel({ navigate }: { navigate: (s: Screen) => void }) {
+  const { pathname } = useLocation();
+
+  return (
+    <nav className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-3 scrollbar-hide sm:px-6" aria-label="Navegação do responsável">
+      {ABAS_RESPONSAVEL.map(({ id, label, Icon, ativa }) => {
+        const ativo = ativa(pathname);
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={() => navigate(id)}
+            aria-current={ativo ? 'page' : undefined}
+            className={`relative flex shrink-0 items-center gap-2 px-3 py-3 text-sm font-semibold transition-colors ${
+              ativo ? 'text-[#C8102E]' : 'text-[#78716C] hover:text-[#1C1917]'
+            }`}
+          >
+            <Icon className="size-[18px]" strokeWidth={ativo ? 2.2 : 1.7} fill={ativo && id === 'public-listing' ? 'currentColor' : 'none'} />
+            {label}
+            {ativo && <span className="absolute inset-x-2 bottom-0 h-[3px] rounded-t-full bg-[#C8102E]" />}
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
 /** Header público compartilhado (listagem e detalhe do item). */
 export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
   const usuario = getUsuario();
   const { playLoginTransition } = useLoginSplash();
+  const ehResponsavel = usuario?.role === 'responsavel';
 
   return (
     <header className="sticky top-0 z-20 border-b border-[#E7E5E4] bg-white">
@@ -84,6 +121,11 @@ export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
           </button>
         )}
       </div>
+      {ehResponsavel && (
+        <div className="border-t border-[#F5F3F0]">
+          <AbasResponsavel navigate={navigate} />
+        </div>
+      )}
     </header>
   );
 }
