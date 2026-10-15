@@ -8,24 +8,51 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { LupaMarca } from './LupaMarca';
 import { ADMIN_FONT, PAGE_INFO } from './AdminChrome';
 import { UserAvatar } from './UserAvatar';
+import { BannerIlustracao, PageBanner } from './PageBanner';
 
-const NAV_ITEMS: {
-  id: Screen;
-  label: string;
-  Icon: ElementType;
-  adminOnly?: boolean;
-}[] = [
-  { id: 'public-listing', label: 'Ver site público', Icon: Globe },
-  { id: 'admin-dashboard', label: 'Dashboard', Icon: LayoutDashboard },
-  { id: 'register-item', label: 'Cadastrar Item', Icon: PlusCircle },
-  { id: 'available-items', label: 'Itens Disponíveis', Icon: Archive },
-  { id: 'pending-claims', label: 'Pendentes', Icon: Clock },
-  { id: 'in-process', label: 'Em Processo', Icon: RefreshCw },
-  { id: 'finalized', label: 'Finalizados', Icon: CheckCircle2 },
-  { id: 'reports', label: 'Relatórios', Icon: BarChart2 },
-  { id: 'staff-management', label: 'Gestão de Funcionárias', Icon: Users, adminOnly: true },
-  { id: 'lgpd', label: 'Privacidade (LGPD)', Icon: ShieldAlert },
-];
+type NavItem = { id: Screen; label: string; Icon: ElementType };
+type NavSecao = { titulo?: string; itens: NavItem[] };
+
+const SITE: NavSecao = {
+  itens: [{ id: 'public-listing', label: 'Ver site público', Icon: Globe }],
+};
+
+const OPERACAO: NavSecao = {
+  titulo: 'Operação',
+  itens: [
+    { id: 'admin-dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+    { id: 'register-item', label: 'Cadastrar Item', Icon: PlusCircle },
+    { id: 'available-items', label: 'Itens Disponíveis', Icon: Archive },
+    { id: 'pending-claims', label: 'Pendentes', Icon: Clock },
+    { id: 'in-process', label: 'Em Processo', Icon: RefreshCw },
+    { id: 'finalized', label: 'Finalizados', Icon: CheckCircle2 },
+  ],
+};
+
+const GESTAO: NavSecao = {
+  titulo: 'Gestão',
+  itens: [
+    { id: 'reports', label: 'Relatórios', Icon: BarChart2 },
+    { id: 'staff-management', label: 'Gestão de Funcionárias', Icon: Users },
+    { id: 'lgpd', label: 'Privacidade (LGPD)', Icon: ShieldAlert },
+  ],
+};
+
+/** Cada perfil tem o seu sidebar: a diretora vê também a seção de gestão. */
+const PERFIS = {
+  diretora: { rotulo: 'Diretora', painel: 'Painel da Diretora', secoes: [SITE, OPERACAO, GESTAO] },
+  inspetora: { rotulo: 'Inspetora', painel: 'Painel da Inspetora', secoes: [SITE, OPERACAO] },
+} as const;
+
+type Perfil = (typeof PERFIS)[keyof typeof PERFIS];
+
+function iconeDaTela(tela: Screen): ElementType {
+  for (const secao of [OPERACAO, GESTAO]) {
+    const item = secao.itens.find(i => i.id === tela);
+    if (item) return item.Icon;
+  }
+  return LayoutDashboard;
+}
 
 interface Props {
   children: ReactNode;
@@ -33,63 +60,38 @@ interface Props {
   navigate: (s: Screen) => void;
 }
 
-function AdminLogo() {
+function AdminLogo({ painel }: { painel: string }) {
   return (
     <div className="flex items-center gap-2.5">
       <LupaMarca size={32} />
       <div>
-        <p className="text-[1rem] font-bold leading-tight tracking-tight text-[#1C1917]">
+        <p className="text-[1rem] leading-tight font-bold tracking-tight text-[#1C1917]">
           Re<span className="text-[#C8102E]">Encontro</span>
         </p>
-        <p className="-mt-0.5 text-[10px] font-medium leading-none text-[#78716C]">Painel Administrativo</p>
+        <p className="-mt-0.5 text-[10px] leading-none font-medium text-[#78716C]">{painel}</p>
       </div>
     </div>
   );
 }
 
-function AdminHeader({
-  current,
-  onMenuClick,
-  usuario,
-}: {
-  current: Screen;
-  onMenuClick: () => void;
-  usuario: { nome?: string; email?: string; role?: string; avatar_seed?: string } | null;
-}) {
-  const info = PAGE_INFO[current] ?? { title: 'Admin', subtitle: '' };
+function SeloPerfil({ perfil, ehDiretora }: { perfil: Perfil; ehDiretora: boolean }) {
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-[#E7E5E4] bg-white px-6 py-4">
-      <div className="flex min-w-0 items-center gap-4">
-        <button
-          type="button"
-          onClick={onMenuClick}
-          className="flex size-8 items-center justify-center rounded-lg text-[#78716C] transition-colors hover:text-[#C8102E] lg:hidden"
-          aria-label="Abrir menu"
-        >
-          <Menu size={18} strokeWidth={1.8} />
-        </button>
-        <div className="min-w-0">
-          <h1 className="truncate text-lg font-extrabold leading-tight text-[#1C1917]">{info.title}</h1>
-          {info.subtitle ? (
-            <p className="hidden truncate text-xs text-[#78716C] sm:block">{info.subtitle}</p>
-          ) : null}
-        </div>
-      </div>
-      <div className="flex shrink-0 items-center gap-3">
-        <div className="hidden text-right sm:block">
-          <p className="max-w-[160px] truncate text-sm font-semibold text-[#1C1917]">{usuario?.nome ?? '—'}</p>
-          <p className="max-w-[160px] truncate text-xs text-[#78716C]">{usuario?.email ?? ''}</p>
-        </div>
-        <UserAvatar usuario={usuario} size={36} />
-      </div>
-    </header>
+    <span
+      className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+        ehDiretora ? 'bg-[#FEE2E2] text-[#C8102E]' : 'bg-[#F5F3F0] text-[#57534E]'
+      }`}
+    >
+      {perfil.rotulo}
+    </span>
   );
 }
 
 export function AdminLayout({ children, current, navigate }: Props) {
   const { usuario, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const isDirectora = Boolean(usuario?.is_diretora);
+  const ehDiretora = Boolean(usuario?.is_diretora);
+  const perfil: Perfil = ehDiretora ? PERFIS.diretora : PERFIS.inspetora;
+  const info = PAGE_INFO[current] ?? { title: 'Admin', subtitle: '' };
 
   function fecharMenu() {
     setSidebarOpen(false);
@@ -138,9 +140,10 @@ export function AdminLayout({ children, current, navigate }: Props) {
         className={`fixed top-0 left-0 z-30 flex h-full w-[270px] flex-col border-r border-[#E7E5E4] bg-white transition-transform duration-300 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0`}
+        aria-label={perfil.painel}
       >
-        <div className="flex items-center justify-between border-b border-[#E7E5E4] px-5 py-5">
-          <AdminLogo />
+        <div className="flex h-16 items-center justify-between border-b border-[#E7E5E4] px-5">
+          <AdminLogo painel={perfil.painel} />
           <button
             type="button"
             onClick={fecharMenu}
@@ -152,32 +155,39 @@ export function AdminLayout({ children, current, navigate }: Props) {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-3">
-          {NAV_ITEMS.map(({ id, label, Icon, adminOnly }) => {
-            if (adminOnly && !isDirectora) return null;
-            const isActive = current === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => irPara(id)}
-                className={`relative mb-0.5 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all duration-150 ${
-                  isActive
-                    ? 'bg-[#FEE2E2] text-[#C8102E]'
-                    : 'text-[#1C1917] hover:bg-[#F5F3F0]'
-                }`}
-              >
-                <Icon
-                  size={17}
-                  strokeWidth={isActive ? 2 : 1.7}
-                  className={isActive ? 'text-[#C8102E]' : 'text-[#78716C]'}
-                />
-                <span className="flex-1">{label}</span>
-                {isActive && (
-                  <div className="absolute top-1/2 right-0 h-6 w-1 -translate-y-1/2 rounded-l-full bg-[#C8102E]" />
-                )}
-              </button>
-            );
-          })}
+          {perfil.secoes.map((secao, i) => (
+            <div key={secao.titulo ?? i} className={i > 0 ? 'mt-4' : ''}>
+              {secao.titulo && (
+                <p className="mb-1.5 px-3 text-[10px] font-bold tracking-wider text-[#A8A29E] uppercase">
+                  {secao.titulo}
+                </p>
+              )}
+              {secao.itens.map(({ id, label, Icon }) => {
+                const ativo = current === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => irPara(id)}
+                    aria-current={ativo ? 'page' : undefined}
+                    className={`relative mb-0.5 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all duration-150 ${
+                      ativo ? 'bg-[#FEE2E2] text-[#C8102E]' : 'text-[#1C1917] hover:bg-[#F5F3F0]'
+                    }`}
+                  >
+                    <Icon
+                      size={17}
+                      strokeWidth={ativo ? 2 : 1.7}
+                      className={ativo ? 'text-[#C8102E]' : 'text-[#78716C]'}
+                    />
+                    <span className="flex-1">{label}</span>
+                    {ativo && (
+                      <div className="absolute top-1/2 right-0 h-6 w-1 -translate-y-1/2 rounded-l-full bg-[#C8102E]" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         <div className="border-t border-[#E7E5E4] p-4">
@@ -185,13 +195,14 @@ export function AdminLayout({ children, current, navigate }: Props) {
             <UserAvatar usuario={usuario} size={38} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-[#1C1917]">{usuario?.nome ?? '—'}</p>
-              <p className="truncate text-xs text-[#78716C]">{usuario?.email ?? ''}</p>
+              <SeloPerfil perfil={perfil} ehDiretora={ehDiretora} />
             </div>
             <button
               type="button"
               onClick={sair}
               className="flex size-8 items-center justify-center rounded-lg text-[#A8A29E] transition-all hover:bg-[#FEE2E2] hover:text-[#C8102E]"
               title="Sair"
+              aria-label="Sair"
             >
               <LogOut size={15} strokeWidth={1.8} />
             </button>
@@ -199,13 +210,43 @@ export function AdminLayout({ children, current, navigate }: Props) {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col lg:ml-[270px]">
-        <AdminHeader
-          current={current}
-          onMenuClick={() => setSidebarOpen(true)}
-          usuario={usuario}
-        />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-5 sm:p-7">{children}</main>
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:ml-[270px]">
+        <header className="sticky top-0 z-20 border-b border-[#E7E5E4] bg-white">
+          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-8">
+            <div className="flex min-w-0 items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="flex size-9 items-center justify-center rounded-xl bg-[#F5F3F0] text-[#78716C] transition-colors hover:text-[#C8102E] lg:hidden"
+                aria-label="Abrir menu"
+              >
+                <Menu size={18} strokeWidth={1.8} />
+              </button>
+              <p className="truncate text-sm text-[#78716C]">
+                <span className="hidden sm:inline">{perfil.painel} · </span>
+                <span className="font-semibold text-[#1C1917]">{info.title}</span>
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-3">
+              <div className="hidden text-right sm:block">
+                <p className="max-w-[160px] truncate text-sm font-semibold text-[#1C1917]">{usuario?.nome ?? '—'}</p>
+                <p className="max-w-[160px] truncate text-xs text-[#78716C]">{usuario?.email ?? ''}</p>
+              </div>
+              <UserAvatar usuario={usuario} size={36} />
+            </div>
+          </div>
+        </header>
+
+        <main className="mx-auto w-full max-w-6xl flex-1 overflow-x-hidden px-4 py-5 sm:px-8 sm:py-8">
+          <PageBanner
+            selo={perfil.painel}
+            titulo={info.title}
+            ilustracao={<BannerIlustracao Icon={iconeDaTela(current)} />}
+          >
+            {info.subtitle}
+          </PageBanner>
+          {children}
+        </main>
       </div>
     </div>
   );

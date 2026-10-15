@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type MouseEvent } from 'react';
 import {
-  Search, MapPin, Calendar, Check,
-  BookOpen, Shirt, Watch, Headphones, Package, Footprints,
+  Search, MapPin, Calendar, Check, X, SlidersHorizontal, ListFilter, Glasses, Key,
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -14,7 +13,10 @@ import type { Item } from './shared/data';
 import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { getUsuario } from '../../lib/auth';
-import { SiteHeader } from './shared/SiteHeader';
+import { SiteFooter, SiteHeader } from './shared/SiteHeader';
+import { BannerIlustracao, PageBanner } from './shared/PageBanner';
+import { useLoginSplash } from './LoginSplash';
+import { getCatConfig } from './shared/AdminChrome';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -22,51 +24,23 @@ interface Props {
 
 const FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
 
-const CAT_CONFIG: Record<string, { color: string; bg: string; Icon: typeof BookOpen }> = {
-  'Material Escolar': { color: '#D97706', bg: '#FEF3C7', Icon: BookOpen },
-  'Vestuário': { color: '#059669', bg: '#D1FAE5', Icon: Shirt },
-  'Acessórios': { color: '#7C3AED', bg: '#EDE9FE', Icon: Watch },
-  'Eletrônicos': { color: '#4F46E5', bg: '#E0E7FF', Icon: Headphones },
-  'Calçados': { color: '#B45309', bg: '#FEF9C3', Icon: Footprints },
-  'Outros': { color: '#B45309', bg: '#FEF9C3', Icon: Package },
-};
+type Ordem = 'recentes' | 'antigos' | 'nome';
 
-const CATEGORIAS = [
-  { id: 'all', label: 'Todos' },
-  { id: 'Material Escolar', label: 'Material Escolar' },
-  { id: 'Vestuário', label: 'Vestuário' },
-  { id: 'Acessórios', label: 'Acessórios' },
-  { id: 'Eletrônicos', label: 'Eletrônicos' },
-  { id: 'Calçados', label: 'Calçados' },
-  { id: 'Outros', label: 'Outros' },
-];
-
-function getCatConfig(category: string) {
-  return CAT_CONFIG[category] ?? { color: '#78716C', bg: '#F5F5F4', Icon: Package };
-}
-
+// Lupa da tela de carregamento "encontrando" uma chave e uns óculos
 function WelcomeIllustration() {
+  const oculos = getCatConfig('Acessório');
+  const chave = getCatConfig('Outros');
   return (
-    <svg width="210" height="148" viewBox="0 0 210 148" fill="none" aria-hidden className="flex-shrink-0">
-      <ellipse cx="105" cy="74" rx="94" ry="66" fill="#FEE2E2" fillOpacity="0.45" />
-      <ellipse cx="112" cy="68" rx="58" ry="44" fill="#FEE2E2" fillOpacity="0.28" />
-      <path d="M122 106 L152 136" stroke="#C8102E" strokeWidth="3.2" strokeLinecap="round" />
-      <circle cx="88" cy="71" r="43" fill="white" fillOpacity="0.84" />
-      <circle cx="88" cy="71" r="43" stroke="#C8102E" strokeWidth="2.4" fill="none" />
-      <circle cx="74" cy="59" r="10.5" stroke="#9CA3AF" strokeWidth="1.8" fill="none" />
-      <path d="M83 59 H103" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M99 59 V65.5" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M93 59 V64.5" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" />
-      <circle cx="76" cy="86" r="10" stroke="#9CA3AF" strokeWidth="1.6" fill="none" />
-      <circle cx="98" cy="86" r="10" stroke="#9CA3AF" strokeWidth="1.6" fill="none" />
-      <path d="M86 86 H88" stroke="#9CA3AF" strokeWidth="1.6" />
-      <path d="M66 82 L61.5 81" stroke="#9CA3AF" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M108 82 L112.5 81" stroke="#9CA3AF" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M28 27 L30.8 18.5 L33.5 27 L42 29.8 L33.5 32.5 L30.8 41 L28 32.5 L19.5 29.8Z" fill="#C8102E" fillOpacity="0.17" />
-      <path d="M170 40 L172 35 L174 40 L179 42 L174 44 L172 49 L170 44 L165 42Z" fill="#C8102E" fillOpacity="0.14" />
-      <circle cx="46" cy="122" r="5.5" fill="#FCA5A5" fillOpacity="0.52" />
-      <circle cx="174" cy="117" r="3.8" fill="#FCA5A5" fillOpacity="0.44" />
-    </svg>
+    <BannerIlustracao>
+      <g transform="translate(-12 -12) rotate(-12)">
+        <circle r="17" fill={oculos.bg} />
+        <Glasses x={-11} y={-11} width={22} height={22} color={oculos.color} strokeWidth={1.8} />
+      </g>
+      <g transform="translate(14 14) rotate(14)">
+        <circle r="15" fill={chave.bg} />
+        <Key x={-10} y={-10} width={20} height={20} color={chave.color} strokeWidth={1.8} />
+      </g>
+    </BannerIlustracao>
   );
 }
 
@@ -86,7 +60,7 @@ function ClaimModal({
   item: Item | null;
   open: boolean;
   onClose: () => void;
-  onCadastrar: () => void;
+  onCadastrar: (e: MouseEvent<HTMLButtonElement>) => void;
 }) {
   const usuario = getUsuario();
   const [submitted, setSubmitted] = useState(false);
@@ -403,6 +377,8 @@ function ItemCard({
       <div className="flex flex-1 flex-col p-4">
         <span
           className="mb-2.5 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+
+          className="mb-2 inline-flex w-fit max-w-full items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold sm:mb-2.5 sm:px-2.5 sm:py-1 sm:text-[11px]"
           style={{ backgroundColor: cfg.bg, color: cfg.color }}
         >
           <CatIcon size={11} strokeWidth={2} />
@@ -453,9 +429,11 @@ export function PublicListing({ navigate }: Props) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [dataFiltro, setDataFiltro] = useState('');
+  const [ordem, setOrdem] = useState<Ordem>('recentes');
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const routerNavigate = useNavigate();
+  const { playCadastroTransition } = useLoginSplash();
 
 
   useEffect(() => {
@@ -487,8 +465,23 @@ const filtered = useMemo(() => {
       (category === 'all' || item.category === category) &&
       (!dataFiltro || dataIso === dataFiltro)
     )
+    .sort((a, b) => {
+      if (ordem === 'nome') return a.item.name.localeCompare(b.item.name, 'pt-BR');
+      // Itens sem data vão sempre para o final
+      if (!a.dataIso || !b.dataIso) return Number(!a.dataIso) - Number(!b.dataIso);
+      const cmp = a.dataIso.localeCompare(b.dataIso);
+      return ordem === 'recentes' ? -cmp : cmp;
+    })
     .map(({ item }) => item);
-}, [itensIndexados, search, category, dataFiltro]);
+}, [itensIndexados, search, category, dataFiltro, ordem]);
+
+  const temFiltro = Boolean(search || dataFiltro || category !== 'all');
+
+  function limparFiltros() {
+    setSearch('');
+    setDataFiltro('');
+    setCategory('all');
+  }
 
   const disponiveis = useMemo(
   () => items.filter(i => i.status === 'Disponível').length,
@@ -497,34 +490,21 @@ const filtered = useMemo(() => {
 
   return (
     <div className="relative min-h-screen bg-[#F5F3F0] pb-24" style={FONT}>
+
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#F5F3F0]" style={FONT}>
       <SiteHeader navigate={navigate} />
 
-      <main className="relative z-10 mx-auto max-w-6xl px-5 py-8 sm:px-8">
-        <div className="relative mb-8 overflow-hidden rounded-3xl border border-black/[0.05] bg-white shadow-sm">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{ background: 'linear-gradient(to left, rgba(254,226,226,0.4) 0%, transparent 55%)' }}
-          />
-          <div className="relative flex items-center justify-between gap-6 px-8 py-7">
-            <div className="min-w-0 flex-1">
-              <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-bold text-[#C8102E]">
-                <span className="size-1.5 animate-pulse rounded-full bg-[#C8102E]" />
-                {loading ? 'Carregando itens…' : `${disponiveis} itens disponíveis`}
-              </div>
-              <h1 className="mb-2 text-2xl font-extrabold leading-tight text-[#1C1917]">
-                Encontrou algo que é seu?
-              </h1>
-              <p className="max-w-sm text-sm leading-relaxed text-[#78716C]">
-                Aqui estão todos os itens encontrados no SESI Nova Odessa. Reconheceu algo? Clique em{' '}
-                <span className="font-bold text-[#C8102E]">“É meu!”</span> para iniciar a reivindicação.
-              </p>
-            </div>
-            <div className="hidden md:block">
-              <WelcomeIllustration />
-            </div>
-          </div>
-          
-        </div>
+      <main className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-8 sm:py-8">
+        <PageBanner
+          selo={loading
+            ? 'Carregando itens…'
+            : `${disponiveis} ${disponiveis === 1 ? 'item disponível' : 'itens disponíveis'}`}
+          titulo="Encontrou algo que é seu?"
+          ilustracao={<WelcomeIllustration />}
+        >
+          Aqui estão todos os itens encontrados no SESI Nova Odessa. Reconheceu algo? Clique em{' '}
+          <span className="font-bold text-[#C8102E]">“É meu!”</span> para iniciar a reivindicação.
+        </PageBanner>
 
         <div className="mb-4 flex flex-col gap-3 sm:flex-row">
           <div className="relative min-w-0 flex-1">
@@ -566,13 +546,22 @@ const filtered = useMemo(() => {
           })}
         </div>
 
-        {!loading && (
-          <p className="mb-5 text-xs text-[#A8A29E]">
-            {filtered.length} {filtered.length === 1 ? 'item' : 'itens'}
-            {category !== 'all' ? ` em “${category}”` : ''}
-            {search.trim() ? ` para “${search}”` : ''}
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <p className="text-sm text-[#78716C]">
+            {loading ? 'Carregando…' : `${filtered.length} ${filtered.length === 1 ? 'item encontrado' : 'itens encontrados'}`}
           </p>
-        )}
+          <Select value={ordem} onValueChange={v => setOrdem(v as Ordem)}>
+            <SelectTrigger className="h-10 w-auto gap-2 rounded-xl border-[#E7E5E4] bg-white px-3.5 text-sm font-medium text-[#1C1917] shadow-sm" aria-label="Ordenar itens">
+              <ListFilter className="size-4 text-[#78716C]" strokeWidth={1.8} />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recentes">Mais recentes</SelectItem>
+              <SelectItem value="antigos">Mais antigos</SelectItem>
+              <SelectItem value="nome">Nome (A–Z)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {loading ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -604,22 +593,20 @@ const filtered = useMemo(() => {
           </div>
         )}
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-[#E7E5E4] pt-5 text-xs text-[#A8A29E] sm:flex-row">
-          <span className="font-medium">ReEncontro — Sistema de Achados e Perdidos · SESI Nova Odessa</span>
-          <span>Dúvidas? Procure a inspetora na recepção.</span>
-        </div>
-        
       </main>
+
+      <SiteFooter />
 
       <ClaimModal
         item={selectedItem}
         open={claimOpen}
         onClose={() => setClaimOpen(false)}
-        onCadastrar={() => {
+        onCadastrar={e => {
           setClaimOpen(false);
-          navigate('register');
+          playCadastroTransition(e);
         }}
       />
     </div>
+    
   );
 }
