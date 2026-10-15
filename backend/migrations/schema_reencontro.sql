@@ -26,7 +26,7 @@ CREATE TABLE users (
   id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
   nome                VARCHAR(120)  NOT NULL,
   email               VARCHAR(160)  NOT NULL UNIQUE,
-  senha_hash          VARCHAR(255)  NOT NULL,                  -- bcrypt
+  senha_hash          VARCHAR(255)  NULL,                  -- bcrypt
   telefone            VARCHAR(20)   NULL,                      -- opcional (RN-008)
   role                ENUM('responsavel','funcionaria') NOT NULL,
   is_diretora         BOOLEAN       NOT NULL DEFAULT FALSE,    -- só funcionária pode ser TRUE
@@ -35,10 +35,14 @@ CREATE TABLE users (
   ultimo_login_em     DATETIME      NULL,
   created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  google_id           VARCHAR(60)   NULL,
+  avatar_seed         VARCHAR(60)   NULL,
+  cadastro_completo   BOOLEAN       NOT NULL DEFAULT TRUE,
 
   INDEX idx_users_role  (role),
   INDEX idx_users_ativo (ativo),
-  INDEX idx_users_email (email)
+  INDEX idx_users_email (email),
+  INDEX idx_users_google (google_id),
 ) ENGINE=InnoDB;
 
 
@@ -107,7 +111,7 @@ CREATE TABLE pontos_coleta (
 -- ---------------------------------------------------------------------
 CREATE TABLE itens (
   id                      BIGINT AUTO_INCREMENT PRIMARY KEY,
-  nome                    VARCHAR(120)  NOT NULL,              -- título curto exibido na listagem
+  nome                    VARCHAR(120)  NULL,              -- título curto exibido na listagem
   descricao               TEXT          NOT NULL,
   categoria_id            BIGINT        NOT NULL,
   local_encontrado        VARCHAR(120)  NOT NULL,              -- texto livre: "Pátio", "Sala 5B"

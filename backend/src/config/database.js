@@ -1,40 +1,11 @@
-// =====================================================================
-// Pool de conexões MySQL (mysql2)
-// IMPORTANTE: use sempre db.execute() com placeholders (?) nas queries.
-// Nunca concatene strings — isso previne SQL injection.
-// =====================================================================
-import mysql from "mysql2/promise";
-import dotenv from "dotenv";
+// Mantido para compatibilidade — a implementação real está em database/Database.js
+import Database from '../database/Database.js';
 
-dotenv.config();
+export const db = Database.getInstance().getPool();
 
-export const db = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  charset: "utf8mb4",
-  // SSL só quando necessário (Aiven exige; MySQL local não usa)
-  ssl:
-    process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : undefined,
-});
-
+/** Testa a conexão com o banco (usado na inicialização do servidor). */
 export async function testConnection() {
-  try {
-    const conn = await db.getConnection();
-    console.log("Conectado ao MySQL");
-    conn.release();
-  } catch (err) {
-    console.error('Erro ao conectar no MySQL:');
-    console.error('  code:', err.code);
-    console.error('  errno:', err.errno);
-    console.error('  message:', err.message);
-    console.error('  sqlState:', err.sqlState);
-    console.error(err);
-    process.exit(1);
-  }
+  return Database.getInstance().testarConexao();
 }
+
+export { Database };

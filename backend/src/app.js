@@ -1,13 +1,14 @@
 // =====================================================================
 // Configuração da aplicação Express
 // =====================================================================
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import dotenv from 'dotenv';
-import routes from './routes/index.js';
-import { errorMiddleware } from './middlewares/errorMiddleware.js';
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
+import dotenv from "dotenv";
+import routes from "./routes/index.js";
+import { errorMiddleware } from "./middlewares/errorMiddleware.js";
+import * as Sentry from "@sentry/node";
 
 dotenv.config();
 
@@ -21,13 +22,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Healthcheck (para monitoramento)
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 // Todas as rotas da API ficam sob /api
-app.use('/api', routes);
+app.use("/api", routes);
 
+Sentry.setupExpressErrorHandler(app);
 // Tratamento central de erros (sempre por último)
 app.use(errorMiddleware);
 

@@ -119,4 +119,24 @@ export const emailTemplates = {
       `),
     };
   },
+
+    // Aviso interno para a equipe quando chega uma nova reivindicação
+  novaReivindicacaoParaEquipe({ descricaoItem, nomeRequerente, nomeAluno, salaAluno, periodoAluno }) {
+    return {
+      assunto: `Nova reivindicação: ${descricaoItem}`,
+      html: base(`
+        <p>Uma nova reivindicação foi registrada e aguarda análise.</p>
+        <div style="background: #F5F3F0; border-radius: 8px; padding: 14px; margin: 16px 0;">
+          <p style="margin: 0; font-size: 15px;"><strong>${descricaoItem}</strong></p>
+          <p style="margin: 10px 0 0; font-size: 13px; color: #78716C;">
+            Solicitado por: <strong>${nomeRequerente}</strong><br>
+            Aluno(a): ${nomeAluno} · ${salaAluno} · ${periodoAluno}
+          </p>
+        </div>
+        <p style="font-size: 13px; color: #78716C;">
+          Acesse a aba <strong>Pendentes</strong> no painel para aprovar ou rejeitar a solicitação.
+        </p>
+      `),
+    };
+  },
 };

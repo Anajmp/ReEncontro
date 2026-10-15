@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, forwardRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import type { Screen } from '../App';
@@ -42,6 +42,7 @@ export function Login({ navigate }: Props) {
     } finally {
       setCarregando(false);
     }
+
   }
 
   return (
@@ -77,6 +78,7 @@ export function Login({ navigate }: Props) {
             value={email}
             onChange={e => setEmail(e.target.value)}
             autoComplete="email"
+            autoFocus
           />
 
           <div>
