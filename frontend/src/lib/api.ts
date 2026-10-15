@@ -395,6 +395,27 @@ export const usuariosApi = {
 // ===== RELATÓRIOS =====
 export const relatoriosApi = {
   gerar: (dias: number) => request(`/api/relatorios?dias=${dias}`),
+
+  async dashboard() {
+    const dados = await request('/api/relatorios/dashboard');
+    const statusMap: Record<string, string> = {
+      pendente: 'Pendente',
+      aprovada: 'Em Processo',
+    };
+    return {
+      ...dados,
+      reivindicacoes_recentes: dados.reivindicacoes_recentes.map((r: any) => ({
+        id: r.id,
+        itemName: r.item_nome,
+        itemImage: r.item_foto || 'https://via.placeholder.com/200?text=Sem+foto',
+        claimantName: r.nome_requerente,
+        studentName: r.nome_aluno,
+        room: r.sala_aluno,
+        date: r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '',
+        status: statusMap[r.status] || r.status,
+      })),
+    };
+  },
 };
 
 // ===== LGPD =====

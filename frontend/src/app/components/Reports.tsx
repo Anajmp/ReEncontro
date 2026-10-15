@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { AdminLayout } from './shared/AdminLayout';
 import type { Screen } from '../App';
 import {
-  MetricCard, CardHeader, CustomBarTooltip, AdminPanel, adminSelectClass,
+  MetricCard, CardHeader, CustomBarTooltip, AdminPanel, adminSelectClass, getCatConfig,
 } from './shared/AdminChrome';
 import { relatoriosApi } from '../../lib/api';
 
@@ -36,12 +36,14 @@ export function Reports({ navigate }: Props) {
   const [dias, setDias] = useState('30');
   const [dados, setDados] = useState<any>(null);
   const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState('');
 
   useEffect(() => {
     setCarregando(true);
+    setErro('');
     relatoriosApi.gerar(Number(dias))
       .then(setDados)
-      .catch(err => console.error('Erro ao carregar relatórios:', err))
+      .catch(err => setErro(err.message || 'Erro ao carregar relatórios'))
       .finally(() => setCarregando(false));
   }, [dias]);
 
@@ -52,6 +54,9 @@ export function Reports({ navigate }: Props) {
     entregues: m.devolvidos,
     descartados: m.descartados,
   }));
+  const temMovimentacao = dadosMensais.some(
+    (m: any) => m.encontrados + m.entregues + m.descartados > 0,
+  );
 
   const dadosStatus = (dados?.por_status ?? []).map((s: any) => ({
     name: STATUS_INFO[s.status]?.nome ?? s.status,
@@ -59,13 +64,17 @@ export function Reports({ navigate }: Props) {
     color: STATUS_INFO[s.status]?.cor ?? '#A8A29E',
   }));
 
+  const dadosCategoria = (dados?.por_categoria ?? []).map((c: any) => ({
+    name: c.categoria,
+    value: c.total,
+    color: getCatConfig(c.categoria).color,
+  }));
+  const maiorCategoria = Math.max(1, ...dadosCategoria.map((c: any) => c.value));
+
   const total = dados?.total_cadastrados ?? 0;
   const entregues = dados?.total_entregues ?? 0;
   const descartados = dados?.total_descartados ?? 0;
   const taxa = dados?.taxa_devolucao ?? 0;
-
-  const pct = (parte: number) =>
-    total > 0 ? `${Math.round((parte / total) * 100)}% do total` : '—';
 
   return (
     <AdminLayout current="reports" navigate={navigate}>
@@ -79,19 +88,21 @@ export function Reports({ navigate }: Props) {
               <SelectItem value="7">Últimos 7 dias</SelectItem>
               <SelectItem value="30">Últimos 30 dias</SelectItem>
               <SelectItem value="90">Últimos 90 dias</SelectItem>
+              <SelectItem value="180">Últimos 6 meses</SelectItem>
+              <SelectItem value="365">Último ano</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {carregando ? (
-          <AdminPanel className="py-16 text-center text-sm text-[#A8A29E]">
-            Carregando relatórios...
+        {carregando || erro ? (
+          <AdminPanel className={`py-16 text-center text-sm ${erro ? 'text-[#C8102E]' : 'text-[#A8A29E]'}`}>
+            {erro || 'Carregando relatórios...'}
           </AdminPanel>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               <MetricCard
-                label="Total de itens (período)"
+                label="Itens cadastrados"
                 value={String(total)}
                 context={`Últimos ${dias} dias`}
                 icon={<Package size={18} color="#78716C" strokeWidth={1.8} />}
@@ -99,9 +110,9 @@ export function Reports({ navigate }: Props) {
                 valueColor="#1C1917"
               />
               <MetricCard
-                label="Total entregues"
+                label="Entregues"
                 value={String(entregues)}
-                context={pct(entregues)}
+                context="Devolvidos no período"
                 icon={<CheckCircle2 size={18} color="#059669" strokeWidth={1.8} />}
                 iconBg="#D1FAE5"
                 valueColor="#059669"
@@ -109,7 +120,7 @@ export function Reports({ navigate }: Props) {
               <MetricCard
                 label="Taxa de devolução"
                 value={`${taxa}%`}
-                context="Entregues sobre o total"
+                context="Entregues sobre finalizados"
                 icon={<TrendingUp size={18} color="#2563EB" strokeWidth={1.8} />}
                 iconBg="#DBEAFE"
                 valueColor="#2563EB"
@@ -117,7 +128,7 @@ export function Reports({ navigate }: Props) {
               <MetricCard
                 label="Descartados"
                 value={String(descartados)}
-                context={pct(descartados)}
+                context="Descartados no período"
                 icon={<Trash2 size={18} color="#78716C" strokeWidth={1.8} />}
                 iconBg="#F5F5F4"
                 valueColor="#78716C"
@@ -127,9 +138,9 @@ export function Reports({ navigate }: Props) {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               <AdminPanel className="p-5 lg:col-span-2">
                 <CardHeader title="Itens por mês" />
-                {dadosMensais.length === 0 ? (
+                {!temMovimentacao ? (
                   <p className="py-16 text-center text-sm text-[#A8A29E]">
-                    Nenhum item cadastrado neste período.
+                    Nenhuma movimentação neste período.
                   </p>
                 ) : (
                   <div className="h-52 w-full sm:h-60">
@@ -186,6 +197,30 @@ export function Reports({ navigate }: Props) {
                 )}
               </AdminPanel>
             </div>
+
+            <AdminPanel className="p-5">
+              <CardHeader title="Itens cadastrados por categoria" />
+              {dadosCategoria.length === 0 ? (
+                <p className="py-8 text-center text-sm text-[#A8A29E]">
+                  Nenhum item cadastrado neste período.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {dadosCategoria.map((c: any) => (
+                    <div key={c.name} className="flex items-center gap-3 text-xs">
+                      <span className="w-32 shrink-0 truncate text-[#78716C]">{c.name}</span>
+                      <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-[#F5F3F0]">
+                        <div
+                          className="h-full rounded-full"
+                          style={{ width: `${(c.value / maiorCategoria) * 100}%`, backgroundColor: c.color }}
+                        />
+                      </div>
+                      <span className="w-8 shrink-0 text-right font-semibold text-[#1C1917]">{c.value}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </AdminPanel>
           </>
         )}
       </div>

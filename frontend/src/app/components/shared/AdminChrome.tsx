@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import {
-  BookOpen, Shirt, Watch, Headphones, Footprints, Package,
+  BookOpen, Shirt, Watch, Footprints, Package, FileText,
   TrendingUp, TrendingDown,
 } from 'lucide-react';
 import type { Screen } from '../../App';
@@ -50,7 +50,8 @@ const CAT_CFG: Record<string, { color: string; bg: string; Icon: typeof BookOpen
   'Material Escolar': { color: '#D97706', bg: '#FEF3C7', Icon: BookOpen },
   'Vestuário': { color: '#059669', bg: '#D1FAE5', Icon: Shirt },
   'Acessórios': { color: '#7C3AED', bg: '#EDE9FE', Icon: Watch },
-  'Eletrônicos': { color: '#4F46E5', bg: '#E0E7FF', Icon: Headphones },
+  'Acessório': { color: '#7C3AED', bg: '#EDE9FE', Icon: Watch },
+  'Documento': { color: '#2563EB', bg: '#DBEAFE', Icon: FileText },
   'Calçados': { color: '#B45309', bg: '#FEF9C3', Icon: Footprints },
   'Outros': { color: '#78716C', bg: '#F5F5F4', Icon: Package },
 };

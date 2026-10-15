@@ -10,4 +10,13 @@ export const relatoriosController = {
       next(err);
     }
   },
+
+  // GET /api/relatorios/dashboard
+  async dashboard(req, res, next) {
+    try {
+      res.json(await relatoriosService.dashboard());
+    } catch (err) {
+      next(err);
+    }
+  },
 };
