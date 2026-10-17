@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle2, X, Clock, User, Mail, Phone, GraduationCap } from 'lucide-react';
+import { CheckCircle2, X, User, Mail, Phone, GraduationCap } from 'lucide-react';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Label } from './ui/label';

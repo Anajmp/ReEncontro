@@ -5,7 +5,7 @@
 // =====================================================================
 import { ZodError } from 'zod';
 
-export function errorMiddleware(err, req, res, next) {
+export function errorMiddleware(err, req, res, _next) {
   // Erro de validação do Zod
   if (err instanceof ZodError) {
     return res.status(400).json({

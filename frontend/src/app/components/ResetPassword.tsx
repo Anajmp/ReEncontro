@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Mail, Eye, EyeOff, Lock, Check } from 'lucide-react';
 import type { Screen } from '../App';

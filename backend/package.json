@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node --import ./instrument.js src/server.js",
     "dev": "node --watch --import ./instrument.js src/server.js",
-    "test": "vitest"
+    "test": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@getbrevo/brevo": "^6.0.3",
@@ -32,6 +34,9 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
     "vitest": "^2.1.1"
   }
 }

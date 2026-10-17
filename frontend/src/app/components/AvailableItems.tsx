@@ -8,7 +8,7 @@ import { AdminLayout } from './shared/AdminLayout';
 import {
   AdminPanel, CategoryBadge, adminBtnPrimary, adminInputClass, adminSearchInputClass, adminSelectClass,
 } from './shared/AdminChrome';
-import { itensApi, reivindicacoesApi, referenciasApi } from '../../lib/api';
+import { itensApi, referenciasApi } from '../../lib/api';
 import type { Screen } from '../App';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Label } from './ui/label';

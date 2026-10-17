@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ParentLayout } from './shared/ParentLayout';
 import { ClaimCard, ParentInputField } from './shared/ParentChrome';
 import { BannerIlustracao, BOTAO_PRIMARIO, CARD, chipClasses, EstadoVazio, PageBanner } from './shared/PageBanner';
-import { myStudents } from './shared/data';
 import { reivindicacoesApi } from '../../lib/api';
 import type { Student } from './shared/data';
 import type { Screen } from '../App';

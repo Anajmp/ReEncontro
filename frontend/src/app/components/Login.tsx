@@ -1,4 +1,4 @@
-import { useState, forwardRef, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import type { Screen } from "../App";
