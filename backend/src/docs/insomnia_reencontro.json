@@ -150,7 +150,7 @@ collection:
           mimeType: application/json
           text: |-
             { 
-            	"refresh_token": "token-aqui" 
+            	"refreshToken": "token-aqui" 
             }
         headers:
           - name: Content-Type

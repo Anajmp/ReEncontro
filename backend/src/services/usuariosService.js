@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import { usuariosRepository } from "../repositories/usuariosRepository.js";
+import { refreshTokenService } from "./refreshTokenService.js";
 
 export const usuariosService = {
   async listarFuncionarias() {
@@ -54,7 +55,7 @@ export const usuariosService = {
     // Confere a senha atual antes de permitir a troca
     const confere = await bcrypt.compare(senhaAtual, hashAtual);
     if (!confere) {
-      throw { status: 401, mensagem: "A senha atual está incorreta" };
+      throw { status: 400, mensagem: "A senha atual está incorreta" };
     }
 
     if (novaSenha.length < 6) {
@@ -67,7 +68,12 @@ export const usuariosService = {
     const novoHash = await bcrypt.hash(novaSenha, 10);
     await usuariosRepository.atualizarSenha(userId, novoHash);
 
-    return { mensagem: "Senha alterada com sucesso" };
+    // Derruba as sessões dos outros dispositivos e devolve um refresh token
+    // novo para esta, que continua logada
+    await refreshTokenService.revogarTodos(userId);
+    const refreshToken = await refreshTokenService.emitir(userId);
+
+    return { mensagem: "Senha alterada com sucesso", refreshToken };
   },
 
   async atualizarPerfil(userId, dados) {

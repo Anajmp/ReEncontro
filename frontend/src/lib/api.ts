@@ -6,36 +6,112 @@
 // A URL do backend vem da variável de ambiente (Vercel/local)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-// Função base que faz as requisições e trata erros, tipo fetch
-async function request(endpoint: string, options: RequestInit = {}) {
-  const token = localStorage.getItem('token');
+const CHAVE_TOKEN = 'token';
+const CHAVE_REFRESH = 'refreshToken';
+const CHAVE_USUARIO = 'usuario';
 
-  let res: Response;
+const ERRO_CONEXAO =
+  'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.';
 
-  try {
-    res = await fetch(`${API_URL}${endpoint}`, {
+// ----- Renovação de sessão -----
+// O access token dura 15 min. Ao tomar 401, trocamos o refresh token por um
+// par novo (POST /api/auth/refresh) e repetimos a requisição uma vez.
+
+// Requisições que tomam 401 ao mesmo tempo esperam a mesma renovação
+let renovacaoEmAndamento: Promise<boolean> | null = null;
+
+function renovarSessao(tokenQueFalhou: string): Promise<boolean> {
+  if (!renovacaoEmAndamento) {
+    renovacaoEmAndamento = executarRenovacao(tokenQueFalhou).finally(() => {
+      renovacaoEmAndamento = null;
+    });
+  }
+  return renovacaoEmAndamento;
+}
+
+// Devolve true se há um access token novo; false se a sessão acabou de vez.
+// Lança erro só quando o servidor não respondeu (aí não derrubamos a sessão).
+async function executarRenovacao(tokenQueFalhou: string): Promise<boolean> {
+  const renovar = async () => {
+    // Outra requisição (ou outra aba) já renovou enquanto esperávamos
+    const tokenAtual = localStorage.getItem(CHAVE_TOKEN);
+    if (tokenAtual && tokenAtual !== tokenQueFalhou) return true;
+
+    const refreshToken = localStorage.getItem(CHAVE_REFRESH);
+    if (!refreshToken) return false;
+
+    const res = await fetch(`${API_URL}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+    if (!res.ok) return false;
+
+    const dados = await res.json();
+    localStorage.setItem(CHAVE_TOKEN, dados.token);
+    localStorage.setItem(CHAVE_REFRESH, dados.refreshToken);
+    window.dispatchEvent(new Event('auth:renovado'));
+    return true;
+  };
+
+  // Trava entre abas: duas abas usando o mesmo refresh token ao mesmo tempo
+  // seriam vistas pelo backend como reuso e derrubariam todas as sessões
+  return navigator.locks
+    ? navigator.locks.request('reencontro-refresh', renovar)
+    : renovar();
+}
+
+// Sessão acabou de vez: limpa tudo. O AuthContext escuta o evento,
+// avisa o usuário e manda para o login.
+function encerrarSessao() {
+  localStorage.removeItem(CHAVE_TOKEN);
+  localStorage.removeItem(CHAVE_REFRESH);
+  localStorage.removeItem(CHAVE_USUARIO);
+  window.dispatchEvent(new Event('auth:expirado'));
+}
+
+// Faz o fetch com o token no cabeçalho, renovando a sessão se precisar
+async function fetchAutenticado(
+  endpoint: string,
+  options: RequestInit,
+  headersBase: Record<string, string>,
+) {
+  const executar = (token: string | null) =>
+    fetch(`${API_URL}${endpoint}`, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        ...headersBase,
         // Se tiver token, manda no cabeçalho (pras rotas protegidas)
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
     });
+
+  const token = localStorage.getItem(CHAVE_TOKEN);
+
+  try {
+    let res = await executar(token);
+
+    if (res.status === 401 && token) {
+      if (await renovarSessao(token)) {
+        res = await executar(localStorage.getItem(CHAVE_TOKEN));
+      }
+      // Refresh falhou (ou o token novo também foi recusado): derruba a sessão
+      if (res.status === 401) encerrarSessao();
+    }
+
+    return res;
   } catch {
     // Servidor fora do ar, sem internet, CORS bloqueado, cold start do Render...
-    throw new Error(
-      'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.'
-    );
+    throw new Error(ERRO_CONEXAO);
   }
+}
 
-  // Token expirado ou inválido numa rota protegida: derruba a sessão.
-  // O AuthContext escuta esse evento e limpa o usuário logado.
-  if (res.status === 401 && token) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    window.dispatchEvent(new Event('auth:expirado'));
-  }
+// Função base que faz as requisições e trata erros, tipo fetch
+async function request(endpoint: string, options: RequestInit = {}) {
+  const res = await fetchAutenticado(endpoint, options, {
+    'Content-Type': 'application/json',
+  });
 
   // Se a resposta não for OK, lança erro com a mensagem do backend
   if (!res.ok) {
@@ -50,16 +126,8 @@ async function request(endpoint: string, options: RequestInit = {}) {
 
 // Requisição com upload de arquivos (multipart/form-data)
 async function requestUpload(endpoint: string, formData: FormData) {
-  const token = localStorage.getItem('token');
-
-  const res = await fetch(`${API_URL}${endpoint}`, {
-    method: 'POST',
-    headers: {
-      // NÃO definir Content-Type aqui — o navegador define sozinho com o boundary
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: formData,
-  });
+  // NÃO definir Content-Type aqui — o navegador define sozinho com o boundary
+  const res = await fetchAutenticado(endpoint, { method: 'POST', body: formData }, {});
 
   if (!res.ok) {
     const erro = await res.json().catch(() => ({ erro: 'Erro na requisição' }));
@@ -106,6 +174,16 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ credential }),
     }),
+
+  // Revoga o refresh token no backend. Não usa request(): a resposta é 204
+  // e o logout local não deve esperar nem falhar por causa da rede.
+  logout: (refreshToken: string) =>
+    fetch(`${API_URL}/api/auth/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+      keepalive: true, // conclui mesmo se a página recarregar em seguida
+    }).catch(() => {}),
 };
 
 // ===== ITENS =====
@@ -395,6 +473,12 @@ export const usuariosApi = {
     request('/api/usuarios/senha', {
       method: 'PATCH',
       body: JSON.stringify({ senhaAtual, novaSenha }),
+    }).then((resultado) => {
+      // As outras sessões foram revogadas; esta recebe um refresh token novo
+      if (resultado.refreshToken) {
+        localStorage.setItem(CHAVE_REFRESH, resultado.refreshToken);
+      }
+      return resultado;
     }),
 
       atualizarPerfil: (dados: { nome: string; email: string; telefone?: string }) =>

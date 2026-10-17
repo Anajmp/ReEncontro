@@ -57,6 +57,13 @@ export const passwordResetRepository = {
         [userId],
       );
 
+      // Senha nova: derruba as sessões abertas em todos os dispositivos
+      await conn.execute(
+        `UPDATE refresh_tokens SET revogado_em = NOW()
+         WHERE user_id = ? AND revogado_em IS NULL`,
+        [userId],
+      );
+
       await conn.commit();
     } catch (err) {
       await conn.rollback();

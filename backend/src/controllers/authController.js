@@ -4,6 +4,7 @@
 import { authService } from "../services/authService.js";
 import { googleAuthService } from "../services/googleAuthService.js";
 import { completarCadastroService } from "../services/completarCadastroService.js";
+import { refreshTokenService } from "../services/refreshTokenService.js";
 import { loginSchema, registroSchema } from "../models/authSchema.js";
 
 export const authController = {
@@ -43,6 +44,33 @@ export const authController = {
       }
       const resultado = await googleAuthService.entrar(credential);
       res.json(resultado);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  // POST /api/auth/refresh — troca o refresh token por um par novo
+  async refresh(req, res, next) {
+    try {
+      const { refreshToken } = req.body;
+      if (!refreshToken || typeof refreshToken !== "string") {
+        throw { status: 401, mensagem: "Sua sessão expirou. Faça login novamente." };
+      }
+      const resultado = await refreshTokenService.renovar(refreshToken);
+      res.json(resultado);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  // POST /api/auth/logout — revoga o refresh token desta sessão
+  async logout(req, res, next) {
+    try {
+      const { refreshToken } = req.body;
+      if (refreshToken && typeof refreshToken === "string") {
+        await refreshTokenService.revogar(refreshToken);
+      }
+      res.status(204).end();
     } catch (err) {
       next(err);
     }
