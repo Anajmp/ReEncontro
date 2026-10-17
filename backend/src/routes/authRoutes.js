@@ -13,7 +13,6 @@ import {
 const router = Router();
 
 // POST /api/auth/esqueci-senha — público
-router.post("/esqueci-senha", passwordResetController.solicitar);
 router.post(
   "/esqueci-senha",
   limiteRecuperacaoSenha,
