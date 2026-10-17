@@ -37,11 +37,16 @@ async function request(endpoint: string, options: RequestInit = {}) {
     window.dispatchEvent(new Event('auth:expirado'));
   }
 
-  // Se a resposta não for OK, lança erro com a mensagem do backend
+  // Se a resposta não for OK, lança erro com a mensagem do backend.
+  // status e dados ficam no erro para quem precisa reagir a casos
+  // específicos (ex.: dados.codigo === 'codigo_expirado').
   if (!res.ok) {
     const erro = await res.json().catch(() => ({}));
-    throw new Error(
-      erro.erro || erro.mensagem || `Erro ${res.status} ao comunicar com o servidor`
+    throw Object.assign(
+      new Error(
+        erro.erro || erro.mensagem || `Erro ${res.status} ao comunicar com o servidor`
+      ),
+      { status: res.status, dados: erro }
     );
   }
 
@@ -84,9 +89,19 @@ export const authApi = {
     }),
 
   register: (dados: any) =>
-    request('/api/auth/register', {
+    request('/api/auth/registrar', {
       method: 'POST',
       body: JSON.stringify(dados),
+    }),
+
+  // Verificação de e-mail (o próprio usuário logado)
+  enviarCodigoVerificacao: () =>
+    request('/api/auth/enviar-codigo-verificacao', { method: 'POST' }),
+
+  confirmarCodigoVerificacao: (codigo: string) =>
+    request('/api/auth/confirmar-codigo-verificacao', {
+      method: 'POST',
+      body: JSON.stringify({ codigo }),
     }),
 
       esqueciSenha: (email: string) =>

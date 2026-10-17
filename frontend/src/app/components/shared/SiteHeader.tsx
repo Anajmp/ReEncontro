@@ -9,7 +9,8 @@ import {
   UserRound,
 } from "lucide-react";
 import type { Screen } from "../../App";
-import { getUsuario, logout } from "../../../lib/auth";
+import { logout } from "../../../lib/auth";
+import { useAuth } from "../../../contexts/AuthContext";
 import { useLoginSplash } from "../LoginSplash";
 import { UserAvatar } from "./UserAvatar";
 
@@ -148,9 +149,13 @@ function AbasResponsavel({
 
 /** Header público compartilhado (listagem e detalhe do item). */
 export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
-  const usuario = getUsuario();
+  // Vem do contexto (e não do localStorage) para o aviso de e-mail sumir
+  // assim que a verificação termina, sem recarregar a página.
+  const { usuario } = useAuth();
   const { playLoginTransition } = useLoginSplash();
   const ehResponsavel = usuario?.role === "responsavel";
+  // null = não verificado. undefined (sessão antiga) não mostra aviso.
+  const emailNaoVerificado = ehResponsavel && usuario?.email_verificado_em === null;
 
   return (
     <header className="sticky top-0 z-20 border-b border-[#E7E5E4] bg-white">
@@ -180,15 +185,41 @@ export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
                     : "parent-profile",
                 )
               }
-              className="flex items-center gap-2.5 rounded-full border border-[#E7E5E4] bg-[#FAFAF8] py-1 pr-3.5 pl-1 text-sm font-semibold text-[#1C1917] shadow-sm transition-all hover:border-[#C8102E]/30 hover:bg-white hover:shadow"
+              aria-label={
+                emailNaoVerificado
+                  ? "Seu perfil — e-mail não verificado. Verificar e-mail"
+                  : "Seu perfil"
+              }
+              title={emailNaoVerificado ? "Verificar e-mail" : undefined}
+              className="flex items-center gap-2.5 rounded-full border border-[#E7E5E4] bg-[#FAFAF8] py-1 pr-1 pl-1 text-sm font-semibold text-[#1C1917] shadow-sm transition-all hover:border-[#C8102E]/30 hover:bg-white hover:shadow sm:pr-4"
             >
-              <UserAvatar
-                usuario={usuario}
-                size={30}
-                className="ring-2 ring-white"
-              />
-              <span className="hidden max-w-[120px] truncate sm:inline">
-                {usuario.nome.split(" ")[0]}
+              <span className="relative shrink-0">
+                <UserAvatar
+                  usuario={usuario}
+                  size={30}
+                  className="ring-2 ring-white"
+                />
+                {emailNaoVerificado && (
+                  // No celular o texto some; o ponto vermelho mantém o aviso visível
+                  <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-[#C8102E] ring-2 ring-white sm:hidden" />
+                )}
+              </span>
+              <span className="hidden min-w-0 flex-col items-start text-left leading-tight sm:flex">
+                <span className="max-w-[180px] truncate">
+                  {usuario.nome.split(" ")[0]}
+                </span>
+                <span
+                  className={`flex items-center gap-1 text-[11px] font-medium ${
+                    emailNaoVerificado ? "text-[#C8102E]" : "text-[#A8A29E]"
+                  }`}
+                >
+                  <span className="max-w-[160px] truncate">{usuario.email}</span>
+                  {emailNaoVerificado && (
+                    <span className="shrink-0 font-bold underline underline-offset-2">
+                      Verificar e-mail
+                    </span>
+                  )}
+                </span>
               </span>
             </button>
             <button

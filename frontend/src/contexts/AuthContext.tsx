@@ -21,6 +21,8 @@ export interface Usuario {
   is_diretora?: boolean | number;
   avatar_seed?: string;
   cadastro_completo?: boolean;
+  // null = não verificado; undefined = sessão antiga, ainda sem essa informação
+  email_verificado_em?: string | null;
 }
 
 interface AuthContextValue {

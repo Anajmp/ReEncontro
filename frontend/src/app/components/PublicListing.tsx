@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, type MouseEvent } from 'react';
 import {
-  Search, MapPin, Calendar, Check, ListFilter, Glasses, Key,
+  Search, MapPin, Calendar, Check, ListFilter, Glasses, Key, AlertCircle,
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -13,6 +13,7 @@ import type { Item } from './shared/data';
 import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { getUsuario } from '../../lib/auth';
+import { mascararTelefone, validarTelefone } from '../../lib/telefone';
 import { SiteFooter, SiteHeader } from './shared/SiteHeader';
 import { BannerIlustracao, PageBanner } from './shared/PageBanner';
 import { useLoginSplash } from './LoginSplash';
@@ -67,6 +68,7 @@ function ClaimModal({
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
+  const [telefoneErro, setTelefoneErro] = useState('');
   const [nomeAluno, setNomeAluno] = useState('');
   const [sala, setSala] = useState('');
   const [periodo, setPeriodo] = useState('');
@@ -107,7 +109,7 @@ function ClaimModal({
     if (usuario) {
       setNome(usuario.nome || '');
       setEmail(usuario.email || '');
-      setTelefone(usuario.telefone || '');
+      setTelefone(mascararTelefone(usuario.telefone || ''));
 
       alunosApi.listarMeus()
         .then(lista => {
@@ -137,6 +139,9 @@ function ClaimModal({
       setErro('Preencha todos os campos obrigatórios (*)');
       return;
     }
+    const erroTel = validarTelefone(telefone);
+    setTelefoneErro(erroTel ?? '');
+    if (erroTel) return;
     setEnviando(true);
     try {
       await reivindicacoesApi.criar({
@@ -161,6 +166,7 @@ function ClaimModal({
     onClose();
     setSubmitted(false);
     setErro('');
+    setTelefoneErro('');
     if (!usuario) {
       setNome('');
       setEmail('');
@@ -255,7 +261,26 @@ function ClaimModal({
             <Label htmlFor="claim-phone" className="font-semibold text-[#1C1917]">
               Telefone <span className="font-normal text-[#A8A29E]">(opcional)</span>
             </Label>
-            <Input id="claim-phone" placeholder="(19) 99999-9999" value={telefone} onChange={e => setTelefone(e.target.value)} className="rounded-xl border-[#E7E5E4]" />
+            <Input
+              id="claim-phone"
+              type="tel"
+              inputMode="numeric"
+              placeholder="(19) 99999-9999"
+              value={telefone}
+              onChange={e => {
+                setTelefone(mascararTelefone(e.target.value));
+                if (telefoneErro) setTelefoneErro('');
+              }}
+              onBlur={() => setTelefoneErro(validarTelefone(telefone) ?? '')}
+              aria-invalid={Boolean(telefoneErro) || undefined}
+              className={`rounded-xl ${telefoneErro ? 'border-[#FCA5A5]' : 'border-[#E7E5E4]'}`}
+            />
+            {telefoneErro && (
+              <div className="flex items-center gap-1.5 rounded-lg border border-[#FECDD3] bg-[#FFF1F2] px-3 py-1.5">
+                <AlertCircle size={12} strokeWidth={2} className="shrink-0 text-[#C8102E]" />
+                <span className="text-xs font-medium text-[#C8102E]">{telefoneErro}</span>
+              </div>
+            )}
           </div>
 
           {mostrarSeletor && (
