@@ -42,7 +42,7 @@ CREATE TABLE users (
   INDEX idx_users_role  (role),
   INDEX idx_users_ativo (ativo),
   INDEX idx_users_email (email),
-  INDEX idx_users_google (google_id),
+  INDEX idx_users_google (google_id)
 ) ENGINE=InnoDB;
 
 
@@ -253,6 +253,27 @@ CREATE TABLE password_resets (
 
   INDEX idx_reset_token  (token_hash),
   INDEX idx_reset_expira (expira_em)
+) ENGINE=InnoDB;
+
+
+-- ---------------------------------------------------------------------
+-- email_verificacoes: códigos de verificação de e-mail (6 dígitos, 15 min)
+-- Informativo: não bloqueia o uso do sistema. Máx. 5 tentativas por código.
+-- ---------------------------------------------------------------------
+CREATE TABLE email_verificacoes (
+  id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id      BIGINT        NOT NULL,
+  codigo_hash  VARCHAR(255)  NOT NULL,                         -- hash do código (nunca o código cru)
+  expira_em    DATETIME      NOT NULL,                         -- created + 15 min
+  usado_em     DATETIME      NULL,                             -- usado, substituído ou queimado
+  tentativas   INT           NOT NULL DEFAULT 0,               -- tentativas erradas (máx. 5)
+  created_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT fk_verif_user
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+
+  INDEX idx_verif_user   (user_id),
+  INDEX idx_verif_expira (expira_em)
 ) ENGINE=InnoDB;
 
 
