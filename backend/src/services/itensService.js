@@ -4,6 +4,8 @@
 // do repository). Aqui ficam as regras e a orquestração.
 // =====================================================================
 import { itensRepository } from "../repositories/itensRepository.js";
+import { enviarEmail } from "../config/email.js";
+import { emailTemplates } from "../utils/emailTemplates.js";
 
 export const itensService = {
   // Lista itens disponíveis aplicando os filtros recebidos
@@ -47,15 +49,37 @@ export const itensService = {
   },
 
   async descartar(id, funcionariaId, motivo) {
-    const ok = await itensRepository.descartar(id, funcionariaId, motivo);
-    if (!ok) {
-      throw {
-        status: 409,
-        mensagem:
-          "Item não pode ser descartado (não existe ou já está em processo/entregue)",
-      };
+    // Regra: motivo é obrigatório (RN-012)
+    if (!motivo || motivo.trim().length < 3) {
+      throw { status: 400, mensagem: "Informe o motivo do descarte" };
     }
-    return { id };
+
+    const resultado = await itensRepository.descartar(
+      id,
+      funcionariaId,
+      motivo.trim(),
+    );
+
+    // Avisa quem tinha reivindicação pendente de que ela foi encerrada
+    for (const reiv of resultado.reivindicacoesRejeitadas) {
+      const template = emailTemplates.reivindicacaoRejeitada({
+        nomeRequerente: reiv.nomeRequerente,
+        descricaoItem: resultado.descricaoItem,
+        motivo: `Item descartado: ${motivo.trim()}`,
+      });
+      enviarEmail({
+        para: reiv.emailRequerente,
+        assunto: template.assunto,
+        html: template.html,
+      }).catch((err) =>
+        console.error("Falha ao enviar e-mail de descarte:", err.message),
+      );
+    }
+
+    return {
+      id,
+      reivindicacoes_rejeitadas: resultado.reivindicacoesRejeitadas.length,
+    };
   },
 
   async editar(id, dados) {

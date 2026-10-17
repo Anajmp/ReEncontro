@@ -150,12 +150,86 @@ function EditItemModal({ item, open, onClose, onSaved }: {
   );
 }
 
+function DiscardItemModal({ item, onClose, onDiscarded }: {
+  item: ItemDisponivel | null; onClose: () => void; onDiscarded: () => void;
+}) {
+  const [motivo, setMotivo] = useState('');
+  const [erro, setErro] = useState('');
+  const [descartando, setDescartando] = useState(false);
+
+  // Limpa o formulário sempre que abre para outro item
+  const [anterior, setAnterior] = useState(item);
+  if (anterior !== item) {
+    setAnterior(item);
+    setMotivo('');
+    setErro('');
+  }
+
+  if (!item) return null;
+
+  async function confirmar() {
+    if (!item) return;
+    setErro('');
+    if (motivo.trim().length < 3) {
+      setErro('Informe o motivo do descarte');
+      return;
+    }
+    setDescartando(true);
+    try {
+      await itensApi.descartar(item.id, motivo.trim());
+      onDiscarded();
+      onClose();
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao descartar');
+    } finally {
+      setDescartando(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-md rounded-2xl border-[#E7E5E4]">
+        <DialogHeader>
+          <DialogTitle className="text-[#1C1917]">Descartar item</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <p className="text-sm text-[#78716C]">
+            O item <strong className="text-[#1C1917]">{item.name}</strong> sairá da listagem e irá para Finalizados.
+          </p>
+          {item.status === 'Pendente' && (
+            <p className="rounded-xl bg-[#FEF3C7] px-3 py-2 text-sm text-[#92400E]">
+              Este item tem uma reivindicação pendente. Ela será rejeitada e o responsável receberá um e-mail com o motivo.
+            </p>
+          )}
+          <div className="space-y-1.5">
+            <Label className="text-sm font-semibold text-[#1C1917]">Motivo *</Label>
+            <Input
+              className={adminInputClass}
+              value={motivo}
+              onChange={e => setMotivo(e.target.value)}
+              placeholder="Ex: Mais de 90 dias sem dono, doado"
+            />
+          </div>
+          {erro && <p className="rounded-xl bg-[#FEE2E2] px-3 py-2 text-sm text-[#C8102E]">{erro}</p>}
+        </div>
+        <div className="flex gap-3 border-t border-[#E7E5E4] pt-2">
+          <Button variant="outline" className="flex-1 rounded-xl border-[#E7E5E4]" onClick={onClose} disabled={descartando}>Cancelar</Button>
+          <Button className="flex-1 rounded-xl bg-[#C8102E] text-white hover:bg-[#A50D26]" onClick={confirmar} disabled={descartando}>
+            {descartando ? 'Descartando...' : 'Descartar'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function AvailableItems({ navigate }: Props) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [items, setItems] = useState<ItemDisponivel[]>([]);
   const [editing, setEditing] = useState<ItemDisponivel | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [discarding, setDiscarding] = useState<ItemDisponivel | null>(null);
 
 
   const carregar = useCallback(() => {
@@ -165,16 +239,6 @@ export function AvailableItems({ navigate }: Props) {
   }, []);
 
   useEffect(() => { carregar(); }, [carregar]);
-
-  async function descartar(id: number, nome: string) {
-    if (!confirm(`Descartar o item "${nome}"? Ele sairá da listagem.`)) return;
-    try {
-      await itensApi.descartar(id);
-      carregar();
-    } catch (err: unknown) {
-      alert((err instanceof Error && err.message) || 'Erro ao descartar');
-    }
-  }
 
   const filtered = items.filter(item => {
     const q = search.toLowerCase();
@@ -267,7 +331,7 @@ export function AvailableItems({ navigate }: Props) {
                       <button
                         type="button"
                         className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
-                        onClick={() => descartar(item.id, item.name)}
+                        onClick={() => setDiscarding(item)}
                       >
                         <Trash2 className="size-3.5" />
                       </button>
@@ -354,7 +418,7 @@ export function AvailableItems({ navigate }: Props) {
                         <button
                           type="button"
                           className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
-                          onClick={() => descartar(item.id, item.name)}
+                          onClick={() => setDiscarding(item)}
                         >
                           <Trash2 className="size-3.5" />
                         </button>
@@ -386,6 +450,11 @@ export function AvailableItems({ navigate }: Props) {
         open={editOpen}
         onClose={() => setEditOpen(false)}
         onSaved={carregar}
+      />
+      <DiscardItemModal
+        item={discarding}
+        onClose={() => setDiscarding(null)}
+        onDiscarded={carregar}
       />
     </AdminLayout>
   );

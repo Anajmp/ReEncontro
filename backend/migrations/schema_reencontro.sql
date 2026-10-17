@@ -107,7 +107,10 @@ CREATE TABLE pontos_coleta (
 -- ---------------------------------------------------------------------
 -- itens: objetos encontrados
 -- Fluxo de status: disponivel -> pendente -> em_processo -> entregue
---                  disponivel -> descartado (RN-012, após 90 dias)
+--                  disponivel/pendente -> descartado (RN-012, motivo obrigatório;
+--                  descartar um item pendente rejeita a reivindicação ativa).
+--                  Após 90 dias o item é sinalizado como candidato a descarte,
+--                  mas o descarte é sempre manual.
 -- ---------------------------------------------------------------------
 CREATE TABLE itens (
   id                      BIGINT AUTO_INCREMENT PRIMARY KEY,

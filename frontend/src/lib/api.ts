@@ -362,8 +362,11 @@ export const itensApi = {
     const dado = await request<ItemBackend>(`/api/itens/${id}`);
     return traduzirItem(dado);
   },
-  descartar: (id: number) =>
-    request<RespostaMensagem>(`/api/itens/${id}/descartar`, { method: 'PATCH' }),
+  descartar: (id: number, motivo: string) =>
+    request<RespostaMensagem & { reivindicacoes_rejeitadas: number }>(`/api/itens/${id}/descartar`, {
+      method: 'PATCH',
+      body: JSON.stringify({ motivo }),
+    }),
   editar: (id: number, dados: DadosEdicaoItem) =>
     request<RespostaMensagem>(`/api/itens/${id}`, {
       method: 'PATCH',

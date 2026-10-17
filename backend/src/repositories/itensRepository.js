@@ -97,16 +97,69 @@ export const itensRepository = {
     );
   },
 
-  // Descarta um item (soft delete): status -> descartado
+  // Descarta um item (soft delete): status -> descartado.
+  // Se o item estava 'pendente', a reivindicação ativa é rejeitada na mesma
+  // transação, para não ficar uma reivindicação pendente de item descartado.
   async descartar(id, funcionariaId, motivo) {
-    const [result] = await db.execute(
-      `UPDATE itens
-       SET status = 'descartado', motivo_descarte = ?,
-           finalizado_por_user_id = ?, finalizado_em = NOW()
-       WHERE id = ? AND status IN ('disponivel', 'pendente')`,
-      [motivo ?? "Descartado pela funcionária", funcionariaId, id],
-    );
-    return result.affectedRows > 0;
+    const conn = await db.getConnection();
+    try {
+      await conn.beginTransaction();
+
+      const [itens] = await conn.execute(
+        `SELECT id, status, descricao FROM itens WHERE id = ? FOR UPDATE`,
+        [id],
+      );
+      if (itens.length === 0) {
+        throw { status: 404, mensagem: "Item não encontrado" };
+      }
+      if (!["disponivel", "pendente"].includes(itens[0].status)) {
+        throw {
+          status: 409,
+          mensagem: "Item não pode ser descartado (já está em processo ou finalizado)",
+        };
+      }
+
+      const [reivs] = await conn.execute(
+        `SELECT id, nome_requerente, email_requerente
+         FROM reivindicacoes
+         WHERE item_id = ? AND status = 'pendente'
+         FOR UPDATE`,
+        [id],
+      );
+
+      if (reivs.length > 0) {
+        await conn.execute(
+          `UPDATE reivindicacoes
+           SET status = 'rejeitada', processado_por_user_id = ?, processado_em = NOW(),
+               motivo_rejeicao = ?
+           WHERE item_id = ? AND status = 'pendente'`,
+          [funcionariaId, `Item descartado: ${motivo}`, id],
+        );
+      }
+
+      await conn.execute(
+        `UPDATE itens
+         SET status = 'descartado', motivo_descarte = ?,
+             finalizado_por_user_id = ?, finalizado_em = NOW()
+         WHERE id = ?`,
+        [motivo, funcionariaId, id],
+      );
+
+      await conn.commit();
+      return {
+        descricaoItem: itens[0].descricao,
+        reivindicacoesRejeitadas: reivs.map((r) => ({
+          id: r.id,
+          nomeRequerente: r.nome_requerente,
+          emailRequerente: r.email_requerente,
+        })),
+      };
+    } catch (err) {
+      await conn.rollback();
+      throw err;
+    } finally {
+      conn.release();
+    }
   },
 
   // Atualiza os dados de texto de um item
