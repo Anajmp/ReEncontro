@@ -29,6 +29,10 @@ router.post(
 router.post("/login", limiteAuth, authController.login);
 // POST /api/auth/register
 router.post("/registrar", limiteAuth, authController.registrar);
+// POST /api/auth/refresh — público (o refresh token é a autenticação)
+router.post("/refresh", limiteAuth, authController.refresh);
+// POST /api/auth/logout — público (o access token pode já ter vencido)
+router.post("/logout", authController.logout);
 // POST /api/auth/google — público
 router.post("/google", authController.loginGoogle);
 // POST /api/auth/completar-cadastro — precisa estar logado

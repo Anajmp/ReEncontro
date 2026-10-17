@@ -4,6 +4,7 @@
 import { OAuth2Client } from 'google-auth-library';
 import { authRepository } from '../repositories/authRepository.js';
 import { gerarToken } from '../utils/tokens.js';
+import { refreshTokenService } from './refreshTokenService.js';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -63,10 +64,13 @@ export const googleAuthService = {
       is_diretora: usuario.is_diretora,
     });
 
+    const refreshToken = await refreshTokenService.emitir(usuario.id);
+
     await authRepository.updateUltimoLogin(usuario.id);
 
     return {
       token,
+      refreshToken,
       usuario: {
         id: usuario.id,
         nome: usuario.nome,
