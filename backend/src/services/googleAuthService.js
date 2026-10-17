@@ -24,6 +24,8 @@ export const googleAuthService = {
     const googleId = payload.sub;
     const email = payload.email;
     const nome = payload.name || email.split('@')[0];
+    // O Google informa se ele mesmo já confirmou o e-mail da conta
+    const emailVerificado = payload.email_verified === true;
 
     // 2. Já existe alguém com esse google_id? Então é login normal.
     let usuario = await authRepository.findByGoogleId(googleId);
@@ -40,13 +42,13 @@ export const googleAuthService = {
             mensagem: 'Contas de funcionária devem entrar com e-mail e senha.',
           };
         }
-        await authRepository.vincularGoogle(porEmail.id, googleId);
+        await authRepository.vincularGoogle(porEmail.id, googleId, emailVerificado);
         usuario = await authRepository.findByGoogleId(googleId);
       } else {
         // 4. Ninguém encontrado: cria uma conta nova de responsável
         const avatarSeed = Math.random().toString(36).slice(2, 10);
         const novoId = await authRepository.criarResponsavelGoogle({
-          nome, email, googleId, avatarSeed,
+          nome, email, googleId, avatarSeed, emailVerificado,
         });
         usuario = await authRepository.findByGoogleId(googleId);
       }
@@ -76,6 +78,7 @@ export const googleAuthService = {
         is_diretora: usuario.is_diretora,
         avatar_seed: usuario.avatar_seed,
         cadastro_completo: Boolean(usuario.cadastro_completo),
+        email_verificado_em: usuario.email_verificado_em ?? null,
       },
     };
   },

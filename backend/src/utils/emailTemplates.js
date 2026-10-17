@@ -120,6 +120,30 @@ export const emailTemplates = {
     };
   },
 
+  // Código de verificação de e-mail (sem link: só o número)
+  codigoVerificacao({ nome, codigo }) {
+    return {
+      assunto: `${codigo} é o seu código de verificação — ReEncontro`,
+      html: base(`
+        <p>Olá, <strong>${nome}</strong>!</p>
+        <p>Use o código abaixo para confirmar o seu e-mail no ReEncontro:</p>
+        <p style="margin: 24px 0; text-align: center;">
+          <span style="display: inline-block; background: #F5F3F0; border: 2px solid ${cor};
+                       border-radius: 12px; padding: 16px 28px; font-size: 32px; font-weight: bold;
+                       letter-spacing: 10px; color: ${cor}; font-family: 'Courier New', monospace;">
+            ${codigo}
+          </span>
+        </p>
+        <p style="font-size: 13px; color: #78716C;">
+          Este código é válido por <strong>15 minutos</strong> e pode ser usado apenas uma vez.
+        </p>
+        <p style="font-size: 13px; color: #78716C;">
+          Se você não pediu este código, ignore este e-mail. Nunca compartilhe o código com ninguém.
+        </p>
+      `),
+    };
+  },
+
     // Aviso interno para a equipe quando chega uma nova reivindicação
   novaReivindicacaoParaEquipe({ descricaoItem, nomeRequerente, nomeAluno, salaAluno, periodoAluno }) {
     return {

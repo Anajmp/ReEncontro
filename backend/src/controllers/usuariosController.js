@@ -5,6 +5,7 @@ import { usuariosService } from "../services/usuariosService.js";
 import {
   criarFuncionariaSchema,
   editarFuncionariaSchema,
+  perfilSchema,
 } from "../models/usuarioSchema.js";
 import { usuariosRepository } from "../repositories/usuariosRepository.js";
 
@@ -104,10 +105,7 @@ export const usuariosController = {
   // PATCH /api/usuarios/perfil
   async atualizarPerfil(req, res, next) {
     try {
-      const { nome, email, telefone } = req.body;
-      if (!nome || !email) {
-        throw { status: 400, mensagem: "Nome e e-mail são obrigatórios" };
-      }
+      const { nome, email, telefone } = perfilSchema.parse(req.body);
       const resultado = await usuariosService.atualizarPerfil(req.usuario.id, {
         nome,
         email,

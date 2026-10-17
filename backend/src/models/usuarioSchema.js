@@ -1,4 +1,12 @@
 import { z } from "zod";
+import { telefoneOpcional } from "../utils/telefone.js";
+
+// Edição do próprio perfil (PATCH /api/usuarios/perfil)
+export const perfilSchema = z.object({
+  nome: z.string().trim().min(2, "Nome muito curto").max(120),
+  email: z.string().trim().email("E-mail inválido"),
+  telefone: telefoneOpcional,
+});
 
 export const criarFuncionariaSchema = z.object({
   nome: z.string().min(2, "Nome muito curto").max(120),

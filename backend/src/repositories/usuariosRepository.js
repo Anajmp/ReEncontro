@@ -87,12 +87,27 @@ export const usuariosRepository = {
     ]);
   },
 
+  // E-mail novo volta a ficar não verificado. email_verificado_em vem ANTES
+  // de email no SET: o MySQL avalia da esquerda para a direita, então a
+  // comparação ainda enxerga o e-mail antigo.
   async atualizarPerfil(userId, { nome, email, telefone }) {
     const [result] = await db.execute(
-      `UPDATE users SET nome = ?, email = ?, telefone = ? WHERE id = ?`,
-      [nome, email, telefone ?? null, userId],
+      `UPDATE users
+       SET email_verificado_em = IF(email = ?, email_verificado_em, NULL),
+           nome = ?, email = ?, telefone = ?
+       WHERE id = ?`,
+      [email, nome, email, telefone ?? null, userId],
     );
     return result.affectedRows > 0;
+  },
+
+  // Dados devolvidos ao front depois de editar o perfil
+  async buscarDadosPerfil(userId) {
+    const [rows] = await db.execute(
+      `SELECT nome, email, telefone, email_verificado_em FROM users WHERE id = ?`,
+      [userId],
+    );
+    return rows[0] ?? null;
   },
 
   async emailEmUsoPorOutro(email, userId) {

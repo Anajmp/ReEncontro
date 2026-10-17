@@ -21,6 +21,7 @@ export class Usuario {
   #ativo;
   #cadastroCompleto;
   #ultimoLoginEm;
+  #emailVerificadoEm;
 
   /**
    * @param {object} dados Linha vinda do banco (snake_case).
@@ -38,6 +39,7 @@ export class Usuario {
     this.#ativo = Boolean(dados.ativo);
     this.#cadastroCompleto = Boolean(dados.cadastro_completo);
     this.#ultimoLoginEm = dados.ultimo_login_em ?? null;
+    this.#emailVerificadoEm = dados.email_verificado_em ?? null;
   }
 
   // ─────────────── Getters ───────────────
@@ -98,6 +100,7 @@ export class Usuario {
       is_diretora: this.#isDiretora,
       avatar_seed: this.#avatarSeed,
       cadastro_completo: this.#cadastroCompleto,
+      email_verificado_em: this.#emailVerificadoEm,
     };
   }
 }

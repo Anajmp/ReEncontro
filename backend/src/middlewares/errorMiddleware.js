@@ -18,8 +18,9 @@ export function errorMiddleware(err, req, res, next) {
   }
 
   // Erro de negócio com status definido (ex: throw { status: 404, mensagem: '...' })
+  // "extra" leva campos que o front precisa para reagir (ex.: { codigo: 'codigo_expirado' })
   if (err.status) {
-    return res.status(err.status).json({ erro: err.mensagem });
+    return res.status(err.status).json({ erro: err.mensagem, ...err.extra });
   }
 
   // Erro não tratado — loga e devolve 500 genérico

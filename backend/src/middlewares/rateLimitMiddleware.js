@@ -43,6 +43,15 @@ export const limiteRecuperacaoSenha = rateLimit({
   message: { erro: 'Limite de pedidos de redefinição atingido. Tente novamente em 1 hora.' },
 });
 
+// Código de verificação de e-mail. Mesmo motivo da recuperação de senha:
+// cada requisição dispara um e-mail pelo Brevo.
+export const limiteVerificacaoEmail = rateLimit({
+  ...base,
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  message: { erro: 'Limite de envios do código atingido. Tente novamente em 1 hora.' },
+});
+
 // Reivindicações. É um formulário público (dá para enviar sem conta), então
 // é o endpoint mais exposto a envio em massa.
 export const limiteReivindicacao = rateLimit({

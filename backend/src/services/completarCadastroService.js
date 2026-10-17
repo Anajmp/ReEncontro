@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import { alunosRepository } from "../repositories/alunosRepository.js";
 import { authRepository } from "../repositories/authRepository.js";
 import { usuariosRepository } from "../repositories/usuariosRepository.js";
+import { normalizarTelefone, validarTelefone } from "../utils/telefone.js";
 
 export const completarCadastroService = {
   async completar(userId, dados) {
@@ -16,9 +17,16 @@ export const completarCadastroService = {
       anoLetivo: dados.aluno_ano_letivo ?? new Date().getFullYear(),
     });
 
-    // 2. Atualiza o telefone, se informado
-    if (dados.telefone) {
-      await usuariosRepository.atualizarTelefone(userId, dados.telefone);
+    // 2. Atualiza o telefone, se informado (mesma validação do cadastro)
+    if (dados.telefone && String(dados.telefone).trim() !== "") {
+      const resultado = validarTelefone(dados.telefone);
+      if (!resultado.valido) {
+        throw { status: 400, mensagem: resultado.mensagem };
+      }
+      await usuariosRepository.atualizarTelefone(
+        userId,
+        normalizarTelefone(dados.telefone),
+      );
     }
 
     // 3. Define uma senha, se a pessoa quiser poder entrar sem o Google
