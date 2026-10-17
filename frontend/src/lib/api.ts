@@ -84,7 +84,7 @@ export const authApi = {
     }),
 
   register: (dados: any) =>
-    request('/api/auth/register', {
+    request('/api/auth/registrar', {
       method: 'POST',
       body: JSON.stringify(dados),
     }),
