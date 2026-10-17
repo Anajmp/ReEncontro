@@ -52,6 +52,8 @@ export class Usuario {
   get isDiretora() { return this.#isDiretora; }
   get ativo() { return this.#ativo; }
   get cadastroCompleto() { return this.#cadastroCompleto; }
+  get googleId() { return this.#googleId; }
+  get ultimoLoginEm() { return this.#ultimoLoginEm; }
 
   // ─────────────── Regras de domínio ───────────────
 

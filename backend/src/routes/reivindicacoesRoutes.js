@@ -12,7 +12,7 @@ import { limiteReivindicacao } from "../middlewares/rateLimitMiddleware.js";
 const router = Router();
 
 // POST /api/reivindicacoes — público, com auth opcional
-router.post("/", limiteReivindicacao, reivindicacoesController.criar);
+router.post("/", limiteReivindicacao, authOpcional, reivindicacoesController.criar);
 
 // GET /api/reivindicacoes/pendentes — só funcionária
 router.get(

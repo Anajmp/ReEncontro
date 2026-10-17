@@ -18,13 +18,10 @@ export default [
     rules: {
       // `_` como prefixo indica parâmetro/variável propositalmente ignorado
       // (ex.: `next` em middlewares de erro do Express).
-      // TEMPORÁRIO: regras com pendências que exigem decisão (ver PR do lint).
-      // Ficam como aviso para não quebrar o CI; voltar para "error" quando zeradas.
       "no-unused-vars": [
-        "warn",
+        "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none" },
       ],
-      "no-unused-private-class-members": "warn",
     },
   },
   {

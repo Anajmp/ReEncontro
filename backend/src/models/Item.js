@@ -47,6 +47,10 @@ export class Item {
   get status() { return this.#status; }
   get localEncontrado() { return this.#localEncontrado; }
   get finalizadoEm() { return this.#finalizadoEm; }
+  get categoriaId() { return this.#categoriaId; }
+  get pontoColetaId() { return this.#pontoColetaId; }
+  get cadastradoPorUserId() { return this.#cadastradoPorUserId; }
+  get finalizadoPorUserId() { return this.#finalizadoPorUserId; }
 
   // ─────────────── Regras de domínio ───────────────
 

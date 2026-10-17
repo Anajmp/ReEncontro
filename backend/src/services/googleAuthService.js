@@ -47,7 +47,7 @@ export const googleAuthService = {
       } else {
         // 4. Ninguém encontrado: cria uma conta nova de responsável
         const avatarSeed = Math.random().toString(36).slice(2, 10);
-        const novoId = await authRepository.criarResponsavelGoogle({
+        await authRepository.criarResponsavelGoogle({
           nome, email, googleId, avatarSeed, emailVerificado,
         });
         usuario = await authRepository.findByGoogleId(googleId);

@@ -50,6 +50,8 @@ export class Reivindicacao {
   get nomeRequerente() { return this.#nomeRequerente; }
   get emailRequerente() { return this.#emailRequerente; }
   get motivoRejeicao() { return this.#motivoRejeicao; }
+  get alunoId() { return this.#alunoId; }
+  get processadoPorUserId() { return this.#processadoPorUserId; }
 
   // ─────────────── Regras de domínio ───────────────
 
