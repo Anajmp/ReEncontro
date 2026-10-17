@@ -42,8 +42,8 @@ export function ParentProfile({ navigate }: Props) {
       }
       setCodigoExpiraEm(Date.now() + (res.expira_em_segundos ?? 900) * 1000);
       setModalCodigoAberto(true);
-    } catch (err: any) {
-      setErroVerificacao(err.message || 'Não foi possível enviar o código.');
+    } catch (err: unknown) {
+      setErroVerificacao((err instanceof Error && err.message) ||'Não foi possível enviar o código.');
     } finally {
       setEnviandoCodigo(false);
     }
@@ -69,8 +69,8 @@ export function ParentProfile({ navigate }: Props) {
       await usuariosApi.atualizarAvatar(seed);
       setAvatarSeed(seed);
       atualizarUsuario({ avatar_seed: seed });
-    } catch (err: any) {
-      alert(err.message || 'Erro ao salvar o avatar');
+    } catch (err: unknown) {
+      alert((err instanceof Error && err.message) || 'Erro ao salvar o avatar');
     } finally {
       setSalvandoAvatar(false);
     }
@@ -97,8 +97,8 @@ export function ParentProfile({ navigate }: Props) {
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
-    } catch (err: any) {
-      alert(err.message || 'Erro ao salvar');
+    } catch (err: unknown) {
+      alert((err instanceof Error && err.message) || 'Erro ao salvar');
     }
   };
 
@@ -115,8 +115,8 @@ export function ParentProfile({ navigate }: Props) {
       setPasswordSaved(true);
       setSenhaAtual(''); setNovaSenha(''); setConfirmar('');
       setTimeout(() => setPasswordSaved(false), 2500);
-    } catch (err: any) {
-      setPassError(err.message || 'Erro ao alterar a senha.');
+    } catch (err: unknown) {
+      setPassError((err instanceof Error && err.message) ||'Erro ao alterar a senha.');
     }
   };
 

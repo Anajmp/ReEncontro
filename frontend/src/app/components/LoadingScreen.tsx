@@ -10,7 +10,7 @@ import { useEffect, useRef, useState, type ElementType, type ReactNode } from 'r
 import {
   Backpack, BookOpen, Footprints, Glasses, IdCard, Key, Pencil, Shirt, Umbrella, Watch,
 } from 'lucide-react';
-import { getCatConfig } from './shared/AdminChrome';
+import { getCatConfig } from './shared/categorias';
 import { prefetchListagem } from '../../lib/api';
 
 const FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };

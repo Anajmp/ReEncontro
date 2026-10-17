@@ -1,10 +1,8 @@
 import type { ReactNode } from 'react';
-import {
-  BookOpen, Shirt, Watch, Footprints, Package, FileText,
-  TrendingUp, TrendingDown,
-} from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '../ui/utils';
 import { ADMIN_FONT } from './estilos';
+import { getCatConfig } from './categorias';
 
 export const adminPanelClass = 'rounded-2xl border border-black/[0.05] bg-white shadow-sm';
 
@@ -22,22 +20,6 @@ export const adminBtnPrimary =
 
 export const adminBtnOutline =
   'rounded-xl border border-[#E7E5E4] bg-white font-semibold text-[#78716C] hover:bg-[#F5F3F0] hover:text-[#1C1917]';
-
-// Cores de texto com contraste ≥ 4.5:1 sobre o fundo (WCAG AA).
-// Usado tanto na área admin quanto na listagem pública.
-const CAT_CFG: Record<string, { color: string; bg: string; Icon: typeof BookOpen }> = {
-  'Material Escolar': { color: '#B45309', bg: '#FEF3C7', Icon: BookOpen },
-  'Vestuário': { color: '#047857', bg: '#D1FAE5', Icon: Shirt },
-  'Acessórios': { color: '#7C3AED', bg: '#EDE9FE', Icon: Watch },
-  'Acessório': { color: '#7C3AED', bg: '#EDE9FE', Icon: Watch },
-  'Documento': { color: '#1D4ED8', bg: '#DBEAFE', Icon: FileText },
-  'Calçados': { color: '#B45309', bg: '#FEF9C3', Icon: Footprints },
-  'Outros': { color: '#57534E', bg: '#F5F5F4', Icon: Package },
-};
-
-export function getCatConfig(category: string) {
-  return CAT_CFG[category] ?? { color: '#57534E', bg: '#F5F5F4', Icon: Package };
-}
 
 export function CategoryBadge({ category, className }: { category: string; className?: string }) {
   const cfg = getCatConfig(category);

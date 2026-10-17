@@ -4,7 +4,7 @@ import type { Screen } from '../../App';
 import { LupaMarca } from './LupaMarca';
 import { cn } from '../ui/utils';
 
-export const AUTH_FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
+const AUTH_FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
 
 const inputClass =
   'w-full rounded-xl border border-[#E7E5E4] bg-[#FAFAF8] py-2.5 pl-10 text-sm text-[#1C1917] placeholder:text-[#C4BFBA] transition-all focus:border-[#C8102E] focus:outline-none focus:ring-2 focus:ring-[#C8102E]/20';

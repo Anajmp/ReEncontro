@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, type MouseEvent } from 'react';
+import { useState, useEffect, useMemo, useCallback, type MouseEvent } from 'react';
 import {
   Search, MapPin, Calendar, Check, ListFilter, Glasses, Key, AlertCircle,
 } from 'lucide-react';
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { StatusBadge } from './shared/StatusBadge';
 import { itensApi, reivindicacoesApi, alunosApi, referenciasApi } from '../../lib/api';
-import type { Item } from './shared/data';
+import type { ItemTela } from '../../lib/api';
 import type { Screen } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { getUsuario } from '../../lib/auth';
@@ -17,7 +17,7 @@ import { mascararTelefone, validarTelefone } from '../../lib/telefone';
 import { SiteFooter, SiteHeader } from './shared/SiteHeader';
 import { BannerIlustracao, PageBanner } from './shared/PageBanner';
 import { useLoginSplash } from './LoginSplash';
-import { getCatConfig } from './shared/AdminChrome';
+import { getCatConfig } from './shared/categorias';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -26,6 +26,27 @@ interface Props {
 const FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
 
 type Ordem = 'recentes' | 'antigos' | 'nome';
+
+// Formato de alunosApi.listarMeus() (traduzirAluno em lib/api.ts)
+interface AlunoResumo {
+  id: number;
+  name: string;
+  room: string;
+  period: string;
+  periodoRaw?: string;
+}
+
+// Formato de referenciasApi.categorias() (SELECT id, nome FROM categorias)
+interface Categoria {
+  id: number;
+  nome: string;
+}
+
+const periodoMap: Record<string, string> = {
+  Manhã: 'manha',
+  Tarde: 'tarde',
+  Integral: 'integral',
+};
 
 // Lupa da tela de carregamento "encontrando" uma chave e uns óculos
 function WelcomeIllustration() {
@@ -58,7 +79,7 @@ function ClaimModal({
   onClose,
   onCadastrar,
 }: {
-  item: Item | null;
+  item: ItemTela | null;
   open: boolean;
   onClose: () => void;
   onCadastrar: (e: MouseEvent<HTMLButtonElement>) => void;
@@ -75,21 +96,18 @@ function ClaimModal({
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-  const [alunos, setAlunos] = useState<any[]>([]);
+  const [alunos, setAlunos] = useState<AlunoResumo[]>([]);
   const [alunoId, setAlunoId] = useState('');
+  const [abertoAntes, setAbertoAntes] = useState(false);
 
-  const periodoMap: Record<string, string> = {
-    Manhã: 'manha',
-    Tarde: 'tarde',
-    Integral: 'integral',
-  };
-
-  function selecionarAluno(aluno: any) {
+  // Só usa setters (estáveis) e o periodoMap do módulo: identidade fixa,
+  // então pode entrar nas deps do efeito sem fazê-lo rodar de novo
+  const selecionarAluno = useCallback((aluno: AlunoResumo) => {
     setAlunoId(String(aluno.id));
     setNomeAluno(aluno.name);
     setSala(aluno.room);
     setPeriodo(periodoMap[aluno.period] || aluno.periodoRaw || aluno.period);
-  }
+  }, [setAlunoId, setNomeAluno, setSala, setPeriodo]);
 
   function trocarAluno(id: string) {
     if (id === 'outro') {
@@ -103,27 +121,36 @@ function ClaimModal({
     if (aluno) selecionarAluno(aluno);
   }
 
-  useEffect(() => {
-    if (!open) return;
-
-    if (usuario) {
-      setNome(usuario.nome || '');
-      setEmail(usuario.email || '');
-      setTelefone(mascararTelefone(usuario.telefone || ''));
-
-      alunosApi.listarMeus()
-        .then(lista => {
-          setAlunos(lista);
-          if (lista.length === 1) {
-            selecionarAluno(lista[0]);
-          }
-        })
-        .catch(err => console.error('Erro ao carregar alunos:', err));
-    } else {
-      setAlunos([]);
-      setAlunoId('');
+  // Ao abrir: preenche com os dados do usuário logado (ou limpa os alunos)
+  if (open !== abertoAntes) {
+    setAbertoAntes(open);
+    if (open) {
+      if (usuario) {
+        setNome(usuario.nome || '');
+        setEmail(usuario.email || '');
+        setTelefone(mascararTelefone(usuario.telefone || ''));
+      } else {
+        setAlunos([]);
+        setAlunoId('');
+      }
     }
-  }, [open]);
+  }
+
+  // Ao abrir com alguém logado: carrega os alunos dele. O usuário é lido do
+  // localStorage aqui dentro (getUsuario() devolve um objeto novo a cada
+  // render, então como dependência faria o efeito rodar sempre).
+  useEffect(() => {
+    if (!open || !getUsuario()) return;
+
+    alunosApi.listarMeus()
+      .then((lista: AlunoResumo[]) => {
+        setAlunos(lista);
+        if (lista.length === 1) {
+          selecionarAluno(lista[0]);
+        }
+      })
+      .catch(err => console.error('Erro ao carregar alunos:', err));
+  }, [open, selecionarAluno]);
 
   if (!item) return null;
 
@@ -155,8 +182,8 @@ function ClaimModal({
         periodo_aluno: periodo,
       });
       setSubmitted(true);
-    } catch (err: any) {
-      setErro(err.message || 'Erro ao enviar reivindicação');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao enviar reivindicação');
     } finally {
       setEnviando(false);
     }
@@ -377,7 +404,7 @@ function ItemCard({
   onDetalhe,
   onReivindicar,
 }: {
-  item: Item;
+  item: ItemTela;
   onDetalhe: () => void;
   onReivindicar: () => void;
 }) {
@@ -446,14 +473,14 @@ function ItemCard({
 }
 
 export function PublicListing({ navigate }: Props) {
-  const [categorias, setCategorias] = useState<any[]>([]);
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [selectedItem, setSelectedItem] = useState<ItemTela | null>(null);
   const [claimOpen, setClaimOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [dataFiltro, setDataFiltro] = useState('');
   const [ordem, setOrdem] = useState<Ordem>('recentes');
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<ItemTela[]>([]);
   const [loading, setLoading] = useState(true);
   const routerNavigate = useNavigate();
   const { playCadastroTransition } = useLoginSplash();

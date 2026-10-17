@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { AuthProvider } from "./contexts/AuthContext.tsx";
+import { AuthProvider } from "./contexts/AuthProvider.tsx";
 import App from "./app/App.tsx";
 import "./styles/index.css";
 import * as Sentry from '@sentry/react';

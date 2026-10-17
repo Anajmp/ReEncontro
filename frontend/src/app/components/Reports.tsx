@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { AdminLayout } from './shared/AdminLayout';
 import type { Screen } from '../App';
 import {
-  MetricCard, CardHeader, CustomBarTooltip, AdminPanel, adminSelectClass, getCatConfig,
+  MetricCard, CardHeader, CustomBarTooltip, AdminPanel, adminSelectClass,
 } from './shared/AdminChrome';
+import { getCatConfig } from './shared/categorias';
 import { relatoriosApi } from '../../lib/api';
 
 interface Props {

@@ -7,16 +7,15 @@
 // — você "entra" na página pela lupa.
 // =====================================================================
 import {
-  createContext, useCallback, useContext, useEffect, useId, useRef, useState,
-  type MouseEvent as ReactMouseEvent, type ReactNode,
+  useCallback, useEffect, useId, useRef, useState, type ReactNode,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { KeyRound, UserPlus } from 'lucide-react';
+import { LoginSplashContext, type Origem } from './LoginSplash';
 
 const FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
 
 type Destino = 'login' | 'cadastro';
-type Origem = ReactMouseEvent<HTMLElement> | null | undefined;
 
 const DESTINOS: Record<Destino, { rota: string; legenda: string; Icon: typeof KeyRound }> = {
   login: { rota: '/login', legenda: 'Abrindo o login', Icon: KeyRound },
@@ -28,22 +27,6 @@ const T_COBRE = 160;     // fundo vermelho cobre a página atual → troca de ro
 const T_CHEGA = 520;     // lupa chega ao centro
 const T_FOCO = 820;      // fim do "foco" (brilho + faíscas)
 const T_FIM = 1320;      // lente engoliu a tela
-
-interface LoginSplashContextValue {
-  /** Aceita o evento de clique para a lupa sair do próprio botão. */
-  playLoginTransition: (e?: Origem) => void;
-  playCadastroTransition: (e?: Origem) => void;
-}
-
-const LoginSplashContext = createContext<LoginSplashContextValue | null>(null);
-
-export function useLoginSplash() {
-  const ctx = useContext(LoginSplashContext);
-  if (!ctx) {
-    throw new Error('useLoginSplash precisa estar dentro de LoginSplashProvider');
-  }
-  return ctx;
-}
 
 function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -9,8 +9,9 @@ import { StatusBadge } from './shared/StatusBadge';
 import type { Screen } from '../App';
 import type { Status } from './shared/data';
 import {
-  MetricCard, CardHeader, CustomBarTooltip, getCatConfig, AdminPanel,
+  MetricCard, CardHeader, CustomBarTooltip, AdminPanel,
 } from './shared/AdminChrome';
+import { getCatConfig } from './shared/categorias';
 import { relatoriosApi } from '../../lib/api';
 
 interface Props {

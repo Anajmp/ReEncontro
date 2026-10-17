@@ -15,7 +15,7 @@ import { Finalized } from './components/Finalized';
 import { Reports } from './components/Reports';
 import { StaffManagement } from './components/StaffManagement';
 import { RotaProtegida } from './components/RotaProtegida';
-import { LoginSplashProvider } from './components/LoginSplash';
+import { LoginSplashProvider } from './components/LoginSplashProvider';
 import { PortaDeEntrada } from './components/LoadingScreen';
 import { Lgpd } from './components/Lgpd';
 

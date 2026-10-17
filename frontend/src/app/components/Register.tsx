@@ -86,8 +86,8 @@ export function Register({ navigate }: Props) {
       // Já vem logado (backend devolve token) — o contexto guarda a sessão
       await registrar(dados);
       navigate('parent-dashboard');
-    } catch (err: any) {
-      setErro(err.message || 'Erro ao criar conta');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao criar conta');
     } finally {
       setCarregando(false);
     }

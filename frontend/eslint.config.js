@@ -33,25 +33,6 @@ export default tseslint.config(
     },
   },
   {
-    // TEMPORÁRIO: arquivos com alterações em andamento na feature de
-    // verificação de e-mail. Ficam como aviso até essa branch ser integrada;
-    // depois corrigir os avisos e remover este bloco.
-    files: [
-      "src/lib/api.ts",
-      "src/contexts/AuthContext.tsx",
-      "src/app/components/PublicListing.tsx",
-      "src/app/components/ParentProfile.tsx",
-      "src/app/components/Register.tsx",
-      "src/app/components/shared/AuthChrome.tsx",
-      "src/app/components/shared/SiteHeader.tsx",
-    ],
-    rules: {
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": "warn",
-      "react-hooks/set-state-in-effect": "warn",
-    },
-  },
-  {
     // Componentes gerados pelo shadcn/ui exportam variantes (ex.: buttonVariants)
     // junto com o componente, por convenção da biblioteca.
     files: ["src/app/components/ui/**"],

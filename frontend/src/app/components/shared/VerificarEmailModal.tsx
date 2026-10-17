@@ -16,6 +16,9 @@ const ESPERA_REENVIO_MS = 60 * 1000;
 // Erros que exigem pedir um código novo (o atual não serve mais)
 const ERROS_TERMINAIS = ['tentativas_esgotadas', 'codigo_expirado', 'sem_codigo'];
 
+// Erro lançado por request() em lib/api.ts: o corpo da resposta vem em `dados`
+type ErroApi = Error & { dados?: { codigo?: string } };
+
 interface Props {
   open: boolean;
   email: string;
@@ -41,22 +44,35 @@ export function VerificarEmailModal({ open, email, expiraEm, onClose, onVerifica
   const [sucesso, setSucesso] = useState(false);
   const [expiraLocal, setExpiraLocal] = useState(expiraEm);
   const [reenvioLiberadoEm, setReenvioLiberadoEm] = useState(() => Date.now() + ESPERA_REENVIO_MS);
-  const [agora, setAgora] = useState(Date.now());
+  const [agora, setAgora] = useState(() => Date.now());
+  const [abertoAntes, setAbertoAntes] = useState(open);
+  const [expiraAntes, setExpiraAntes] = useState(expiraEm);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Cada abertura começa do zero. Quem usa o modal deve montá-lo só quando
   // abre (com key), para que o primeiro render já tenha o prazo certo — senão
   // o campo nasce desabilitado e o foco automático pula para outro botão.
+  if (open !== abertoAntes || expiraEm !== expiraAntes) {
+    setAbertoAntes(open);
+    setExpiraAntes(expiraEm);
+    if (open) {
+      setCodigo('');
+      setErro('');
+      setTipoErro('');
+      setAviso('');
+      setSucesso(false);
+      setExpiraLocal(expiraEm);
+    }
+  }
+
+  // Os prazos que dependem do relógio são reiniciados fora do render
   useEffect(() => {
     if (!open) return;
-    setCodigo('');
-    setErro('');
-    setTipoErro('');
-    setAviso('');
-    setSucesso(false);
-    setExpiraLocal(expiraEm);
-    setReenvioLiberadoEm(Date.now() + ESPERA_REENVIO_MS);
-    setAgora(Date.now());
+    const id = window.setTimeout(() => {
+      setReenvioLiberadoEm(Date.now() + ESPERA_REENVIO_MS);
+      setAgora(Date.now());
+    }, 0);
+    return () => window.clearTimeout(id);
   }, [open, expiraEm]);
 
   // Relógio dos contadores
@@ -86,9 +102,10 @@ export function VerificarEmailModal({ open, email, expiraEm, onClose, onVerifica
         onVerificado(verificadoEm);
         onClose();
       }, 1400);
-    } catch (err: any) {
-      setTipoErro(err.dados?.codigo ?? '');
-      setErro(err.message || 'Não foi possível verificar o código.');
+    } catch (err: unknown) {
+      const dados = err instanceof Error ? (err as ErroApi).dados : undefined;
+      setTipoErro(dados?.codigo ?? '');
+      setErro((err instanceof Error && err.message) || 'Não foi possível verificar o código.');
       setCodigo('');
     } finally {
       setVerificando(false);
@@ -112,8 +129,8 @@ export function VerificarEmailModal({ open, email, expiraEm, onClose, onVerifica
       setExpiraLocal(Date.now() + (res.expira_em_segundos ?? 900) * 1000);
       setReenvioLiberadoEm(Date.now() + ESPERA_REENVIO_MS);
       setAviso('Enviamos um novo código. O anterior não vale mais.');
-    } catch (err: any) {
-      setErro(err.message || 'Não foi possível reenviar o código.');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Não foi possível reenviar o código.');
     } finally {
       setReenviando(false);
     }
