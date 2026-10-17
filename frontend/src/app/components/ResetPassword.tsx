@@ -60,8 +60,8 @@ export function ResetPassword({ navigate }: Props) {
     try {
       await authApi.esqueciSenha(email.trim());
       setStep('sent');
-    } catch (err: any) {
-      setErro(err.message || 'Erro ao solicitar a redefinição.');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao solicitar a redefinição.');
     } finally {
       setCarregando(false);
     }
@@ -87,8 +87,8 @@ export function ResetPassword({ navigate }: Props) {
     try {
       await authApi.redefinirSenha(tokenDaUrl, novaSenha);
       setStep('done');
-    } catch (err: any) {
-      setErro(err.message || 'Erro ao redefinir a senha.');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao redefinir a senha.');
     } finally {
       setCarregando(false);
     }
@@ -115,7 +115,7 @@ export function ResetPassword({ navigate }: Props) {
                 placeholder="seu@email.com"
                 autoComplete="email"
                 value={email}
-                onChange={(e: any) => setEmail(e.target.value)}
+                onChange={(e) =>setEmail(e.target.value)}
               />
               {erro && (
                 <p className="rounded-xl bg-[#FFF1F2] px-4 py-2.5 text-sm text-[#C8102E]">{erro}</p>
@@ -164,7 +164,7 @@ export function ResetPassword({ navigate }: Props) {
                 type={showPw ? 'text' : 'password'}
                 placeholder="Mínimo 6 caracteres"
                 value={novaSenha}
-                onChange={(e: any) => setNovaSenha(e.target.value)}
+                onChange={(e) =>setNovaSenha(e.target.value)}
                 rightElement={
                   <button
                     type="button"
@@ -182,7 +182,7 @@ export function ResetPassword({ navigate }: Props) {
                 type="password"
                 placeholder="Repita a nova senha"
                 value={confirmarSenha}
-                onChange={(e: any) => setConfirmarSenha(e.target.value)}
+                onChange={(e) =>setConfirmarSenha(e.target.value)}
               />
               {erro && (
                 <p className="rounded-xl bg-[#FFF1F2] px-4 py-2.5 text-sm text-[#C8102E]">{erro}</p>

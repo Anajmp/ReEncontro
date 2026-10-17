@@ -1,51 +1,72 @@
 import { Search, RotateCcw } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { StatusBadge } from './shared/StatusBadge';
 import { AdminLayout } from './shared/AdminLayout';
 import { AdminPanel, CategoryBadge, adminSearchInputClass, adminSelectClass } from './shared/AdminChrome';
 import type { Screen } from '../App';
+import type { Status } from './shared/data';
 import { itensApi, reivindicacoesApi } from '../../lib/api';
 
 interface Props {
   navigate: (s: Screen) => void;
 }
 
+// Item finalizado como devolvido por itensApi.listarFinalizados()
+interface ItemFinalizado {
+  id: number;
+  name: string;
+  category: string;
+  location: string;
+  status: Status;
+  image: string;
+  finalizadoEmRaw?: string | null;
+  finalizadoEm?: string;
+  finalizadoPor: string;
+  motivoDescarte: string;
+}
+
 export function Finalized({ navigate }: Props) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('Entregue');
-  const [itens, setItens] = useState<any[]>([]);
+  const [itens, setItens] = useState<ItemFinalizado[]>([]);
   const [loading, setLoading] = useState(true);
+  // "Agora" de referência pra janela de 24h, atualizado a cada carregamento
+  const [agora, setAgora] = useState(() => Date.now());
 
-  async function carregar() {
-    setLoading(true);
-    try {
-      if (statusFilter === 'all') {
-        // Busca os dois status e junta
-        const [entregues, descartados] = await Promise.all([
+  // Busca os itens do filtro atual. Quem quiser mostrar o "Carregando..."
+  // chama setLoading(true) antes (no handler), não aqui dentro.
+  const carregar = useCallback(() => {
+    const busca: Promise<ItemFinalizado[]> = statusFilter === 'all'
+      // Busca os dois status e junta
+      ? Promise.all([
           itensApi.listarFinalizados('entregue'),
           itensApi.listarFinalizados('descartado'),
-        ]);
-        setItens([...entregues, ...descartados]);
-      } else {
-        const status = statusFilter === 'Entregue' ? 'entregue' : 'descartado';
-        setItens(await itensApi.listarFinalizados(status));
-      }
-    } catch (err) {
-      console.error('Erro ao carregar finalizados:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
+        ]).then(([entregues, descartados]) => [...entregues, ...descartados])
+      : itensApi.listarFinalizados(statusFilter === 'Entregue' ? 'entregue' : 'descartado');
+
+    return busca
+      .then(dados => setItens(dados))
+      .catch(err => console.error('Erro ao carregar finalizados:', err))
+      .finally(() => {
+        setAgora(Date.now());
+        setLoading(false);
+      });
+  }, [statusFilter]);
 
   // Recarrega sempre que o filtro de status muda
-  useEffect(() => { carregar(); }, [statusFilter]);
+  useEffect(() => { carregar(); }, [carregar]);
+
+  function trocarFiltro(valor: string) {
+    if (valor !== statusFilter) setLoading(true);
+    setStatusFilter(valor);
+  }
 
   // Verifica se a entrega ainda está na janela de 24h (RN-015)
-  function podeReverter(item: any) {
+  function podeReverter(item: ItemFinalizado) {
     if (item.status !== 'Entregue' || !item.finalizadoEmRaw) return false;
-    const horas = (Date.now() - new Date(item.finalizadoEmRaw).getTime()) / 36e5;
+    const horas = (agora - new Date(item.finalizadoEmRaw).getTime()) / 36e5;
     return horas <= 24;
   }
 
@@ -53,9 +74,10 @@ export function Finalized({ navigate }: Props) {
     if (!confirm(`Reverter a entrega de "${nome}"? O item voltará para disponível.`)) return;
     try {
       await reivindicacoesApi.reverterEntrega(itemId);
+      setLoading(true);
       carregar();
-    } catch (err: any) {
-      alert(err.message || 'Erro ao reverter a entrega');
+    } catch (err: unknown) {
+      alert((err instanceof Error && err.message) || 'Erro ao reverter a entrega');
     }
   }
 
@@ -77,7 +99,7 @@ export function Finalized({ navigate }: Props) {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={trocarFiltro}>
             <SelectTrigger className={`w-44 ${adminSelectClass}`}>
               <SelectValue placeholder="Status" />
             </SelectTrigger>

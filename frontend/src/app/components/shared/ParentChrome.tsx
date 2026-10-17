@@ -3,8 +3,6 @@ import { AlertCircle, Clock, CheckCircle, Search, XCircle, GraduationCap } from 
 import { CategoryBadge, getCatConfig } from './AdminChrome';
 import { cn } from '../ui/utils';
 
-export const PARENT_FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
-
 export function ParentInputField({
   label,
   leftIcon,

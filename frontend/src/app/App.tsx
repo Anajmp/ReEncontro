@@ -1,4 +1,4 @@
-import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
+import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import { PublicListing } from './components/PublicListing';
 import { ItemDetail } from './components/ItemDetail';
 import { Login } from './components/Login';
@@ -70,16 +70,8 @@ function useScreenNavigate() {
   };
 }
 
-// Descobre qual screen corresponde à URL atual (pra DemoNav destacar a tela certa)
-function useCurrentScreen(): Screen {
-  const location = useLocation();
-  const entry = Object.entries(screenToPath).find(([, path]) => path === location.pathname);
-  return (entry?.[0] as Screen) ?? 'public-listing';
-}
-
 export default function App() {
   const navigate = useScreenNavigate();
-  const current = useCurrentScreen();
 
   return (
     <LoginSplashProvider>

@@ -14,7 +14,6 @@ import { useNavigate } from 'react-router-dom';
 import { KeyRound, UserPlus } from 'lucide-react';
 
 const FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
-const VERMELHO = '#C8102E';
 
 type Destino = 'login' | 'cadastro';
 type Origem = ReactMouseEvent<HTMLElement> | null | undefined;

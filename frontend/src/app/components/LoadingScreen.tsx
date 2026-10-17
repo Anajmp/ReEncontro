@@ -115,9 +115,10 @@ export function LoadingScreen({ onFinish }: LoadingScreenProps) {
   const lenteRef = useRef<SVGGElement>(null);
   const recorteRef = useRef<SVGCircleElement>(null);
   const vidroRef = useRef<SVGCircleElement>(null);
-  const reduzMovimento = useRef(
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  ).current;
+  // Lido uma vez só, na montagem
+  const [reduzMovimento] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
 
   function marcarAchado(id: number) {
     if (achadosRef.current.has(id)) return;
@@ -155,7 +156,9 @@ export function LoadingScreen({ onFinish }: LoadingScreenProps) {
   // só desmontar a tela
   const timersSaidaRef = useRef<number[]>([]);
   const onFinishRef = useRef(onFinish);
-  onFinishRef.current = onFinish;
+  useEffect(() => {
+    onFinishRef.current = onFinish;
+  });
   useEffect(() => () => timersSaidaRef.current.forEach(t => window.clearTimeout(t)), []);
 
   // Dados chegaram e a busca já teve seu tempo: a lupa pousa no centro,

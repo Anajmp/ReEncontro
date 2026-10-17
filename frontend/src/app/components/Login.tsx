@@ -39,8 +39,8 @@ export function Login({ navigate }: Props) {
       } else {
         navigate("parent-dashboard");
       }
-    } catch (err: any) {
-      setErro(err.message || "Erro ao fazer login");
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || "Erro ao fazer login");
     } finally {
       setCarregando(false);
     }

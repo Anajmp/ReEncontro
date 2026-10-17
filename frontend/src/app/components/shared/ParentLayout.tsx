@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Screen } from '../../App';
-import { PARENT_FONT } from './ParentChrome';
+import { PARENT_FONT } from './estilos';
 import { SiteFooter, SiteHeader } from './SiteHeader';
 
 interface Props {

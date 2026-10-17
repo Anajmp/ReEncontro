@@ -6,7 +6,8 @@ import {
 import type { Screen } from '../../App';
 import { useAuth } from '../../../contexts/AuthContext';
 import { LupaMarca } from './LupaMarca';
-import { ADMIN_FONT, PAGE_INFO } from './AdminChrome';
+import { ADMIN_FONT } from './estilos';
+import { PAGE_INFO } from './paginasAdmin';
 import { UserAvatar } from './UserAvatar';
 import { BannerIlustracao, PageBanner } from './PageBanner';
 
@@ -122,9 +123,12 @@ export function AdminLayout({ children, current, navigate }: Props) {
     };
   }, [sidebarOpen]);
 
-  useEffect(() => {
-    fecharMenu();
-  }, [current]);
+  // Fecha o menu quando a tela muda (ajuste durante o render, sem efeito)
+  const [telaAnterior, setTelaAnterior] = useState(current);
+  if (current !== telaAnterior) {
+    setTelaAnterior(current);
+    setSidebarOpen(false);
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F3F0]" style={ADMIN_FONT}>

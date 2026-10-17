@@ -7,6 +7,7 @@ import { Package, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { AdminLayout } from './shared/AdminLayout';
 import { StatusBadge } from './shared/StatusBadge';
 import type { Screen } from '../App';
+import type { Status } from './shared/data';
 import {
   MetricCard, CardHeader, CustomBarTooltip, getCatConfig, AdminPanel,
 } from './shared/AdminChrome';
@@ -25,8 +26,36 @@ function nomeMes(mes: string): string {
 const plural = (n: number, singular: string, pluralForm: string) =>
   `${n} ${n === 1 ? singular : pluralForm}`;
 
+// Formato devolvido por relatoriosApi.dashboard() (GET /api/relatorios/dashboard),
+// só com os campos usados nesta tela
+interface ReivindicacaoRecente {
+  id: number;
+  itemName: string;
+  itemImage: string;
+  claimantName: string;
+  studentName: string;
+  room: string;
+  date: string;
+  status: Status;
+}
+
+interface DadosDashboard {
+  itens_disponiveis: number;
+  disponiveis_semana: number;
+  pendentes: number;
+  pendentes_hoje: number;
+  em_processo: number;
+  em_processo_prazo: number;
+  entregues_mes: number;
+  entregues_mes_anterior: number;
+  variacao_entregues: number | null;
+  por_mes: { mes: string; encontrados: number; devolvidos: number }[];
+  por_categoria: { categoria: string; total: number }[];
+  reivindicacoes_recentes: ReivindicacaoRecente[];
+}
+
 export function AdminDashboard({ navigate }: Props) {
-  const [dados, setDados] = useState<any>(null);
+  const [dados, setDados] = useState<DadosDashboard | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
 
@@ -37,7 +66,7 @@ export function AdminDashboard({ navigate }: Props) {
       .finally(() => setCarregando(false));
   }, []);
 
-  if (carregando || erro) {
+  if (carregando || erro || !dados) {
     return (
       <AdminLayout current="admin-dashboard" navigate={navigate}>
         <div className="mx-auto max-w-6xl">
@@ -49,19 +78,19 @@ export function AdminDashboard({ navigate }: Props) {
     );
   }
 
-  const monthlyData = dados.por_mes.map((m: any) => ({
+  const monthlyData = dados.por_mes.map(m => ({
     month: nomeMes(m.mes),
     encontrados: m.encontrados,
     entregues: m.devolvidos,
   }));
 
-  const categoryData = dados.por_categoria.map((c: any) => ({
+  const categoryData = dados.por_categoria.map(c => ({
     name: c.categoria,
     value: c.total,
     color: getCatConfig(c.categoria).color,
   }));
 
-  const recentes: any[] = dados.reivindicacoes_recentes;
+  const recentes: ReivindicacaoRecente[] = dados.reivindicacoes_recentes;
   const variacao: number | null = dados.variacao_entregues;
 
   return (
@@ -148,7 +177,7 @@ export function AdminDashboard({ navigate }: Props) {
                       paddingAngle={3}
                       dataKey="value"
                     >
-                      {categoryData.map((entry: any, index: number) => (
+                      {categoryData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -156,7 +185,7 @@ export function AdminDashboard({ navigate }: Props) {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="mt-3 space-y-2">
-                  {categoryData.map((d: any) => (
+                  {categoryData.map(d => (
                     <div key={d.name} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
                         <div className="size-2.5 rounded-sm" style={{ backgroundColor: d.color }} />

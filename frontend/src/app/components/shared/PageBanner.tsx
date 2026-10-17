@@ -111,15 +111,6 @@ export function EstadoVazio({
   );
 }
 
-/** Classes dos chips (mesmo estilo das categorias da listagem). */
-export function chipClasses(ativo: boolean) {
-  return `shrink-0 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-150 ${
-    ativo
-      ? 'bg-[#C8102E] text-white shadow-sm shadow-[#C8102E]/20'
-      : 'border border-[#E7E5E4] bg-white text-[#57534E] hover:border-[#C8102E]/30 hover:text-[#C8102E]'
-  }`;
-}
-
 /** Card branco padrão (mesmo do card de filtros da listagem). */
 export const CARD = 'rounded-2xl border border-black/[0.05] bg-white p-4 shadow-sm sm:p-5';
 

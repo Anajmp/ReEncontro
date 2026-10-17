@@ -3,15 +3,36 @@ import { Plus, Pencil, GraduationCap, FileText, User, Clock, ChevronDown } from 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { ParentLayout } from './shared/ParentLayout';
 import { ClaimCard, ParentInputField } from './shared/ParentChrome';
-import { BannerIlustracao, BOTAO_PRIMARIO, CARD, chipClasses, EstadoVazio, PageBanner } from './shared/PageBanner';
+import { BannerIlustracao, BOTAO_PRIMARIO, CARD, EstadoVazio, PageBanner } from './shared/PageBanner';
+import { chipClasses } from './shared/estilos';
 import { reivindicacoesApi } from '../../lib/api';
-import type { Student } from './shared/data';
 import type { Screen } from '../App';
 import { alunosApi } from '../../lib/api';
 
 interface Props {
   navigate: (s: Screen) => void;
   activeTab: 'claims' | 'students';
+}
+
+// Aluno no formato devolvido por alunosApi.listarMeus() (traduzirAluno)
+interface AlunoTela {
+  id: number;
+  name: string;
+  room: string;
+  period: string;
+}
+
+// Reivindicação no formato devolvido por reivindicacoesApi.listarMinhas()
+interface ReivindicacaoTela {
+  id: number;
+  itemName: string;
+  itemImage: string;
+  studentName: string;
+  studentRoom: string;
+  studentPeriod: string;
+  date: string;
+  status: string;
+  motivoRejeicao: string;
 }
 function StudentModal({
   open,
@@ -21,7 +42,7 @@ function StudentModal({
 }: {
   open: boolean;
   onClose: () => void;
-  student?: any;
+  student?: AlunoTela;
   onSaved: () => void;
 }) {
   const [nome, setNome] = useState('');
@@ -29,16 +50,21 @@ function StudentModal({
   const [periodo, setPeriodo] = useState('Manhã');
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
+  const [openAnterior, setOpenAnterior] = useState(false);
+  const [studentAnterior, setStudentAnterior] = useState(student);
 
-  // Preenche os campos quando abre (edição) ou limpa (novo)
-  useEffect(() => {
+  // Preenche os campos quando abre (edição) ou limpa (novo).
+  // Ajusta o estado durante o render quando `open`/`student` mudam (sem useEffect).
+  if (open !== openAnterior || student !== studentAnterior) {
+    setOpenAnterior(open);
+    setStudentAnterior(student);
     if (open) {
       setNome(student?.name ?? '');
       setSala(student?.room ?? '');
       setPeriodo(student?.period ?? 'Manhã');
       setErro('');
     }
-  }, [open, student]);
+  }
 
   // Converte o label da tela para o valor que o backend espera
   const periodoMap: Record<string, string> = {
@@ -70,8 +96,8 @@ function StudentModal({
 
       onSaved();   // recarrega a lista
       onClose();
-    } catch (err: any) {
-      setErro(err.message || 'Erro ao salvar o aluno.');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao salvar o aluno.');
     } finally {
       setSalvando(false);
     }
@@ -98,7 +124,7 @@ function StudentModal({
             type="text"
             placeholder="Nome completo do aluno"
             value={nome}
-            onChange={(e: any) => setNome(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNome(e.target.value)}
           />
           <ParentInputField
             label="Turma / Série"
@@ -106,7 +132,7 @@ function StudentModal({
             type="text"
             placeholder="Ex: 2º EM A"
             value={sala}
-            onChange={(e: any) => setSala(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSala(e.target.value)}
           />
           <div>
             <label className="mb-1.5 block text-sm font-semibold text-[#1C1917]">Período</label>
@@ -173,11 +199,11 @@ const periodoColor: Record<string, string> = {
 
 export function ParentDashboard({ navigate, activeTab }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingStudent, setEditingStudent] = useState<Student | undefined>();
+  const [editingStudent, setEditingStudent] = useState<AlunoTela | undefined>();
   const [claimsSubTab, setClaimsSubTab] = useState<'claims' | 'history'>('claims');
 
-  const [minhasClaims, setMinhasClaims] = useState<any[]>([]);
-  const [myStudents, setMyStudents] = useState<any[]>([]);
+  const [minhasClaims, setMinhasClaims] = useState<ReivindicacaoTela[]>([]);
+  const [myStudents, setMyStudents] = useState<AlunoTela[]>([]);
 
   async function carregarAlunos() {
     try {
@@ -188,7 +214,11 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
     }
   }
 
-  useEffect(() => { carregarAlunos(); }, []);
+  useEffect(() => {
+    alunosApi.listarMeus()
+      .then(setMyStudents)
+      .catch(err => console.error('Erro ao carregar alunos:', err));
+  }, []);
   useEffect(() => {
     reivindicacoesApi.listarMinhas()
       .then(setMinhasClaims)

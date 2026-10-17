@@ -24,6 +24,12 @@ interface Props {
   navigate: (s: Screen) => void;
 }
 
+// Categoria / ponto de coleta devolvidos por referenciasApi (SELECT id, nome)
+interface Referencia {
+  id: number;
+  nome: string;
+}
+
 export function RegisterItem({ navigate }: Props) {
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -37,8 +43,8 @@ export function RegisterItem({ navigate }: Props) {
   const [dataEncontrado, setDataEncontrado] = useState(new Date().toISOString().split('T')[0]);
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
-    const [categorias, setCategorias] = useState<any[]>([]);
-  const [pontosColeta, setPontosColeta] = useState<any[]>([]);
+    const [categorias, setCategorias] = useState<Referencia[]>([]);
+  const [pontosColeta, setPontosColeta] = useState<Referencia[]>([]);
 
   useEffect(() => {
     referenciasApi.categorias().then(setCategorias).catch(console.error);
@@ -98,8 +104,8 @@ export function RegisterItem({ navigate }: Props) {
       setPhotos([]); setNome(''); setDescricao(''); setCategoriaId('');
       setLocal(''); setPontoColetaId('');
       setSaved(true);
-    } catch (err: any) {
-      setErro(err.message || 'Erro ao cadastrar o item.');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao cadastrar o item.');
     } finally {
       setSalvando(false);
     }

@@ -10,11 +10,26 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { StatusBadge } from './shared/StatusBadge';
 import { SiteFooter, SiteHeader } from './shared/SiteHeader';
 import type { Screen } from '../App';
+import type { Status } from './shared/data';
 
 const FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
 
 interface Props {
   navigate: (s: Screen) => void;
+}
+
+// Item como devolvido por itensApi.detalhe() (já traduzido pro formato da tela)
+interface ItemDetalhe {
+  id: number;
+  name: string;
+  category: string;
+  location: string;
+  date: string;
+  status: Status;
+  image: string;
+  images: string[];
+  description: string;
+  collectionPoint: string;
 }
 
 function ClaimModal({ open, onClose, itemName }: { open: boolean; onClose: () => void; itemName: string }) {
@@ -96,7 +111,7 @@ export function ItemDetail({ navigate }: Props) {
   const { id } = useParams();
   const [claimOpen, setClaimOpen] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
-  const [item, setItem] = useState<any>(null);
+  const [item, setItem] = useState<ItemDetalhe | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

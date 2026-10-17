@@ -3,10 +3,8 @@ import {
   BookOpen, Shirt, Watch, Footprints, Package, FileText,
   TrendingUp, TrendingDown,
 } from 'lucide-react';
-import type { Screen } from '../../App';
 import { cn } from '../ui/utils';
-
-export const ADMIN_FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
+import { ADMIN_FONT } from './estilos';
 
 export const adminPanelClass = 'rounded-2xl border border-black/[0.05] bg-white shadow-sm';
 
@@ -24,27 +22,6 @@ export const adminBtnPrimary =
 
 export const adminBtnOutline =
   'rounded-xl border border-[#E7E5E4] bg-white font-semibold text-[#78716C] hover:bg-[#F5F3F0] hover:text-[#1C1917]';
-
-export const PAGE_INFO: Record<Screen, { title: string; subtitle: string }> = {
-  'public-listing': { title: 'Listagem', subtitle: '' },
-  'item-detail': { title: 'Detalhe', subtitle: '' },
-  login: { title: 'Login', subtitle: '' },
-  register: { title: 'Cadastro', subtitle: '' },
-  'reset-password': { title: 'Redefinir senha', subtitle: '' },
-  'parent-dashboard': { title: 'Painel', subtitle: '' },
-  'my-students': { title: 'Alunos', subtitle: '' },
-  'parent-profile': { title: 'Meu Perfil', subtitle: '' },
-  'completar-cadastro': { title: 'Completar cadastro', subtitle: 'Cadastre o primeiro aluno para continuar' },
-  'admin-dashboard': { title: 'Dashboard', subtitle: 'Visão geral dos achados e perdidos' },
-  'register-item': { title: 'Cadastrar Item', subtitle: 'Adicione um novo item encontrado ao sistema' },
-  'available-items': { title: 'Itens Disponíveis', subtitle: 'Gerencie os itens aguardando retirada' },
-  'pending-claims': { title: 'Pendentes', subtitle: 'Reivindicações aguardando validação' },
-  'in-process': { title: 'Em Processo', subtitle: 'Reivindicações aprovadas aguardando entrega' },
-  finalized: { title: 'Finalizados', subtitle: 'Histórico de itens entregues e descartados' },
-  reports: { title: 'Relatórios', subtitle: 'Análise e exportação de dados' },
-  'staff-management': { title: 'Gestão de Funcionárias', subtitle: 'Contas com acesso ao sistema administrativo' },
-    'lgpd': { title: 'Privacidade (LGPD)', subtitle: 'Exclusão de dados pessoais a pedido do titular' },
-};
 
 // Cores de texto com contraste ≥ 4.5:1 sobre o fundo (WCAG AA).
 // Usado tanto na área admin quanto na listagem pública.

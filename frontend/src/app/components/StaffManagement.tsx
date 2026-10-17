@@ -17,12 +17,32 @@ interface Props {
   navigate: (s: Screen) => void;
 }
 
+// Funcionária no formato da tela (usuariosApi.listarFuncionarias → traduzirFuncionaria)
+interface Funcionaria {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  isDiretora: boolean;
+  role: string;
+  active: boolean;
+  lastLogin: string;
+}
+
+// Corpo enviado ao criar/editar funcionária
+interface DadosFuncionaria {
+  nome: string;
+  email: string;
+  telefone?: string;
+  is_diretora: boolean;
+}
+
 function StaffModal({
   open, onClose, member, onSaved,
 }: {
   open: boolean;
   onClose: () => void;
-  member?: any;
+  member?: Funcionaria;
   onSaved: () => void;
 }) {
   const [nome, setNome] = useState('');
@@ -33,7 +53,11 @@ function StaffModal({
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
 
-  useEffect(() => {
+  // Preenche o formulário ao abrir (ou ao trocar a funcionária editada).
+  // Ajuste durante o render comparando com o valor anterior, sem efeito.
+  const [anterior, setAnterior] = useState<{ open: boolean; member?: Funcionaria }>({ open: false });
+  if (open !== anterior.open || member !== anterior.member) {
+    setAnterior({ open, member });
     if (open) {
       setNome(member?.name ?? '');
       setEmail(member?.email ?? '');
@@ -42,7 +66,7 @@ function StaffModal({
       setSenha('');
       setErro('');
     }
-  }, [open, member]);
+  }
 
   async function salvar() {
     setErro('');
@@ -57,7 +81,7 @@ function StaffModal({
 
     setSalvando(true);
     try {
-      const dados: any = {
+      const dados: DadosFuncionaria = {
         nome: nome.trim(),
         email: email.trim(),
         telefone: telefone.trim() || undefined,
@@ -72,8 +96,8 @@ function StaffModal({
 
       onSaved();
       onClose();
-    } catch (err: any) {
-      setErro(err.message || 'Erro ao salvar a funcionária.');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao salvar a funcionária.');
     } finally {
       setSalvando(false);
     }
@@ -143,31 +167,34 @@ function StaffModal({
 
 export function StaffManagement({ navigate }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<any | undefined>();
-  const [staff, setStaff] = useState<any[]>([]);
+  const [editing, setEditing] = useState<Funcionaria | undefined>();
+  const [staff, setStaff] = useState<Funcionaria[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Busca a lista; só mexe no estado depois da resposta
+  function buscar() {
+    return usuariosApi.listarFuncionarias()
+      .then((lista: Funcionaria[]) => setStaff(lista))
+      .catch(err => console.error('Erro ao carregar funcionárias:', err))
+      .finally(() => setLoading(false));
+  }
 
   async function carregar() {
     setLoading(true);
-    try {
-      setStaff(await usuariosApi.listarFuncionarias());
-    } catch (err) {
-      console.error('Erro ao carregar funcionárias:', err);
-    } finally {
-      setLoading(false);
-    }
+    await buscar();
   }
 
-  useEffect(() => { carregar(); }, []);
+  // loading já começa true, então a primeira carga não precisa ligá-lo
+  useEffect(() => { buscar(); }, []);
 
-  async function alternarStatus(member: any) {
+  async function alternarStatus(member: Funcionaria) {
     const acao = member.active ? 'desativar' : 'ativar';
     if (!confirm(`Deseja ${acao} a conta de ${member.name}?`)) return;
     try {
       await usuariosApi.alterarStatus(member.id, !member.active);
       carregar();
-    } catch (err: any) {
-      alert(err.message || 'Erro ao alterar o status');
+    } catch (err: unknown) {
+      alert((err instanceof Error && err.message) || 'Erro ao alterar o status');
     }
   }
 

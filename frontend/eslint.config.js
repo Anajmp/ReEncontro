@@ -26,16 +26,37 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
-      // TEMPORÁRIO: regras com pendências que exigem decisão (ver PR do lint).
-      // Ficam como aviso para não quebrar o CI; voltar para "error" quando zeradas.
       "@typescript-eslint/no-unused-vars": [
-        "warn",
+        "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none" },
       ],
+    },
+  },
+  {
+    // TEMPORÁRIO: arquivos com alterações em andamento na feature de
+    // verificação de e-mail. Ficam como aviso até essa branch ser integrada;
+    // depois corrigir os avisos e remover este bloco.
+    files: [
+      "src/lib/api.ts",
+      "src/contexts/AuthContext.tsx",
+      "src/app/components/PublicListing.tsx",
+      "src/app/components/ParentProfile.tsx",
+      "src/app/components/Register.tsx",
+      "src/app/components/shared/AuthChrome.tsx",
+      "src/app/components/shared/SiteHeader.tsx",
+    ],
+    rules: {
       "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
       "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/refs": "warn",
-      "react-hooks/purity": "warn",
+    },
+  },
+  {
+    // Componentes gerados pelo shadcn/ui exportam variantes (ex.: buttonVariants)
+    // junto com o componente, por convenção da biblioteca.
+    files: ["src/app/components/ui/**"],
+    rules: {
+      "react-refresh/only-export-components": "off",
     },
   },
   {

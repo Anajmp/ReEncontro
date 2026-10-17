@@ -1,4 +1,4 @@
-import { useState, useEffect} from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, Pencil, Trash2, AlertTriangle, Plus } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -10,6 +10,7 @@ import {
 } from './shared/AdminChrome';
 import { itensApi, referenciasApi } from '../../lib/api';
 import type { Screen } from '../App';
+import type { Status } from './shared/data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Label } from './ui/label';
 
@@ -17,38 +18,61 @@ interface Props {
   navigate: (s: Screen) => void;
 }
 
+// Item como devolvido por itensApi.listar() (já traduzido pro formato da tela)
+interface ItemDisponivel {
+  id: number;
+  name: string;
+  category: string;
+  location: string;
+  date: string;
+  status: Status;
+  image: string;
+  description: string;
+  daysFound: number;
+}
+
+// Categoria de GET /api/categorias
+interface Categoria {
+  id: number;
+  nome: string;
+}
+
 function EditItemModal({ item, open, onClose, onSaved }: {
-  item: any | null; open: boolean; onClose: () => void; onSaved: () => void;
+  item: ItemDisponivel | null; open: boolean; onClose: () => void; onSaved: () => void;
 }) {
-  const [nome, setNome] = useState('');
-  const [descricao, setDescricao] = useState('');
+  const [nome, setNome] = useState(item?.name || '');
+  const [descricao, setDescricao] = useState(item?.description || '');
+  // categoria e ponto: o item traduzido tem nome, mas o backend quer ID.
+  // Por simplicidade, o usuário reescolhe (começa vazio).
   const [categoriaId, setCategoriaId] = useState('');
-  const [local, setLocal] = useState('');
+  const [local, setLocal] = useState(item?.location || '');
   const [pontoColetaId, setPontoColetaId] = useState('');
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
-  const [categorias, setCategorias] = useState<any[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
 
   useEffect(() => {
     referenciasApi.categorias().then(setCategorias).catch(console.error);
   }, []);
 
-  // Preenche com os dados atuais quando abre
-  useEffect(() => {
+  // Preenche com os dados atuais quando abre (ajuste de estado durante o
+  // render quando item/open mudam, em vez de sincronizar via efeito)
+  const [anterior, setAnterior] = useState({ item, open });
+  if (anterior.item !== item || anterior.open !== open) {
+    setAnterior({ item, open });
     if (item) {
       setNome(item.name || '');
       setDescricao(item.description || '');
       setLocal(item.location || '');
-      // categoria e ponto: o item traduzido tem nome, mas o backend quer ID.
-      // Por simplicidade, o usuário reescolhe (começa vazio).
       setCategoriaId('');
       setPontoColetaId('');
     }
-  }, [item, open]);
+  }
 
   if (!item) return null;
 
   async function salvar() {
+    if (!item) return;
     setErro('');
     if (!nome || !descricao || !categoriaId || !local || !pontoColetaId) {
       setErro('Preencha todos os campos');
@@ -65,8 +89,8 @@ function EditItemModal({ item, open, onClose, onSaved }: {
       });
       onSaved();
       onClose();
-    } catch (err: any) {
-      setErro(err.message || 'Erro ao salvar');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao salvar');
     } finally {
       setSalvando(false);
     }
@@ -129,29 +153,26 @@ function EditItemModal({ item, open, onClose, onSaved }: {
 export function AvailableItems({ navigate }: Props) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
-  const [items, setItems] = useState<any[]>([]);
-  const [editing, setEditing] = useState<any | null>(null);
+  const [items, setItems] = useState<ItemDisponivel[]>([]);
+  const [editing, setEditing] = useState<ItemDisponivel | null>(null);
   const [editOpen, setEditOpen] = useState(false);
-  
 
-  async function carregar() {
-    try {
-      const dados = await itensApi.listar();
-      setItems(dados);
-    } catch (err) {
-      console.error('Erro ao carregar itens:', err);
-    }
-  }
 
-  useEffect(() => { carregar(); }, []);
+  const carregar = useCallback(() => {
+    return itensApi.listar()
+      .then((dados: ItemDisponivel[]) => setItems(dados))
+      .catch(err => console.error('Erro ao carregar itens:', err));
+  }, []);
+
+  useEffect(() => { carregar(); }, [carregar]);
 
   async function descartar(id: number, nome: string) {
     if (!confirm(`Descartar o item "${nome}"? Ele sairá da listagem.`)) return;
     try {
       await itensApi.descartar(id);
       carregar();
-    } catch (err: any) {
-      alert(err.message || 'Erro ao descartar');
+    } catch (err: unknown) {
+      alert((err instanceof Error && err.message) || 'Erro ao descartar');
     }
   }
 
