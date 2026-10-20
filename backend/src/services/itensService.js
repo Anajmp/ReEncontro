@@ -14,8 +14,8 @@ export const itensService = {
   },
 
   // Busca um item; lança erro 404 se não existir
-  async buscarPorId(id) {
-    const item = await itensRepository.findById(id);
+  async buscarPorId(id, { incluirInternos = false } = {}) {
+    const item = await itensRepository.findById(id, { incluirInternos });
     if (!item) {
       throw { status: 404, mensagem: "Item não encontrado" };
     }
@@ -45,7 +45,7 @@ export const itensService = {
       });
     }
 
-    return itensRepository.findById(itemId);
+    return itensRepository.findById(itemId, { incluirInternos: true });
   },
 
   async descartar(id, funcionariaId, motivo) {

@@ -28,6 +28,9 @@ export async function enviarEmail({ para, assunto, html }) {
       subject: assunto,
       htmlContent: html,
     }),
+    // Sem timeout, um Brevo lento deixa a requisição pendurada (o envio do
+    // código de verificação é aguardado pela resposta da API).
+    signal: AbortSignal.timeout(10000),
   });
 
   if (!res.ok) {

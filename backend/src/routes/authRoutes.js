@@ -8,7 +8,10 @@ import { emailVerificacaoController } from "../controllers/emailVerificacaoContr
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import {
   limiteAuth,
+  limiteAuthPorIp,
   limiteRecuperacaoSenha,
+  limiteRecuperacaoSenhaPorIp,
+  limiteRedefinicaoSenha,
   limiteVerificacaoEmail,
 } from "../middlewares/rateLimitMiddleware.js";
 
@@ -17,19 +20,20 @@ const router = Router();
 // POST /api/auth/esqueci-senha — público
 router.post(
   "/esqueci-senha",
+  limiteRecuperacaoSenhaPorIp,
   limiteRecuperacaoSenha,
   passwordResetController.solicitar,
 );
 // POST /api/auth/redefinir-senha — público (o token é a autenticação)
 router.post(
   "/redefinir-senha",
-  limiteRecuperacaoSenha,
+  limiteRedefinicaoSenha,
   passwordResetController.redefinir,
 );
 // POST /api/auth/login
-router.post("/login", limiteAuth, authController.login);
+router.post("/login", limiteAuthPorIp, limiteAuth, authController.login);
 // POST /api/auth/register
-router.post("/registrar", limiteAuth, authController.registrar);
+router.post("/registrar", limiteAuthPorIp, limiteAuth, authController.registrar);
 // POST /api/auth/google — público
 router.post("/google", authController.loginGoogle);
 // POST /api/auth/completar-cadastro — precisa estar logado

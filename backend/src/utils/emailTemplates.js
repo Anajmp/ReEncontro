@@ -19,7 +19,25 @@ function base(conteudo) {
   `;
 }
 
-export const emailTemplates = {
+// Escapa texto para HTML. Nome do requerente, do aluno e a sala vêm de um
+// formulário público: sem isso, qualquer pessoa conseguiria mandar HTML e
+// links próprios pelo remetente da escola (phishing).
+function escaparHtml(valor) {
+  return String(valor ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escaparCampos(dados = {}) {
+  return Object.fromEntries(
+    Object.entries(dados).map(([chave, valor]) => [chave, escaparHtml(valor)]),
+  );
+}
+
+const templates = {
   // Enviado ao criar a reivindicação (RF-005)
   reivindicacaoCriada({ nomeRequerente, descricaoItem, nomeAluno }) {
     return {
@@ -145,9 +163,10 @@ export const emailTemplates = {
   },
 
     // Aviso interno para a equipe quando chega uma nova reivindicação
-  novaReivindicacaoParaEquipe({ descricaoItem, nomeRequerente, nomeAluno, salaAluno, periodoAluno }) {
+  novaReivindicacaoParaEquipe({ descricaoItem, nomeRequerente, nomeAluno, salaAluno, periodoAluno }, bruto) {
     return {
-      assunto: `Nova reivindicação: ${descricaoItem}`,
+      // O assunto é texto puro (não HTML): usa o valor original
+      assunto: `Nova reivindicação: ${bruto.descricaoItem}`,
       html: base(`
         <p>Uma nova reivindicação foi registrada e aguarda análise.</p>
         <div style="background: #F5F3F0; border-radius: 8px; padding: 14px; margin: 16px 0;">
@@ -164,3 +183,12 @@ export const emailTemplates = {
     };
   },
 };
+
+// Todo template recebe os campos já escapados. O segundo argumento traz os
+// valores originais, para os assuntos (texto puro, não HTML).
+export const emailTemplates = Object.fromEntries(
+  Object.entries(templates).map(([nome, montar]) => [
+    nome,
+    (dados) => montar(escaparCampos(dados), dados),
+  ]),
+);

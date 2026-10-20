@@ -25,7 +25,9 @@ export const itensController = {
   // GET /api/itens/:id
   async detalhar(req, res, next) {
     try {
-      const item = await itensService.buscarPorId(Number(req.params.id));
+      const item = await itensService.buscarPorId(Number(req.params.id), {
+        incluirInternos: req.usuario?.role === "funcionaria",
+      });
       res.json(item);
     } catch (err) {
       next(err);

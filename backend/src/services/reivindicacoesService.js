@@ -65,9 +65,10 @@ export const reivindicacoesService = {
         const aviso = emailTemplates.novaReivindicacaoParaEquipe({
           descricaoItem: resultado.descricaoItem,
           nomeRequerente: dados.nome_requerente,
-          nomeAluno: dados.nome_aluno,
-          salaAluno: dados.sala_aluno,
-          periodoAluno: dados.periodo_aluno,
+          // Mesmo snapshot gravado na reivindicação (aluno cadastrado, se houver)
+          nomeAluno,
+          salaAluno,
+          periodoAluno,
         });
 
         // Um envio por funcionária, todos assíncronos

@@ -40,10 +40,20 @@ export const itensRepository = {
     return rows;
   },
 
-  // Detalhe de um item por ID (com todas as fotos)
-  async findById(id) {
+  // Detalhe de um item por ID (com todas as fotos).
+  // A rota é pública: anotações internas, motivo de descarte e quem
+  // cadastrou/finalizou só saem para funcionária (incluirInternos).
+  async findById(id, { incluirInternos = false } = {}) {
+    const colunasInternas = incluirInternos
+      ? `, i.observacoes_internas, i.motivo_descarte, i.cadastrado_por_user_id,
+         i.finalizado_por_user_id, i.finalizado_em, i.revertido_em,
+         i.revertido_por_user_id, i.updated_at`
+      : "";
     const [itens] = await db.execute(
-      `SELECT i.*, c.nome AS categoria_nome, pc.nome AS ponto_coleta_nome
+      `SELECT i.id, i.nome, i.descricao, i.categoria_id, i.local_encontrado,
+              i.ponto_coleta_id, i.data_encontrado, i.data_disponibilizacao,
+              i.status, i.created_at ${colunasInternas},
+              c.nome AS categoria_nome, pc.nome AS ponto_coleta_nome
        FROM itens i
        INNER JOIN categorias c     ON c.id  = i.categoria_id
        INNER JOIN pontos_coleta pc ON pc.id = i.ponto_coleta_id

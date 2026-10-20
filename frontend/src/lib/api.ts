@@ -182,10 +182,22 @@ export const authApi = {
 
 // ===== ITENS =====
 
+// Converte uma coluna DATE ('YYYY-MM-DD' ou o ISO antigo 'YYYY-MM-DDT00:00:00.000Z')
+// em data local. new Date('YYYY-MM-DD') seria meia-noite UTC, que no Brasil
+// (UTC-3) cai no dia anterior.
+function dataLocal(data: string): Date {
+  const [ano, mes, dia] = data.slice(0, 10).split('-').map(Number);
+  return new Date(ano, mes - 1, dia);
+}
+
+function formatarDataSimples(data: string | null | undefined): string {
+  return data ? dataLocal(data).toLocaleDateString('pt-BR') : '';
+}
+
 // Calcula quantos dias se passaram desde uma data
 function calcularDias(data: string): number {
   if (!data) return 0;
-  const inicio = new Date(data);
+  const inicio = dataLocal(data);
   const hoje = new Date();
   const diff = hoje.getTime() - inicio.getTime();
   return Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -301,9 +313,7 @@ function traduzirItem(itemBackend: ItemBackend): ItemTela {
     // listagem traz categoria, detalhe traz categoria_nome: sempre vem um dos dois
     category: (itemBackend.categoria || itemBackend.categoria_nome) as string,
     location: itemBackend.local_encontrado,
-    date: itemBackend.data_encontrado
-      ? new Date(itemBackend.data_encontrado).toLocaleDateString('pt-BR')
-      : '',
+    date: formatarDataSimples(itemBackend.data_encontrado),
     status: statusMap[itemBackend.status] || (itemBackend.status as Status),
     image: fotoCapa,
     images: urlsFotos.length > 0 ? urlsFotos : [fotoCapa],
@@ -323,7 +333,7 @@ function traduzirItemFinalizado(i: ItemFinalizadoBackend): ItemFinalizadoTela {
     name: i.nome || i.descricao,
     category: i.categoria,
     location: i.local_encontrado,
-    date: i.data_encontrado ? new Date(i.data_encontrado).toLocaleDateString('pt-BR') : '',
+    date: formatarDataSimples(i.data_encontrado),
     status: statusMap[i.status] || (i.status as Status),
     image: i.foto_capa || 'https://via.placeholder.com/200?text=Sem+foto',
     collectionPoint: i.ponto_coleta || '',
