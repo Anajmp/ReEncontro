@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthProvider.tsx";
 import App from "./app/App.tsx";
 import "./styles/index.css";
@@ -19,6 +20,7 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <AuthProvider>
         <App />
+        <Toaster position="top-center" richColors />
       </AuthProvider>
     </BrowserRouter>
   </GoogleOAuthProvider>

@@ -5,13 +5,14 @@
 //  - Guardar o usuário logado e o token
 //  - Restaurar a sessão automaticamente ao recarregar a página (F5)
 //  - Fazer login / cadastro / logout
-//  - Reagir quando a API avisa que o token expirou (evento 'auth:expirado')
+//  - Reagir quando a API renova o token (evento 'auth:renovado') ou avisa
+//    que a sessão acabou de vez (evento 'auth:expirado')
 //
 // O componente <AuthProvider> fica em ./AuthProvider.tsx; aqui ficam só o
 // contexto, o hook e os tipos (separados para não quebrar o fast refresh).
 // =====================================================================
 import { createContext, useContext } from 'react';
-import type { DadosRegistro } from '../lib/api';
+import type { DadosRegistro, ResultadoLogin } from '../lib/api';
 
 // Formato do usuário devolvido pelo backend no login/registro
 export interface Usuario {
@@ -34,7 +35,7 @@ export interface AuthContextValue {
   autenticado: boolean;
   login: (email: string, senha: string) => Promise<Usuario>;
   registrar: (dados: DadosRegistro) => Promise<Usuario>;
-  salvarSessao: (resultado: { token: string; usuario: Usuario }) => Usuario;
+  salvarSessao: (resultado: ResultadoLogin) => Usuario;
   logout: () => void;
   atualizarUsuario: (parcial: Partial<Usuario>) => void;
 }

@@ -2,6 +2,7 @@
 // Helpers de autenticação no frontend.
 // Lê/limpa os dados do usuário logado guardados no localStorage.
 // =====================================================================
+import { authApi } from './api';
 
 export interface UsuarioLogado {
   id: number;
@@ -30,8 +31,11 @@ export function estaLogado(): boolean {
   return !!localStorage.getItem('token');
 }
 
-// Faz logout (limpa tudo)
+// Faz logout (revoga o refresh token no backend e limpa tudo)
 export function logout() {
+  const refreshToken = localStorage.getItem('refreshToken');
+  if (refreshToken) authApi.logout(refreshToken);
   localStorage.removeItem('token');
+  localStorage.removeItem('refreshToken');
   localStorage.removeItem('usuario');
 }

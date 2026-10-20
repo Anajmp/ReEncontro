@@ -8,6 +8,7 @@
 import bcrypt from "bcrypt";
 import { authRepository } from "../repositories/authRepository.js";
 import { gerarToken } from "../utils/tokens.js";
+import { refreshTokenService } from "./refreshTokenService.js";
 import { Usuario } from "../models/Usuario.js";
 
 export const authService = {
@@ -44,11 +45,13 @@ export const authService = {
       is_diretora: usuario.isDiretora,
     });
 
+    const refreshToken = await refreshTokenService.emitir(usuario.id);
+
     // 7. Registra o último acesso
     await authRepository.updateUltimoLogin(usuario.id);
 
     // 8. paraResposta() garante que o hash da senha nunca seja exposto
-    return { token, usuario: usuario.paraResposta() };
+    return { token, refreshToken, usuario: usuario.paraResposta() };
   },
 
   async registrar({ nome, email, senha, telefone, alunos }) {
@@ -86,8 +89,11 @@ export const authService = {
       is_diretora: false,
     });
 
+    const refreshToken = await refreshTokenService.emitir(responsavelId);
+
     return {
       token,
+      refreshToken,
       usuario: {
         id: responsavelId,
         nome,
