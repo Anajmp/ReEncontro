@@ -40,7 +40,9 @@ export function RegisterItem({ navigate }: Props) {
   const [categoriaId, setCategoriaId] = useState('');
   const [local, setLocal] = useState('');
   const [pontoColetaId, setPontoColetaId] = useState('');
-  const [dataEncontrado, setDataEncontrado] = useState(new Date().toISOString().split('T')[0]);
+  // Data local (en-CA = AAAA-MM-DD); toISOString() daria o dia em UTC, que
+  // das 21h à meia-noite já é o dia seguinte no Brasil
+  const [dataEncontrado, setDataEncontrado] = useState(() => new Date().toLocaleDateString('en-CA'));
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
     const [categorias, setCategorias] = useState<Referencia[]>([]);

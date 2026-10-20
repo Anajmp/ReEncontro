@@ -345,14 +345,74 @@ function traduzirItemFinalizado(i: ItemFinalizadoBackend): ItemFinalizadoTela {
   
 }
 
-async function buscarItensDisponiveis() {
-  const dados = await request<ItemBackend[]>('/api/itens');
-  return dados.map(traduzirItem);   // traduz cada item
+// Resposta paginada das listagens (GET /api/itens e /api/itens/finalizados)
+interface PaginaBackend<T> {
+  itens: T[];
+  total: number;
+  pagina: number;
+  limite: number;
+  totalPaginas: number;
+}
+
+// Página já traduzida pro formato das telas
+export interface Pagina<T> {
+  itens: T[];
+  total: number;
+  pagina: number;
+  totalPaginas: number;
+}
+
+// Filtros da listagem pública; a busca e os filtros rodam no servidor
+export type OrdemListagem = 'recentes' | 'antigos' | 'nome';
+export interface FiltrosListagem {
+  q?: string;
+  categoriaId?: number;
+  dataInicio?: string;
+  dataFim?: string;
+  ordem?: OrdemListagem;
+  pagina?: number;
+  limite?: number;
+}
+
+// Monta a query string ignorando vazios e os valores padrão do backend
+// (assim a primeira página sem filtros sempre vira a mesma URL)
+function queryString(params: Record<string, string | number | undefined>) {
+  const padroes: Record<string, string> = { ordem: 'recentes', pagina: '1' };
+  const busca = new URLSearchParams();
+  for (const [chave, valor] of Object.entries(params)) {
+    if (valor === undefined || valor === '') continue;
+    if (padroes[chave] === String(valor)) continue;
+    busca.set(chave, String(valor));
+  }
+  const texto = busca.toString();
+  return texto ? `?${texto}` : '';
+}
+
+function traduzirPagina<T, R>(dados: PaginaBackend<T>, traduzir: (item: T) => R): Pagina<R> {
+  return {
+    itens: dados.itens.map(traduzir),
+    total: dados.total,
+    pagina: dados.pagina,
+    totalPaginas: dados.totalPaginas,
+  };
+}
+
+async function buscarItensDisponiveis(filtros: FiltrosListagem = {}) {
+  const dados = await request<PaginaBackend<ItemBackend>>(`/api/itens${queryString({ ...filtros })}`);
+  return traduzirPagina(dados, traduzirItem);   // traduz cada item
+}
+
+// Fotos do Cloudinary em tamanho de miniatura: o card mostra a foto pequena,
+// então pedimos uma versão redimensionada (e em WebP/AVIF quando o navegador
+// aceitar) em vez do original da câmera. URLs de fora do Cloudinary passam direto.
+export function fotoMiniatura(url: string, largura = 400) {
+  if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) return url;
+  return url.replace('/upload/', `/upload/w_${largura},c_limit,q_auto,f_auto/`);
 }
 
 // A tela de carregamento já dispara a busca da listagem; a primeira chamada
-// de itensApi.listar() reaproveita essa mesma requisição em vez de refazer.
-let listagemPrefetch: Promise<ItemTela[]> | null = null;
+// de itensApi.listar() sem filtros reaproveita essa mesma requisição.
+let listagemPrefetch: Promise<Pagina<ItemTela>> | null = null;
 
 export function prefetchListagem() {
   if (!listagemPrefetch) listagemPrefetch = buscarItensDisponiveis();
@@ -360,13 +420,15 @@ export function prefetchListagem() {
 }
 
 export const itensApi = {
-  listar() {
-    if (listagemPrefetch) {
+  // Uma página de itens disponíveis (24 por padrão)
+  listar(filtros: FiltrosListagem = {}) {
+    const semFiltros = queryString({ ...filtros }) === '';
+    if (listagemPrefetch && semFiltros) {
       const emAndamento = listagemPrefetch;
       listagemPrefetch = null;
       return emAndamento;
     }
-    return buscarItensDisponiveis();
+    return buscarItensDisponiveis(filtros);
   },
   async detalhe(id: number) {
     const dado = await request<ItemBackend>(`/api/itens/${id}`);
@@ -383,9 +445,15 @@ export const itensApi = {
       body: JSON.stringify(dados),
     }),
   criar: (formData: FormData) => requestUpload<{ id: number }>('/api/itens', formData),
-    async listarFinalizados(status: 'entregue' | 'descartado') {
-    const dados = await request<ItemFinalizadoBackend[]>(`/api/itens/finalizados?status=${status}`);
-    return dados.map(traduzirItemFinalizado);
+  // Uma página de finalizados; "todos" junta entregues e descartados
+  async listarFinalizados(
+    status: 'entregue' | 'descartado' | 'todos',
+    { q, pagina }: { q?: string; pagina?: number } = {},
+  ) {
+    const dados = await request<PaginaBackend<ItemFinalizadoBackend>>(
+      `/api/itens/finalizados${queryString({ status, q, pagina })}`,
+    );
+    return traduzirPagina(dados, traduzirItemFinalizado);
   },
 };
 

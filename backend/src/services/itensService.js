@@ -7,10 +7,24 @@ import { itensRepository } from "../repositories/itensRepository.js";
 import { enviarEmail } from "../config/email.js";
 import { emailTemplates } from "../utils/emailTemplates.js";
 
+// Converte página/limite em offset e devolve a resposta paginada padrão
+async function paginar({ pagina = 1, limite = 24 }, buscar) {
+  const { itens, total } = await buscar((pagina - 1) * limite);
+  return {
+    itens,
+    total,
+    pagina,
+    limite,
+    totalPaginas: Math.ceil(total / limite),
+  };
+}
+
 export const itensService = {
-  // Lista itens disponíveis aplicando os filtros recebidos
-  async listarDisponiveis(filtros) {
-    return itensRepository.findDisponiveis(filtros);
+  // Lista uma página de itens disponíveis aplicando os filtros recebidos
+  async listarDisponiveis({ pagina, limite, ...filtros } = {}) {
+    return paginar({ pagina, limite }, (offset) =>
+      itensRepository.findDisponiveis({ ...filtros, limite, offset }),
+    );
   },
 
   // Busca um item; lança erro 404 se não existir
@@ -99,11 +113,15 @@ export const itensService = {
     return { id };
   },
 
-  async listarFinalizados(status) {
-    // só aceita esses dois status (proteção)
-    if (!["entregue", "descartado"].includes(status)) {
+  async listarFinalizados({ status = "entregue", q, pagina, limite } = {}) {
+    // só aceita esses status (proteção); "todos" junta os dois
+    const statuses =
+      status === "todos" ? ["entregue", "descartado"] : [status];
+    if (!statuses.every((s) => ["entregue", "descartado"].includes(s))) {
       throw { status: 400, mensagem: "Status inválido" };
     }
-    return itensRepository.findFinalizados(status);
+    return paginar({ pagina, limite }, (offset) =>
+      itensRepository.findFinalizados({ statuses, q, limite, offset }),
+    );
   },
 };

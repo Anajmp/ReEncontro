@@ -8,7 +8,8 @@ import { AdminLayout } from './shared/AdminLayout';
 import {
   AdminPanel, CategoryBadge, adminBtnPrimary, adminInputClass, adminSearchInputClass, adminSelectClass,
 } from './shared/AdminChrome';
-import { itensApi, referenciasApi } from '../../lib/api';
+import { itensApi, referenciasApi, fotoMiniatura } from '../../lib/api';
+import type { FiltrosListagem, ItemTela, Pagina } from '../../lib/api';
 import type { Screen } from '../App';
 import type { Status } from './shared/data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
@@ -226,26 +227,66 @@ function DiscardItemModal({ item, onClose, onDiscarded }: {
 export function AvailableItems({ navigate }: Props) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
-  const [items, setItems] = useState<ItemDisponivel[]>([]);
+  const [lista, setLista] = useState<(Pagina<ItemTela> & { chave: string }) | null>(null);
   const [editing, setEditing] = useState<ItemDisponivel | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [discarding, setDiscarding] = useState<ItemDisponivel | null>(null);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [buscaAplicada, setBuscaAplicada] = useState('');
+  // Sobe a cada edição/descarte para recarregar a lista
+  const [versao, setVersao] = useState(0);
+  const [carregandoMais, setCarregandoMais] = useState(false);
 
-
-  const carregar = useCallback(() => {
-    return itensApi.listar()
-      .then((dados: ItemDisponivel[]) => setItems(dados))
-      .catch(err => console.error('Erro ao carregar itens:', err));
+  useEffect(() => {
+    referenciasApi.categorias().then(setCategorias).catch(console.error);
   }, []);
 
-  useEffect(() => { carregar(); }, [carregar]);
+  // A busca só vai pro servidor quando a funcionária para de digitar
+  useEffect(() => {
+    const timer = window.setTimeout(() => setBuscaAplicada(search.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
-  const filtered = items.filter(item => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || item.name.toLowerCase().includes(q) || item.location.toLowerCase().includes(q);
-    const matchCategory = category === 'all' || item.category === category;
-    return matchSearch && matchCategory;
+  const chave = JSON.stringify({
+    q: buscaAplicada || undefined,
+    categoriaId: category === 'all' ? undefined : Number(category),
   });
+
+  // Primeira página sempre que os filtros mudam (ou após editar/descartar).
+  // Enquanto a nova não chega, a lista anterior continua na tela.
+  useEffect(() => {
+    let ativo = true;
+    itensApi.listar(JSON.parse(chave) as FiltrosListagem)
+      .then(pagina => { if (ativo) setLista({ ...pagina, chave }); })
+      .catch(err => console.error('Erro ao carregar itens:', err));
+    return () => { ativo = false; };
+  }, [chave, versao]);
+
+  const carregar = useCallback(() => setVersao(v => v + 1), []);
+
+  function carregarMais() {
+    if (!lista || carregandoMais) return;
+    const { chave: chaveDaLista, pagina } = lista;
+    setCarregandoMais(true);
+    itensApi.listar({ ...(JSON.parse(chaveDaLista) as FiltrosListagem), pagina: pagina + 1 })
+      .then(proxima => setLista(atual => {
+        // Os filtros mudaram enquanto carregava: essa página não vale mais
+        if (!atual || atual.chave !== chaveDaLista) return atual;
+        const vistos = new Set(atual.itens.map(i => i.id));
+        return {
+          ...atual,
+          itens: [...atual.itens, ...proxima.itens.filter(i => !vistos.has(i.id))],
+          total: proxima.total,
+          pagina: proxima.pagina,
+          totalPaginas: proxima.totalPaginas,
+        };
+      }))
+      .catch(err => console.error('Erro ao carregar mais itens:', err))
+      .finally(() => setCarregandoMais(false));
+  }
+
+  const items: ItemDisponivel[] = lista?.itens ?? [];
+  const temMais = Boolean(lista && lista.pagina < lista.totalPaginas);
 
   return (
     <AdminLayout current="available-items" navigate={navigate}>
@@ -273,11 +314,9 @@ export function AvailableItems({ navigate }: Props) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas as categorias</SelectItem>
-              <SelectItem value="Vestuário">Vestuário</SelectItem>
-              <SelectItem value="Acessórios">Acessórios</SelectItem>
-              <SelectItem value="Material Escolar">Material Escolar</SelectItem>
-              <SelectItem value="Calçados">Calçados</SelectItem>
-              <SelectItem value="Outros">Outros</SelectItem>
+              {categorias.map(c => (
+                <SelectItem key={c.id} value={String(c.id)}>{c.nome}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select defaultValue="all">
@@ -297,13 +336,14 @@ export function AvailableItems({ navigate }: Props) {
         <AdminPanel className="overflow-hidden">
           {/* Lista em cards — mobile */}
           <div className="divide-y divide-[#E7E5E4] lg:hidden">
-            {filtered.map(item => (
+            {items.map(item => (
               <div
                 key={item.id}
                 className={`flex gap-3 p-4 ${item.daysFound > 0 ? 'bg-[#FEF3C7]/30' : ''}`}
               >
                 <img
-                  src={item.image}
+                  src={fotoMiniatura(item.image, 160)}
+                  loading="lazy"
                   alt={item.name}
                   className="size-14 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
                 />
@@ -362,7 +402,7 @@ export function AvailableItems({ navigate }: Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E7E5E4]">
-                {filtered.map(item => (
+                {items.map(item => (
                   <tr
                     key={item.id}
                     className={`transition-colors hover:bg-[#F5F3F0]/50 ${item.daysFound > 0 ? 'bg-[#FEF3C7]/30' : ''}`}
@@ -371,7 +411,8 @@ export function AvailableItems({ navigate }: Props) {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={item.image}
+                          src={fotoMiniatura(item.image, 160)}
+                          loading="lazy"
                           alt={item.name}
                           className="size-10 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
                         />
@@ -430,12 +471,21 @@ export function AvailableItems({ navigate }: Props) {
             </table>
           </div>
 
-          {filtered.length === 0 && (
+          {lista && items.length === 0 && (
             <div className="py-10 text-center text-sm text-[#A8A29E]">
               Nenhum item encontrado.
             </div>
           )}
         </AdminPanel>
+
+        {temMais && (
+          <div className="flex flex-col items-center gap-1.5">
+            <Button variant="outline" size="sm" className="rounded-xl border-[#E7E5E4]" onClick={carregarMais} disabled={carregandoMais}>
+              {carregandoMais ? 'Carregando...' : 'Carregar mais'}
+            </Button>
+            <p className="text-xs text-[#A8A29E]">Mostrando {items.length} de {lista?.total}</p>
+          </div>
+        )}
 
         {items.some(i => i.daysFound > 90) && (
           <div className="flex items-center gap-2 rounded-xl border border-[#FEF3C7] bg-[#FEF3C7]/50 px-4 py-2.5 text-xs text-[#92400E]">

@@ -130,8 +130,9 @@ export function LoadingScreen({ onFinish }: LoadingScreenProps) {
   useEffect(() => {
     let ativo = true;
     prefetchListagem()
-      .then(itens => {
-        if (ativo) setTotal(itens.filter(i => i.status === 'Disponível').length);
+      .then(pagina => {
+        // a listagem pública só traz disponíveis; o total vem do servidor
+        if (ativo) setTotal(pagina.total);
       })
       .catch(() => {
         // a listagem mostra o próprio erro; aqui só seguimos em frente
@@ -254,14 +255,16 @@ export function LoadingScreen({ onFinish }: LoadingScreenProps) {
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[42%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        className="pointer-events-none absolute left-1/2 top-[42%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full lg:h-[min(1000px,110vw)] lg:w-[min(1000px,110vw)]"
         style={{ background: 'radial-gradient(circle, rgba(254,226,226,0.7) 0%, rgba(254,226,226,0.2) 40%, rgba(245,243,240,0) 70%)' }}
       />
 
       {/* No celular a cena passa um pouco da tela (só as margens vazias do
-          viewBox ficam de fora) para os objetos não ficarem minúsculos */}
+          viewBox ficam de fora) para os objetos não ficarem minúsculos.
+          No computador ela cresce com a tela, limitada pela altura para
+          sobrar espaço ao título */}
       <div
-        className={`relative w-[min(112vw,640px)] shrink-0 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`relative w-[min(112vw,640px)] shrink-0 md:w-[min(88vw,1200px,calc((100vh-240px)*2))] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           entrada ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
         } ${saindo ? 'scale-[1.06]' : 'scale-100'}`}
       >
@@ -319,17 +322,17 @@ export function LoadingScreen({ onFinish }: LoadingScreenProps) {
       </div>
 
       <div
-        className={`relative mt-4 flex flex-col items-center text-center transition-all delay-150 duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`relative mt-4 flex flex-col items-center lg:mt-6 text-center transition-all delay-150 duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           entrada ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
         }`}
       >
-        <h1 className="text-[1.7rem] font-extrabold tracking-tight text-[#1C1917] sm:text-[2rem]">
+        <h1 className="text-[1.7rem] font-extrabold tracking-tight text-[#1C1917] sm:text-[2rem] lg:text-[2.75rem]">
           Re<span className="text-[#C8102E]">Encontro</span>
         </h1>
         <p
           key={status}
           aria-live="polite"
-          className={`rl-status mt-2 min-h-[1.5rem] text-sm font-semibold ${
+          className={`rl-status mt-2 min-h-[1.5rem] text-sm font-semibold lg:text-base ${
             fase === 'buscando' ? 'text-[#78716C]' : 'text-[#C8102E]'
           }`}
         >

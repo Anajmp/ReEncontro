@@ -7,16 +7,18 @@ import { itensService } from "../services/itensService.js";
 import {
   criarItemSchema,
   listarItensSchema,
+  listarFinalizadosSchema,
   editarItemSchema,
 } from "../models/itemSchema.js";
 
 export const itensController = {
-  // GET /api/itens
+  // GET /api/itens?q=&categoriaId=&dataInicio=&dataFim=&ordem=&pagina=1&limite=24
+  // Devolve { itens, total, pagina, limite, totalPaginas }
   async listar(req, res, next) {
     try {
       const filtros = listarItensSchema.parse(req.query);
-      const itens = await itensService.listarDisponiveis(filtros);
-      res.json(itens);
+      const resultado = await itensService.listarDisponiveis(filtros);
+      res.json(resultado);
     } catch (err) {
       next(err);
     }
@@ -71,12 +73,12 @@ export const itensController = {
     }
   },
 
-  // GET /api/itens/finalizados?status=entregue
+  // GET /api/itens/finalizados?status=entregue&q=&pagina=1&limite=24
   async listarFinalizados(req, res, next) {
     try {
-      const status = req.query.status || "entregue";
-      const itens = await itensService.listarFinalizados(status);
-      res.json(itens);
+      const filtros = listarFinalizadosSchema.parse(req.query);
+      const resultado = await itensService.listarFinalizados(filtros);
+      res.json(resultado);
     } catch (err) {
       next(err);
     }

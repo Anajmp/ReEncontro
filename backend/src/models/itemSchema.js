@@ -17,8 +17,23 @@ export const criarItemSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida (use AAAA-MM-DD)"),
 });
 
+// Paginação comum às listagens: páginas de 24 itens por padrão, no máximo 100
+const paginacao = {
+  pagina: z.coerce.number().int().min(1).max(10000).default(1),
+  limite: z.coerce.number().int().min(1).max(100).default(24),
+};
+
+// Busca por palavra-chave; vazio vira "sem busca"
+const busca = z
+  .string()
+  .trim()
+  .max(100)
+  .optional()
+  .transform((v) => v || undefined);
+
 // Schema para filtros da listagem (query params)
 export const listarItensSchema = z.object({
+  q: busca,
   categoriaId: z.coerce.number().int().positive().optional(),
   dataInicio: z
     .string()
@@ -28,6 +43,15 @@ export const listarItensSchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .optional(),
+  ordem: z.enum(["recentes", "antigos", "nome"]).default("recentes"),
+  ...paginacao,
+});
+
+// Schema para a listagem de finalizados (só funcionária)
+export const listarFinalizadosSchema = z.object({
+  status: z.enum(["entregue", "descartado", "todos"]).default("entregue"),
+  q: busca,
+  ...paginacao,
 });
 
 export const editarItemSchema = z.object({

@@ -154,6 +154,8 @@ CREATE TABLE itens (
   INDEX idx_itens_ponto          (ponto_coleta_id),
   INDEX idx_itens_data           (data_encontrado),
   INDEX idx_itens_disponibiliz   (data_disponibilizacao),     -- p/ query dos 90 dias
+  INDEX idx_itens_status_data       (status, data_encontrado),  -- listagem pública paginada
+  INDEX idx_itens_status_finalizado (status, finalizado_em),    -- listagem de finalizados
   INDEX idx_itens_cadastrado_por (cadastrado_por_user_id)
 ) ENGINE=InnoDB;
 
