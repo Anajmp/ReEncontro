@@ -1,7 +1,7 @@
 import { useEffect, useState, type ElementType, type ReactNode } from 'react';
 import {
   LayoutDashboard, PlusCircle, Archive, Clock, RefreshCw,
-  CheckCircle2, BarChart2, Users, LogOut, Menu, X, ShieldAlert, Globe,
+  CheckCircle2, BarChart2, Users, LogOut, Menu, X, ShieldAlert, Globe, UserRound,
 } from 'lucide-react';
 import type { Screen } from '../../App';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -39,16 +39,21 @@ const GESTAO: NavSecao = {
   ],
 };
 
-/** Cada perfil tem o seu sidebar: a diretora vê também a seção de gestão. */
+const PESSOAL: NavSecao = {
+  titulo: 'Pessoal',
+  itens: [{ id: 'admin-profile', label: 'Minha conta', Icon: UserRound }],
+};
+
+/** Cada perfil tem o seu sidebar: a diretora vê também as seções de gestão e pessoal. */
 const PERFIS = {
-  diretora: { rotulo: 'Diretora', painel: 'Painel da Diretora', secoes: [SITE, OPERACAO, GESTAO] },
+  diretora: { rotulo: 'Diretora', painel: 'Painel da Diretora', secoes: [SITE, OPERACAO, GESTAO, PESSOAL] },
   inspetora: { rotulo: 'Inspetora', painel: 'Painel da Inspetora', secoes: [SITE, OPERACAO] },
 } as const;
 
 type Perfil = (typeof PERFIS)[keyof typeof PERFIS];
 
 function iconeDaTela(tela: Screen): ElementType {
-  for (const secao of [OPERACAO, GESTAO]) {
+  for (const secao of [OPERACAO, GESTAO, PESSOAL]) {
     const item = secao.itens.find(i => i.id === tela);
     if (item) return item.Icon;
   }

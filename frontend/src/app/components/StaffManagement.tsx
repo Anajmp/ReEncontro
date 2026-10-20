@@ -24,6 +24,7 @@ interface Funcionaria {
   email: string;
   phone: string;
   isDiretora: boolean;
+  avatarSeed: string | null;
   role: string;
   active: boolean;
   lastLogin: string;
@@ -219,7 +220,7 @@ export function StaffManagement({ navigate }: Props) {
             {staff.map(member => (
               <div key={member.id} className="flex items-center gap-3 p-4">
                 <img
-                  src={member.isDiretora ? avatarDiretora() : avatarFuncionaria(member.email || String(member.id))}
+                  src={member.isDiretora ? avatarDiretora(member.avatarSeed) : avatarFuncionaria(member.avatarSeed || member.email || String(member.id))}
                   alt=""
                   className="size-10 shrink-0 rounded-full border border-[#E7E5E4] bg-white"
                 />
@@ -279,7 +280,7 @@ export function StaffManagement({ navigate }: Props) {
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
                           <img
-                            src={member.isDiretora ? avatarDiretora() : avatarFuncionaria(member.email || String(member.id))}
+                            src={member.isDiretora ? avatarDiretora(member.avatarSeed) : avatarFuncionaria(member.avatarSeed || member.email || String(member.id))}
                             alt=""
                             className="size-8 shrink-0 rounded-full border border-[#E7E5E4] bg-white"
                           />

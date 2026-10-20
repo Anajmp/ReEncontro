@@ -677,6 +677,7 @@ interface FuncionariaBackend {
   telefone: string | null;
   is_diretora: boolean | number;
   ativo: boolean | number;
+  avatar_seed: string | null;
   ultimo_login_em: string | null;
   created_at: string;
 }
@@ -712,6 +713,7 @@ function traduzirFuncionaria(u: FuncionariaBackend) {
     email: u.email,
     phone: u.telefone || '',
     isDiretora: !!u.is_diretora,
+    avatarSeed: u.avatar_seed,
     role: u.is_diretora ? 'Diretora' : 'Inspetora',
     active: !!u.ativo,
     lastLogin: u.ultimo_login_em

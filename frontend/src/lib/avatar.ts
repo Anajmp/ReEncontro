@@ -43,7 +43,7 @@ const PARAMS_FUNCIONARIA = [
 ].join('&');
 
 /**
- * Personagem institucional fixo da diretora.
+ * Personagem institucional da diretora — o padrão até ela escolher outro.
  * Características definidas explicitamente para sempre idêntico.
  */
 const AVATAR_DIRETORA = [
@@ -64,9 +64,21 @@ const AVATAR_DIRETORA = [
   'seed=Felix',
 ].join('&');
 
+/** Seed reservado que representa o personagem institucional da diretora. */
+export const SEED_INSTITUCIONAL = 'institucional';
+
 /** URL do avatar institucional da diretora. */
-export function avatarDiretora(): string {
+export function avatarInstitucional(): string {
   return `${BASE}?${AVATAR_DIRETORA}`;
+}
+
+/**
+ * URL do avatar da diretora: o personagem que ela escolheu (mesmo estilo
+ * feminino das inspetoras) ou o institucional, enquanto não escolher outro.
+ */
+export function avatarDiretora(seed?: string | null): string {
+  if (!seed || seed === SEED_INSTITUCIONAL) return avatarInstitucional();
+  return avatarFuncionaria(seed);
 }
 
 /**
@@ -85,20 +97,20 @@ export function avatarUrl(seed: string): string {
 
 /**
  * Retorna a URL do avatar conforme o perfil.
- * - Diretora: personagem institucional fixo
+ * - Diretora: personagem escolhido (institucional por padrão)
  * - Funcionária/inspetora: aleatório feminino (estável pelo seed)
  * - Responsável: personagem escolhido
  */
 export function avatarDoUsuario(usuario: {
   role?: string;
   is_diretora?: boolean | number;
-  avatar_seed?: string;
+  avatar_seed?: string | null;
   email?: string;
 } | null): string {
   if (!usuario) return avatarUrl('padrao');
 
   if (usuario.role === 'funcionaria') {
-    if (usuario.is_diretora) return avatarDiretora();
+    if (usuario.is_diretora) return avatarDiretora(usuario.avatar_seed);
     return avatarFuncionaria(usuario.avatar_seed || usuario.email || 'funcionaria');
   }
 

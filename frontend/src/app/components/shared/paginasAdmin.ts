@@ -20,4 +20,5 @@ export const PAGE_INFO: Record<Screen, { title: string; subtitle: string }> = {
   reports: { title: 'Relatórios', subtitle: 'Análise e exportação de dados' },
   'staff-management': { title: 'Gestão de Funcionárias', subtitle: 'Contas com acesso ao sistema administrativo' },
   'lgpd': { title: 'Privacidade (LGPD)', subtitle: 'Exclusão de dados pessoais a pedido do titular' },
+  'admin-profile': { title: 'Minha conta', subtitle: 'Credenciais, dados de contato, senha e personagem' },
 };

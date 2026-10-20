@@ -8,7 +8,7 @@ export const usuariosRepository = {
   // Lista todas as funcionárias (inspetoras e diretoras)
   async listarFuncionarias() {
     const [rows] = await db.execute(
-      `SELECT id, nome, email, telefone, is_diretora, ativo, ultimo_login_em, created_at
+      `SELECT id, nome, email, telefone, is_diretora, ativo, avatar_seed, ultimo_login_em, created_at
        FROM users
        WHERE role = 'funcionaria'
        ORDER BY nome ASC`,

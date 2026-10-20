@@ -18,6 +18,7 @@ import { RotaProtegida } from './components/RotaProtegida';
 import { LoginSplashProvider } from './components/LoginSplashProvider';
 import { PortaDeEntrada } from './components/LoadingScreen';
 import { Lgpd } from './components/Lgpd';
+import { AdminProfile } from './components/AdminProfile';
 
 export type Screen =
   | 'public-listing'
@@ -37,6 +38,7 @@ export type Screen =
   | 'finalized'
   | 'reports'
   | 'staff-management'
+  | 'admin-profile'
   | 'lgpd';
 
 // Liga cada nome de tela a uma URL de verdade
@@ -58,6 +60,7 @@ const screenToPath: Record<Screen, string> = {
   'finalized': '/admin/finalizados',
   'reports': '/admin/relatorios',
   'staff-management': '/admin/funcionarias',
+  'admin-profile': '/admin/pessoal',
   'lgpd': '/admin/privacidade'
 };
 
@@ -95,6 +98,7 @@ export default function App() {
           <Route path="/admin/relatorios" element={<RotaProtegida role="funcionaria" apenasDiretora><Reports navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin/funcionarias" element={<RotaProtegida role="funcionaria" apenasDiretora><StaffManagement navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin/privacidade" element={<RotaProtegida role="funcionaria" apenasDiretora><Lgpd navigate={navigate} /></RotaProtegida>} />
+          <Route path="/admin/pessoal" element={<RotaProtegida role="funcionaria" apenasDiretora><AdminProfile navigate={navigate} /></RotaProtegida>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
