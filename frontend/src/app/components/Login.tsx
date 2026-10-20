@@ -1,4 +1,4 @@
-import { useState, forwardRef, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import type { Screen } from "../App";
@@ -39,8 +39,8 @@ export function Login({ navigate }: Props) {
       } else {
         navigate("parent-dashboard");
       }
-    } catch (err: any) {
-      setErro(err.message || "Erro ao fazer login");
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || "Erro ao fazer login");
     } finally {
       setCarregando(false);
     }

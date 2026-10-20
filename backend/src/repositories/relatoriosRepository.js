@@ -3,6 +3,11 @@
 // Toda query usa db.execute() com placeholders (?) — nunca concatenação.
 // =====================================================================
 import { db } from "../config/database.js";
+import { emHorarioBrasilia, HOJE_BRASILIA } from "../database/fusoHorario.js";
+
+// Constantes SQL fixas (sem dado do usuário) para dia e mês em Brasília
+const CRIADO_BR = emHorarioBrasilia("created_at");
+const FINALIZADO_BR = emHorarioBrasilia("finalizado_em");
 
 export const relatoriosRepository = {
   // ===================== RELATÓRIOS =====================
@@ -38,7 +43,7 @@ export const relatoriosRepository = {
   // Itens cadastrados por mês, a partir de N dias atrás
   async encontradosPorMes(dias) {
     const [rows] = await db.execute(
-      `SELECT DATE_FORMAT(created_at, '%Y-%m') AS mes, COUNT(*) AS total
+      `SELECT DATE_FORMAT(${CRIADO_BR}, '%Y-%m') AS mes, COUNT(*) AS total
        FROM itens
        WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
        GROUP BY mes`,
@@ -51,7 +56,7 @@ export const relatoriosRepository = {
   async finalizadosPorMes(dias) {
     const [rows] = await db.execute(
       `SELECT
-         DATE_FORMAT(finalizado_em, '%Y-%m') AS mes,
+         DATE_FORMAT(${FINALIZADO_BR}, '%Y-%m') AS mes,
          SUM(CASE WHEN status = 'entregue'   THEN 1 ELSE 0 END) AS entregues,
          SUM(CASE WHEN status = 'descartado' THEN 1 ELSE 0 END) AS descartados
        FROM itens
@@ -89,18 +94,18 @@ export const relatoriosRepository = {
              AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY))   AS disponiveis_semana,
          (SELECT COUNT(*) FROM reivindicacoes WHERE status = 'pendente') AS pendentes,
          (SELECT COUNT(*) FROM reivindicacoes
-           WHERE status = 'pendente' AND DATE(created_at) = CURDATE()) AS pendentes_hoje,
+           WHERE status = 'pendente' AND DATE(${CRIADO_BR}) = ${HOJE_BRASILIA}) AS pendentes_hoje,
          (SELECT COUNT(*) FROM reivindicacoes WHERE status = 'aprovada') AS em_processo,
          (SELECT COUNT(*) FROM reivindicacoes
            WHERE status = 'aprovada'
              AND data_aprovacao <= DATE_SUB(NOW(), INTERVAL 5 DAY)) AS em_processo_prazo,
          (SELECT COUNT(*) FROM itens
            WHERE status = 'entregue'
-             AND finalizado_em >= DATE_FORMAT(CURDATE(), '%Y-%m-01')) AS entregues_mes,
+             AND ${FINALIZADO_BR} >= DATE_FORMAT(${HOJE_BRASILIA}, '%Y-%m-01')) AS entregues_mes,
          (SELECT COUNT(*) FROM itens
            WHERE status = 'entregue'
-             AND finalizado_em >= DATE_FORMAT(CURDATE() - INTERVAL 1 MONTH, '%Y-%m-01')
-             AND finalizado_em <  DATE_FORMAT(CURDATE(), '%Y-%m-01')) AS entregues_mes_anterior`,
+             AND ${FINALIZADO_BR} >= DATE_FORMAT(${HOJE_BRASILIA} - INTERVAL 1 MONTH, '%Y-%m-01')
+             AND ${FINALIZADO_BR} <  DATE_FORMAT(${HOJE_BRASILIA}, '%Y-%m-01')) AS entregues_mes_anterior`,
     );
     return rows[0];
   },

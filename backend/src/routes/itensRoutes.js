@@ -6,6 +6,7 @@
 import { Router } from "express";
 import { itensController } from "../controllers/itensController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { authOpcional } from "../middlewares/authOpcionalMiddleware.js";
 import { apenasFuncionaria } from "../middlewares/roleMiddleware.js";
 import { upload } from "../middlewares/uploadMiddleware.js";
 
@@ -20,7 +21,8 @@ router.get(
   apenasFuncionaria,
   itensController.listarFinalizados,
 );
-router.get("/:id", itensController.detalhar);
+// Público; com token de funcionária devolve também os campos internos
+router.get("/:id", authOpcional, itensController.detalhar);
 // PATCH /api/itens/:id/descartar — só funcionária
 router.patch(
   "/:id/descartar",

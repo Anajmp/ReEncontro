@@ -12,6 +12,7 @@ export interface UsuarioLogado {
   role: string;
   is_diretora?: boolean;
   avatar_seed?: string;
+  email_verificado_em?: string | null;
 }
 
 // Retorna o usuário logado, ou null se não houver

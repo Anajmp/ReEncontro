@@ -103,6 +103,7 @@ export const authService = {
         is_diretora: false,
         avatar_seed: avatarSeed,
         cadastro_completo: true,
+        email_verificado_em: null,
       },
     };
   },

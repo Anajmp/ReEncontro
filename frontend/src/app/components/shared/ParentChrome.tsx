@@ -1,9 +1,8 @@
 import type { InputHTMLAttributes, ReactNode } from 'react';
 import { AlertCircle, Clock, CheckCircle, Search, XCircle, GraduationCap } from 'lucide-react';
-import { CategoryBadge, getCatConfig } from './AdminChrome';
+import { CategoryBadge } from './AdminChrome';
+import { getCatConfig } from './categorias';
 import { cn } from '../ui/utils';
-
-export const PARENT_FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
 
 export function ParentInputField({
   label,

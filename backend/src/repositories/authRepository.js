@@ -8,7 +8,8 @@ export const authRepository = {
   // Busca um usuário pelo email (usado no login)
   async findByEmail(email) {
     const [rows] = await db.execute(
-      `SELECT id, nome, email, senha_hash, telefone, role, is_diretora, ativo, avatar_seed, cadastro_completo
+      `SELECT id, nome, email, senha_hash, telefone, role, is_diretora, ativo, avatar_seed, cadastro_completo,
+              email_verificado_em
        FROM users WHERE email = ?`,
       [email],
     );
@@ -79,27 +80,34 @@ export const authRepository = {
     // Busca um usuário pelo ID do Google
     async findByGoogleId(googleId) {
       const [rows] = await db.execute(
-        `SELECT id, nome, email, telefone, role, is_diretora, ativo, avatar_seed, cadastro_completo
+        `SELECT id, nome, email, telefone, role, is_diretora, ativo, avatar_seed, cadastro_completo,
+                email_verificado_em
          FROM users WHERE google_id = ?`,
         [googleId]
       );
       return rows[0] ?? null;
     },
   
-    // Vincula uma conta existente (que tem senha) ao Google
-    async vincularGoogle(userId, googleId) {
+    // Vincula uma conta existente (que tem senha) ao Google.
+    // Se o Google atesta o e-mail, ele passa a contar como verificado
+    // (sem sobrescrever uma verificação anterior).
+    async vincularGoogle(userId, googleId, emailVerificado) {
       await db.execute(
-        `UPDATE users SET google_id = ? WHERE id = ?`,
-        [googleId, userId]
+        `UPDATE users
+         SET google_id = ?,
+             email_verificado_em = COALESCE(email_verificado_em, IF(?, NOW(), NULL))
+         WHERE id = ?`,
+        [googleId, emailVerificado ? 1 : 0, userId]
       );
     },
-  
-    // Cria um responsável que entrou pelo Google (sem senha, sem alunos ainda)
-    async criarResponsavelGoogle({ nome, email, googleId, avatarSeed }) {
+
+    // Cria um responsável que entrou pelo Google (sem senha, sem alunos ainda).
+    // O e-mail já nasce verificado: foi o próprio Google que o confirmou.
+    async criarResponsavelGoogle({ nome, email, googleId, avatarSeed, emailVerificado }) {
       const [result] = await db.execute(
-        `INSERT INTO users (nome, email, google_id, avatar_seed, role, cadastro_completo)
-         VALUES (?, ?, ?, ?, 'responsavel', 0)`,
-        [nome, email, googleId, avatarSeed]
+        `INSERT INTO users (nome, email, google_id, avatar_seed, role, cadastro_completo, email_verificado_em)
+         VALUES (?, ?, ?, ?, 'responsavel', 0, IF(?, NOW(), NULL))`,
+        [nome, email, googleId, avatarSeed, emailVerificado ? 1 : 0]
       );
       return result.insertId;
     },

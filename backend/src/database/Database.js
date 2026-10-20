@@ -32,6 +32,12 @@ class Database {
       connectionLimit: 10,
       queueLimit: 0,
       charset: 'utf8mb4',
+      // Colunas DATE voltam como 'YYYY-MM-DD'. Sem isso o driver cria um Date
+      // à meia-noite UTC, e no Brasil (UTC-3) o navegador mostra o dia anterior.
+      dateStrings: ['DATE'],
+      // O banco grava DATETIME em UTC (NOW() no Aiven). Sem isso o driver lê
+      // o valor como horário local e tudo fica 3h adiantado no Brasil.
+      timezone: 'Z',
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
     });
 

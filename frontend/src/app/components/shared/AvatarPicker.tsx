@@ -2,15 +2,29 @@ import { useState } from 'react';
 import { RefreshCw, Check } from 'lucide-react';
 import { avatarUrl, gerarSeeds } from '../../../lib/avatar';
 
+const TOTAL_OPCOES = 12;
+
 interface Props {
   seedAtual: string;
   onSelecionar: (seed: string) => void;
   salvando?: boolean;
+  /** Monta a URL do personagem a partir do seed (padrão: estilo dos responsáveis). */
+  urlDoSeed?: (seed: string) => string;
+  /** Seeds sempre exibidos no início da grade (ex.: personagem institucional). */
+  opcoesFixas?: string[];
 }
 
-export function AvatarPicker({ seedAtual, onSelecionar, salvando }: Props) {
-  const [opcoes, setOpcoes] = useState<string[]>(() => gerarSeeds(12));
+export function AvatarPicker({
+  seedAtual,
+  onSelecionar,
+  salvando,
+  urlDoSeed = avatarUrl,
+  opcoesFixas = [],
+}: Props) {
+  const quantidade = Math.max(TOTAL_OPCOES - opcoesFixas.length, 0);
+  const [aleatorias, setAleatorias] = useState<string[]>(() => gerarSeeds(quantidade));
   const [selecionado, setSelecionado] = useState(seedAtual);
+  const opcoes = [...opcoesFixas, ...aleatorias];
 
   function escolher(seed: string) {
     setSelecionado(seed);
@@ -22,7 +36,7 @@ export function AvatarPicker({ seedAtual, onSelecionar, salvando }: Props) {
       {/* Avatar atual, em destaque */}
       <div className="mb-5 flex items-center gap-4">
         <img
-          src={avatarUrl(selecionado)}
+          src={urlDoSeed(selecionado)}
           alt="Seu avatar"
           className="size-20 rounded-2xl border border-[#E7E5E4] bg-white"
         />
@@ -49,7 +63,7 @@ export function AvatarPicker({ seedAtual, onSelecionar, salvando }: Props) {
               }`}
               aria-label="Escolher este personagem"
             >
-              <img src={avatarUrl(seed)} alt="" className="size-full bg-white" />
+              <img src={urlDoSeed(seed)} alt="" className="size-full bg-white" />
               {ativo && (
                 <span className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-[#C8102E]">
                   <Check size={12} strokeWidth={3} className="text-white" />
@@ -63,7 +77,7 @@ export function AvatarPicker({ seedAtual, onSelecionar, salvando }: Props) {
       {/* Gerar novas opções */}
       <button
         type="button"
-        onClick={() => setOpcoes(gerarSeeds(12))}
+        onClick={() => setAleatorias(gerarSeeds(quantidade))}
         disabled={salvando}
         className="mt-4 flex items-center gap-2 rounded-xl border border-[#E7E5E4] bg-white px-4 py-2 text-sm font-semibold text-[#78716C] transition-colors hover:border-[#C8102E]/40 hover:text-[#1C1917]"
       >

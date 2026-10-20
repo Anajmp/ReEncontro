@@ -8,12 +8,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { AdminLayout } from './shared/AdminLayout';
 import type { Screen } from '../App';
 import {
-  MetricCard, CardHeader, CustomBarTooltip, AdminPanel, adminSelectClass, getCatConfig,
+  MetricCard, CardHeader, CustomBarTooltip, AdminPanel, adminSelectClass,
 } from './shared/AdminChrome';
+import { getCatConfig } from './shared/categorias';
 import { relatoriosApi } from '../../lib/api';
 
 interface Props {
   navigate: (s: Screen) => void;
+}
+
+// Formato devolvido por GET /api/relatorios?dias=N (relatoriosService.gerar)
+interface Relatorio {
+  total_cadastrados: number;
+  total_entregues: number;
+  total_descartados: number;
+  taxa_devolucao: number;
+  por_status: { status: string; total: number }[];
+  por_mes: { mes: string; encontrados: number; devolvidos: number; descartados: number }[];
+  por_categoria: { categoria: string; total: number }[];
+}
+
+// Resultado da última busca, guardado junto com o período que foi pedido
+interface Resultado {
+  dias: string;
+  dados: Relatorio | null;
+  erro: string;
 }
 
 // Cores e rótulos de cada status
@@ -34,42 +53,47 @@ function formatarMes(mes: string): string {
 
 export function Reports({ navigate }: Props) {
   const [dias, setDias] = useState('30');
-  const [dados, setDados] = useState<any>(null);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState('');
+  const [resultado, setResultado] = useState<Resultado | null>(null);
 
   useEffect(() => {
-    setCarregando(true);
-    setErro('');
     relatoriosApi.gerar(Number(dias))
-      .then(setDados)
-      .catch(err => setErro(err.message || 'Erro ao carregar relatórios'))
-      .finally(() => setCarregando(false));
+      .then((r: Relatorio) => setResultado({ dias, dados: r, erro: '' }))
+      .catch((err: unknown) => setResultado({
+        dias,
+        dados: null,
+        erro: (err instanceof Error && err.message) || 'Erro ao carregar relatórios',
+      }));
   }, [dias]);
 
+  // Enquanto o resultado do período selecionado não chega, está carregando
+  const atual = resultado?.dias === dias ? resultado : null;
+  const carregando = !atual;
+  const erro = atual?.erro ?? '';
+  const dados = atual?.dados ?? null;
+
   // Prepara os dados para os gráficos
-  const dadosMensais = (dados?.por_mes ?? []).map((m: any) => ({
+  const dadosMensais = (dados?.por_mes ?? []).map(m => ({
     month: formatarMes(m.mes),
     encontrados: m.encontrados,
     entregues: m.devolvidos,
     descartados: m.descartados,
   }));
   const temMovimentacao = dadosMensais.some(
-    (m: any) => m.encontrados + m.entregues + m.descartados > 0,
+    m => m.encontrados + m.entregues + m.descartados > 0,
   );
 
-  const dadosStatus = (dados?.por_status ?? []).map((s: any) => ({
+  const dadosStatus = (dados?.por_status ?? []).map(s => ({
     name: STATUS_INFO[s.status]?.nome ?? s.status,
     value: s.total,
     color: STATUS_INFO[s.status]?.cor ?? '#A8A29E',
   }));
 
-  const dadosCategoria = (dados?.por_categoria ?? []).map((c: any) => ({
+  const dadosCategoria = (dados?.por_categoria ?? []).map(c => ({
     name: c.categoria,
     value: c.total,
     color: getCatConfig(c.categoria).color,
   }));
-  const maiorCategoria = Math.max(1, ...dadosCategoria.map((c: any) => c.value));
+  const maiorCategoria = Math.max(1, ...dadosCategoria.map(c => c.value));
 
   const total = dados?.total_cadastrados ?? 0;
   const entregues = dados?.total_entregues ?? 0;
@@ -174,7 +198,7 @@ export function Reports({ navigate }: Props) {
                           innerRadius={36} outerRadius={58}
                           paddingAngle={3} dataKey="value"
                         >
-                          {dadosStatus.map((entry: any, i: number) => (
+                          {dadosStatus.map((entry, i) => (
                             <Cell key={`cell-${i}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -183,7 +207,7 @@ export function Reports({ navigate }: Props) {
                     </ResponsiveContainer>
                     </div>
                     <div className="mt-3 space-y-2">
-                      {dadosStatus.map((d: any) => (
+                      {dadosStatus.map(d => (
                         <div key={d.name} className="flex items-center justify-between text-xs">
                           <div className="flex items-center gap-2">
                             <div className="size-2.5 rounded-sm" style={{ backgroundColor: d.color }} />
@@ -206,7 +230,7 @@ export function Reports({ navigate }: Props) {
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {dadosCategoria.map((c: any) => (
+                  {dadosCategoria.map(c => (
                     <div key={c.name} className="flex items-center gap-3 text-xs">
                       <span className="w-32 shrink-0 truncate text-[#78716C]">{c.name}</span>
                       <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-[#F5F3F0]">

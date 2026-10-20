@@ -1,4 +1,4 @@
-import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
+import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import { PublicListing } from './components/PublicListing';
 import { ItemDetail } from './components/ItemDetail';
 import { Login } from './components/Login';
@@ -15,9 +15,10 @@ import { Finalized } from './components/Finalized';
 import { Reports } from './components/Reports';
 import { StaffManagement } from './components/StaffManagement';
 import { RotaProtegida } from './components/RotaProtegida';
-import { LoginSplashProvider } from './components/LoginSplash';
+import { LoginSplashProvider } from './components/LoginSplashProvider';
 import { PortaDeEntrada } from './components/LoadingScreen';
 import { Lgpd } from './components/Lgpd';
+import { AdminProfile } from './components/AdminProfile';
 
 export type Screen =
   | 'public-listing'
@@ -37,6 +38,7 @@ export type Screen =
   | 'finalized'
   | 'reports'
   | 'staff-management'
+  | 'admin-profile'
   | 'lgpd';
 
 // Liga cada nome de tela a uma URL de verdade
@@ -58,6 +60,7 @@ const screenToPath: Record<Screen, string> = {
   'finalized': '/admin/finalizados',
   'reports': '/admin/relatorios',
   'staff-management': '/admin/funcionarias',
+  'admin-profile': '/admin/pessoal',
   'lgpd': '/admin/privacidade'
 };
 
@@ -70,16 +73,8 @@ function useScreenNavigate() {
   };
 }
 
-// Descobre qual screen corresponde à URL atual (pra DemoNav destacar a tela certa)
-function useCurrentScreen(): Screen {
-  const location = useLocation();
-  const entry = Object.entries(screenToPath).find(([, path]) => path === location.pathname);
-  return (entry?.[0] as Screen) ?? 'public-listing';
-}
-
 export default function App() {
   const navigate = useScreenNavigate();
-  const current = useCurrentScreen();
 
   return (
     <LoginSplashProvider>
@@ -103,6 +98,7 @@ export default function App() {
           <Route path="/admin/relatorios" element={<RotaProtegida role="funcionaria" apenasDiretora><Reports navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin/funcionarias" element={<RotaProtegida role="funcionaria" apenasDiretora><StaffManagement navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin/privacidade" element={<RotaProtegida role="funcionaria" apenasDiretora><Lgpd navigate={navigate} /></RotaProtegida>} />
+          <Route path="/admin/pessoal" element={<RotaProtegida role="funcionaria" apenasDiretora><AdminProfile navigate={navigate} /></RotaProtegida>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 

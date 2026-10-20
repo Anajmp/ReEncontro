@@ -12,9 +12,16 @@ interface Props {
   navigate: (s: Screen) => void;
 }
 
+// Responsável devolvido por GET /api/lgpd/buscar
+interface ResponsavelEncontrado {
+  id: number;
+  nome: string;
+  email: string;
+}
+
 export function Lgpd({ navigate }: Props) {
   const [busca, setBusca] = useState('');
-  const [encontrado, setEncontrado] = useState<any>(null);
+  const [encontrado, setEncontrado] = useState<ResponsavelEncontrado | null>(null);
   const [confirmacao, setConfirmacao] = useState('');
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
@@ -28,16 +35,18 @@ export function Lgpd({ navigate }: Props) {
     }
     setCarregando(true);
     try {
-      const usuario = await lgpdApi.buscar(busca.trim());
+      const usuario: ResponsavelEncontrado = await lgpdApi.buscar(busca.trim());
       setEncontrado(usuario);
-    } catch (err: any) {
-      setErro(err.message || 'Erro ao buscar o responsável.');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao buscar o responsável.');
     } finally {
       setCarregando(false);
     }
   }
 
   async function anonimizar() {
+    // Só é chamado com um responsável na tela
+    if (!encontrado) return;
     setErro('');
     if (confirmacao.trim() !== encontrado.email) {
       setErro('O e-mail de confirmação não confere.');
@@ -45,12 +54,12 @@ export function Lgpd({ navigate }: Props) {
     }
     setCarregando(true);
     try {
-      const res = await lgpdApi.anonimizar(encontrado.email, confirmacao.trim());
+      const res: { mensagem: string } = await lgpdApi.anonimizar(encontrado.email, confirmacao.trim());
       setSucesso(res.mensagem);
       setEncontrado(null);
       setBusca(''); setConfirmacao('');
-    } catch (err: any) {
-      setErro(err.message || 'Erro ao anonimizar os dados.');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao anonimizar os dados.');
     } finally {
       setCarregando(false);
     }

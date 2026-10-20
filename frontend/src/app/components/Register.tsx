@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import type { Screen } from '../App';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLoginSplash } from './LoginSplash';
+import { mascararTelefone, validarTelefone } from '../../lib/telefone';
 import {
   AuthCard,
   AuthEmblem,
@@ -39,6 +40,7 @@ export function Register({ navigate }: Props) {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
+  const [telefoneErro, setTelefoneErro] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [erro, setErro] = useState('');
@@ -55,6 +57,9 @@ export function Register({ navigate }: Props) {
     setErro('');
 
     // Validações básicas
+    const erroTel = validarTelefone(telefone);
+    setTelefoneErro(erroTel ?? '');
+    if (erroTel) return;
     if (senha !== confirmarSenha) {
       setErro('As senhas não conferem');
       return;
@@ -81,8 +86,8 @@ export function Register({ navigate }: Props) {
       // Já vem logado (backend devolve token) — o contexto guarda a sessão
       await registrar(dados);
       navigate('parent-dashboard');
-    } catch (err: any) {
-      setErro(err.message || 'Erro ao criar conta');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao criar conta');
     } finally {
       setCarregando(false);
     }
@@ -145,9 +150,15 @@ export function Register({ navigate }: Props) {
               label="Telefone"
               leftIcon={<Phone size={15} strokeWidth={1.6} />}
               type="tel"
-              placeholder="(19) 9 0000-0000"
+              inputMode="numeric"
+              placeholder="(19) 99999-9999"
               value={telefone}
-              onChange={e => setTelefone(e.target.value)}
+              onChange={e => {
+                setTelefone(mascararTelefone(e.target.value));
+                if (telefoneErro) setTelefoneErro('');
+              }}
+              onBlur={() => setTelefoneErro(validarTelefone(telefone) ?? '')}
+              error={telefoneErro || undefined}
               autoComplete="tel"
             />
 

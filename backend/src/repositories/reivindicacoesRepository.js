@@ -4,6 +4,35 @@
 // =====================================================================
 import { db } from "../config/database.js";
 
+// Reivindicações pendentes que uma mesma pessoa (e-mail ou conta) pode ter.
+const MAX_PENDENTES_POR_PESSOA = 3;
+
+// Trava o item e a reivindicação, nessa ordem — a mesma de criar() e de
+// itensRepository.descartar(), para duas operações simultâneas não entrarem
+// em deadlock. Trava só as duas linhas (sem JOIN), para não serializar
+// operações de itens diferentes que dividem o mesmo ponto de coleta.
+async function travarReivindicacaoEItem(conn, reivindicacaoId) {
+  const [alvo] = await conn.execute(
+    "SELECT item_id FROM reivindicacoes WHERE id = ?",
+    [reivindicacaoId],
+  );
+  if (alvo.length === 0) {
+    throw { status: 404, mensagem: "Reivindicação não encontrada" };
+  }
+
+  const [itens] = await conn.execute(
+    `SELECT id, status, descricao, ponto_coleta_id FROM itens WHERE id = ? FOR UPDATE`,
+    [alvo[0].item_id],
+  );
+  const [reivs] = await conn.execute(
+    `SELECT id, item_id, status, nome_requerente, email_requerente
+     FROM reivindicacoes WHERE id = ? FOR UPDATE`,
+    [reivindicacaoId],
+  );
+
+  return { reiv: reivs[0], item: itens[0] };
+}
+
 export const reivindicacoesRepository = {
   // Cria uma reivindicação de forma atômica e segura contra concorrência.
   async criar({
@@ -38,7 +67,23 @@ export const reivindicacoesRepository = {
         };
       }
 
-      // 2. Cria a reivindicação (com snapshot dos dados - RN-018)
+      // 2. Cada reivindicação tira o item da vitrine até a equipe decidir.
+      //    Limita quantas uma mesma pessoa pode ter em aberto, para que um
+      //    envio em massa não esconda o acervo inteiro.
+      const [[abertas]] = await conn.execute(
+        `SELECT COUNT(*) AS total FROM reivindicacoes
+         WHERE status = 'pendente' AND (email_requerente = ? OR user_id = ?)`,
+        [emailRequerente, userId ?? 0],
+      );
+      if (abertas.total >= MAX_PENDENTES_POR_PESSOA) {
+        throw {
+          status: 429,
+          mensagem: `Você já tem ${MAX_PENDENTES_POR_PESSOA} reivindicações aguardando análise. `
+            + "Aguarde a resposta da equipe ou procure a inspetoria da escola.",
+        };
+      }
+
+      // 3. Cria a reivindicação (com snapshot dos dados - RN-018)
       const [result] = await conn.execute(
         `INSERT INTO reivindicacoes
           (item_id, user_id, aluno_id, nome_requerente, email_requerente,
@@ -57,7 +102,7 @@ export const reivindicacoesRepository = {
         ],
       );
 
-      // 3. Muda o status do item para 'pendente'
+      // 4. Muda o status do item para 'pendente'
       await conn.execute(`UPDATE itens SET status = 'pendente' WHERE id = ?`, [
         itemId,
       ]);
@@ -129,26 +174,21 @@ export const reivindicacoesRepository = {
     try {
       await conn.beginTransaction();
 
-      // Busca a reivindicação e trava a linha
-      const [reivs] = await conn.execute(
-        `SELECT r.id, r.item_id, r.status, r.nome_requerente, r.email_requerente,
-                i.descricao AS descricao_item, p.nome AS ponto_coleta
-         FROM reivindicacoes r
-         INNER JOIN itens i ON i.id = r.item_id
-         LEFT JOIN pontos_coleta p ON p.id = i.ponto_coleta_id
-         WHERE r.id = ? FOR UPDATE`,
-        [reivindicacaoId],
-      );
-      if (reivs.length === 0) {
-        throw { status: 404, mensagem: "Reivindicação não encontrada" };
-      }
-      if (reivs[0].status !== "pendente") {
+      const { reiv, item } = await travarReivindicacaoEItem(conn, reivindicacaoId);
+      if (reiv.status !== "pendente") {
         throw { status: 409, mensagem: "Esta reivindicação já foi processada" };
       }
+      // O item pode ter sido descartado ou alterado por outra funcionária
+      if (item.status !== "pendente") {
+        throw { status: 409, mensagem: "O item não está mais aguardando validação" };
+      }
 
-      const itemId = reivs[0].item_id;
+      const itemId = item.id;
+      const [pontos] = await conn.execute(
+        "SELECT nome FROM pontos_coleta WHERE id = ?",
+        [item.ponto_coleta_id],
+      );
 
-      // Aprova a reivindicação
       // Aprova a reivindicação
       await conn.execute(
         `UPDATE reivindicacoes
@@ -167,10 +207,10 @@ export const reivindicacoesRepository = {
       return {
         reivindicacaoId,
         itemId,
-        nomeRequerente: reivs[0].nome_requerente,
-        emailRequerente: reivs[0].email_requerente,
-        descricaoItem: reivs[0].descricao_item,
-        pontoColeta: reivs[0].ponto_coleta,
+        nomeRequerente: reiv.nome_requerente,
+        emailRequerente: reiv.email_requerente,
+        descricaoItem: item.descricao,
+        pontoColeta: pontos[0]?.nome ?? null,
       };
     } catch (err) {
       await conn.rollback();
@@ -186,22 +226,12 @@ export const reivindicacoesRepository = {
     try {
       await conn.beginTransaction();
 
-      const [reivs] = await conn.execute(
-        `SELECT r.id, r.item_id, r.status, r.nome_requerente, r.email_requerente,
-                i.descricao AS descricao_item
-         FROM reivindicacoes r
-         INNER JOIN itens i ON i.id = r.item_id
-         WHERE r.id = ? FOR UPDATE`,
-        [reivindicacaoId],
-      );
-      if (reivs.length === 0) {
-        throw { status: 404, mensagem: "Reivindicação não encontrada" };
-      }
-      if (reivs[0].status !== "pendente") {
+      const { reiv, item } = await travarReivindicacaoEItem(conn, reivindicacaoId);
+      if (reiv.status !== "pendente") {
         throw { status: 409, mensagem: "Esta reivindicação já foi processada" };
       }
 
-      const itemId = reivs[0].item_id;
+      const itemId = item.id;
 
       // Rejeita com o motivo
       await conn.execute(
@@ -211,9 +241,10 @@ export const reivindicacoesRepository = {
         [funcionariaId, motivo, reivindicacaoId],
       );
 
-      // Item volta a ficar disponível
+      // Item volta a ficar disponível — só se ainda estava aguardando
+      // validação (um item descartado não pode voltar para a vitrine)
       await conn.execute(
-        `UPDATE itens SET status = 'disponivel' WHERE id = ?`,
+        `UPDATE itens SET status = 'disponivel' WHERE id = ? AND status = 'pendente'`,
         [itemId],
       );
 
@@ -221,9 +252,9 @@ export const reivindicacoesRepository = {
       return {
         reivindicacaoId,
         itemId,
-        nomeRequerente: reivs[0].nome_requerente,
-        emailRequerente: reivs[0].email_requerente,
-        descricaoItem: reivs[0].descricao_item,
+        nomeRequerente: reiv.nome_requerente,
+        emailRequerente: reiv.email_requerente,
+        descricaoItem: item.descricao,
       };
     } catch (err) {
       await conn.rollback();
@@ -239,26 +270,16 @@ export const reivindicacoesRepository = {
     try {
       await conn.beginTransaction();
 
-      const [reivs] = await conn.execute(
-        `SELECT r.id, r.item_id, r.status, r.nome_requerente, r.email_requerente,
-                i.descricao AS descricao_item
-         FROM reivindicacoes r
-         INNER JOIN itens i ON i.id = r.item_id
-         WHERE r.id = ? FOR UPDATE`,
-        [reivindicacaoId],
-      );
-      if (reivs.length === 0) {
-        throw { status: 404, mensagem: "Reivindicação não encontrada" };
-      }
+      const { reiv, item } = await travarReivindicacaoEItem(conn, reivindicacaoId);
       // Só pode entregar o que foi aprovado
-      if (reivs[0].status !== "aprovada") {
+      if (reiv.status !== "aprovada" || item.status !== "em_processo") {
         throw {
           status: 409,
           mensagem: "Só é possível entregar itens de reivindicações aprovadas",
         };
       }
 
-      const itemId = reivs[0].item_id;
+      const itemId = item.id;
 
       // Reivindicação vira entregue
       await conn.execute(
@@ -278,9 +299,9 @@ export const reivindicacoesRepository = {
       return {
         reivindicacaoId,
         itemId,
-        nomeRequerente: reivs[0].nome_requerente,
-        emailRequerente: reivs[0].email_requerente,
-        descricaoItem: reivs[0].descricao_item,
+        nomeRequerente: reiv.nome_requerente,
+        emailRequerente: reiv.email_requerente,
+        descricaoItem: item.descricao,
       };
     } catch (err) {
       await conn.rollback();
@@ -296,25 +317,15 @@ export const reivindicacoesRepository = {
     try {
       await conn.beginTransaction();
 
-      const [reivs] = await conn.execute(
-        `SELECT r.id, r.item_id, r.status, r.nome_requerente, r.email_requerente,
-                i.descricao AS descricao_item
-         FROM reivindicacoes r
-         INNER JOIN itens i ON i.id = r.item_id
-         WHERE r.id = ? FOR UPDATE`,
-        [reivindicacaoId],
-      );
-      if (reivs.length === 0) {
-        throw { status: 404, mensagem: "Reivindicação não encontrada" };
-      }
-      if (!["pendente", "aprovada"].includes(reivs[0].status)) {
+      const { reiv, item } = await travarReivindicacaoEItem(conn, reivindicacaoId);
+      if (!["pendente", "aprovada"].includes(reiv.status)) {
         throw {
           status: 409,
           mensagem: "Esta reivindicação não pode ser cancelada",
         };
       }
 
-      const itemId = reivs[0].item_id;
+      const itemId = item.id;
 
       await conn.execute(
         `UPDATE reivindicacoes
@@ -323,8 +334,10 @@ export const reivindicacoesRepository = {
         [funcionariaId, motivo, reivindicacaoId],
       );
 
+      // Só devolve à vitrine o item que estava preso a esta reivindicação
       await conn.execute(
-        `UPDATE itens SET status = 'disponivel' WHERE id = ?`,
+        `UPDATE itens SET status = 'disponivel'
+         WHERE id = ? AND status IN ('pendente', 'em_processo')`,
         [itemId],
       );
 
@@ -332,9 +345,9 @@ export const reivindicacoesRepository = {
       return {
         reivindicacaoId,
         itemId,
-        nomeRequerente: reivs[0].nome_requerente,
-        emailRequerente: reivs[0].email_requerente,
-        descricaoItem: reivs[0].descricao_item,
+        nomeRequerente: reiv.nome_requerente,
+        emailRequerente: reiv.email_requerente,
+        descricaoItem: item.descricao,
       };
     } catch (err) {
       await conn.rollback();

@@ -9,13 +9,8 @@ import dotenv from "dotenv";
 import routes from "./routes/index.js";
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import * as Sentry from "@sentry/node";
-import { CORS_ORIGINS, EH_PRODUCAO } from "./config/env.js";
-import {
-  limiteGeral,
-  limiteAuth,
-  limiteRecuperacaoSenha,
-  limiteReivindicacao,
-} from "./middlewares/rateLimitMiddleware.js";
+import { CORS_ORIGINS } from "./config/env.js";
+import { limiteGeral } from "./middlewares/rateLimitMiddleware.js";
 
 dotenv.config();
 
@@ -23,7 +18,6 @@ const app = express();
 
 // Middlewares globais
 app.use(helmet());
-app.use(cors({ origin: process.env.FRONTEND_URL }));
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

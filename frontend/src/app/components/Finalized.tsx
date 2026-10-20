@@ -1,51 +1,119 @@
 import { Search, RotateCcw } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { StatusBadge } from './shared/StatusBadge';
 import { AdminLayout } from './shared/AdminLayout';
 import { AdminPanel, CategoryBadge, adminSearchInputClass, adminSelectClass } from './shared/AdminChrome';
 import type { Screen } from '../App';
-import { itensApi, reivindicacoesApi } from '../../lib/api';
+import type { Status } from './shared/data';
+import { itensApi, reivindicacoesApi, fotoMiniatura } from '../../lib/api';
+import type { Pagina } from '../../lib/api';
 
 interface Props {
   navigate: (s: Screen) => void;
 }
 
+// Item finalizado como devolvido por itensApi.listarFinalizados()
+interface ItemFinalizado {
+  id: number;
+  name: string;
+  category: string;
+  location: string;
+  status: Status;
+  image: string;
+  finalizadoEmRaw?: string | null;
+  finalizadoEm?: string;
+  finalizadoPor: string;
+  motivoDescarte: string;
+}
+
+// Filtros que viajam na chave da lista
+interface FiltrosFinalizados {
+  status: 'entregue' | 'descartado' | 'todos';
+  q?: string;
+}
+
+// Página atual, marcada com os filtros que a geraram
+type ListaFinalizados = Pagina<ItemFinalizado> & { chave: string };
+
 export function Finalized({ navigate }: Props) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('Entregue');
-  const [itens, setItens] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [buscaAplicada, setBuscaAplicada] = useState('');
+  const [lista, setLista] = useState<ListaFinalizados | null>(null);
+  // Sobe a cada reversão para recarregar a lista
+  const [versao, setVersao] = useState(0);
+  const [carregandoMais, setCarregandoMais] = useState(false);
+  // "Agora" de referência pra janela de 24h, atualizado a cada carregamento
+  const [agora, setAgora] = useState(() => Date.now());
 
-  async function carregar() {
-    setLoading(true);
-    try {
-      if (statusFilter === 'all') {
-        // Busca os dois status e junta
-        const [entregues, descartados] = await Promise.all([
-          itensApi.listarFinalizados('entregue'),
-          itensApi.listarFinalizados('descartado'),
-        ]);
-        setItens([...entregues, ...descartados]);
-      } else {
-        const status = statusFilter === 'Entregue' ? 'entregue' : 'descartado';
-        setItens(await itensApi.listarFinalizados(status));
-      }
-    } catch (err) {
-      console.error('Erro ao carregar finalizados:', err);
-    } finally {
-      setLoading(false);
-    }
+  // A busca só vai pro servidor quando a funcionária para de digitar
+  useEffect(() => {
+    const timer = window.setTimeout(() => setBuscaAplicada(search.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
+  // "Todos" vira status=todos: o servidor junta entregues e descartados
+  const chave = JSON.stringify({
+    status: statusFilter === 'all' ? 'todos' : statusFilter === 'Entregue' ? 'entregue' : 'descartado',
+    q: buscaAplicada || undefined,
+  });
+
+  // Primeira página sempre que o status ou a busca mudam (ou após reverter)
+  useEffect(() => {
+    let ativo = true;
+    const { status, q } = JSON.parse(chave) as FiltrosFinalizados;
+    itensApi.listarFinalizados(status, { q })
+      .then(pagina => {
+        if (!ativo) return;
+        setLista({ ...pagina, chave });
+        setAgora(Date.now());
+      })
+      .catch(err => {
+        console.error('Erro ao carregar finalizados:', err);
+        if (ativo) setLista({ chave, itens: [], total: 0, pagina: 1, totalPaginas: 0 });
+      });
+    return () => { ativo = false; };
+  }, [chave, versao]);
+
+  const carregar = useCallback(() => setVersao(v => v + 1), []);
+
+  // Mostra "Carregando..." enquanto a página do filtro atual não chega
+  const loading = lista?.chave !== chave;
+  const itens = lista?.itens ?? [];
+  const temMais = Boolean(lista && lista.pagina < lista.totalPaginas);
+
+  function carregarMais() {
+    if (!lista || carregandoMais) return;
+    const { chave: chaveDaLista, pagina } = lista;
+    const { status, q } = JSON.parse(chaveDaLista) as FiltrosFinalizados;
+    setCarregandoMais(true);
+    itensApi.listarFinalizados(status, { q, pagina: pagina + 1 })
+      .then(proxima => setLista(atual => {
+        // O filtro mudou enquanto carregava: essa página não vale mais
+        if (!atual || atual.chave !== chaveDaLista) return atual;
+        const vistos = new Set(atual.itens.map(i => i.id));
+        return {
+          ...atual,
+          itens: [...atual.itens, ...proxima.itens.filter(i => !vistos.has(i.id))],
+          total: proxima.total,
+          pagina: proxima.pagina,
+          totalPaginas: proxima.totalPaginas,
+        };
+      }))
+      .catch(err => console.error('Erro ao carregar mais finalizados:', err))
+      .finally(() => setCarregandoMais(false));
   }
 
-  // Recarrega sempre que o filtro de status muda
-  useEffect(() => { carregar(); }, [statusFilter]);
+  function trocarFiltro(valor: string) {
+    setStatusFilter(valor);
+  }
 
   // Verifica se a entrega ainda está na janela de 24h (RN-015)
-  function podeReverter(item: any) {
+  function podeReverter(item: ItemFinalizado) {
     if (item.status !== 'Entregue' || !item.finalizadoEmRaw) return false;
-    const horas = (Date.now() - new Date(item.finalizadoEmRaw).getTime()) / 36e5;
+    const horas = (agora - new Date(item.finalizadoEmRaw).getTime()) / 36e5;
     return horas <= 24;
   }
 
@@ -54,15 +122,11 @@ export function Finalized({ navigate }: Props) {
     try {
       await reivindicacoesApi.reverterEntrega(itemId);
       carregar();
-    } catch (err: any) {
-      alert(err.message || 'Erro ao reverter a entrega');
+    } catch (err: unknown) {
+      alert((err instanceof Error && err.message) || 'Erro ao reverter a entrega');
     }
   }
 
-  const filtered = itens.filter(item => {
-    const q = search.toLowerCase();
-    return !q || item.name.toLowerCase().includes(q);
-  });
 
   return (
     <AdminLayout current="finalized" navigate={navigate}>
@@ -77,7 +141,7 @@ export function Finalized({ navigate }: Props) {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={trocarFiltro}>
             <SelectTrigger className={`w-44 ${adminSelectClass}`}>
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -92,10 +156,11 @@ export function Finalized({ navigate }: Props) {
         <AdminPanel className="overflow-hidden">
           {/* Lista em cards — mobile */}
           <div className="divide-y divide-[#E7E5E4] lg:hidden">
-            {filtered.map(item => (
+            {itens.map(item => (
               <div key={item.id} className="flex gap-3 p-4">
                 <img
-                  src={item.image}
+                  src={fotoMiniatura(item.image, 160)}
+                  loading="lazy"
                   alt={item.name}
                   className="size-14 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
                 />
@@ -146,12 +211,13 @@ export function Finalized({ navigate }: Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E7E5E4]">
-                {filtered.map(item => (
+                {itens.map(item => (
                   <tr key={item.id} className="transition-colors hover:bg-[#F5F3F0]/50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={item.image}
+                          src={fotoMiniatura(item.image, 160)}
+                          loading="lazy"
                           alt={item.name}
                           className="size-10 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
                         />
@@ -195,12 +261,26 @@ export function Finalized({ navigate }: Props) {
 
           {loading ? (
             <div className="py-10 text-center text-sm text-[#A8A29E]">Carregando...</div>
-          ) : filtered.length === 0 && (
+          ) : itens.length === 0 && (
             <div className="py-10 text-center text-sm text-[#A8A29E]">
               Nenhum item no histórico.
             </div>
           )}
         </AdminPanel>
+
+        {temMais && !loading && (
+          <div className="flex flex-col items-center gap-1.5">
+            <button
+              type="button"
+              onClick={carregarMais}
+              disabled={carregandoMais}
+              className="rounded-xl border border-[#E7E5E4] bg-white px-4 py-1.5 text-sm font-medium text-[#1C1917] transition-colors hover:text-[#C8102E] disabled:opacity-60"
+            >
+              {carregandoMais ? 'Carregando...' : 'Carregar mais'}
+            </button>
+            <p className="text-xs text-[#A8A29E]">Mostrando {itens.length} de {lista?.total}</p>
+          </div>
+        )}
       </div>
     </AdminLayout>
   );

@@ -80,7 +80,9 @@ export const usuariosService = {
     if (await usuariosRepository.emailEmUsoPorOutro(dados.email, userId)) {
       throw { status: 409, mensagem: "Este e-mail já está em uso" };
     }
+    // Se o e-mail mudar, o repositório zera email_verificado_em
     await usuariosRepository.atualizarPerfil(userId, dados);
-    return { mensagem: "Dados atualizados" };
+    const usuario = await usuariosRepository.buscarDadosPerfil(userId);
+    return { mensagem: "Dados atualizados", usuario };
   },
 };

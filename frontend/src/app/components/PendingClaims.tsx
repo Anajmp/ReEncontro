@@ -98,32 +98,30 @@ function RejectionModal({
 export function PendingClaims({ navigate }: Props) {
   const [rejecting, setRejecting] = useState<Claim | null>(null);
   const [rejectOpen, setRejectOpen] = useState(false);
-  const [approved, setApproved] = useState<number[]>([]);
-  const [rejected, setRejected] = useState<number[]>([]);
   const [pendingClaims, setPendingClaims] = useState<Claim[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Busca os pendentes reais do backend
   async function carregar() {
-    setLoading(true);
     try {
       const dados = await reivindicacoesApi.listarPendentes();
       setPendingClaims(dados);
     } catch (err) {
       console.error('Erro ao carregar pendentes:', err);
-    } finally {
-      setLoading(false);
     }
   }
 
-  useEffect(() => { carregar(); }, []);
+  useEffect(() => {
+    reivindicacoesApi.listarPendentes()
+      .then(setPendingClaims)
+      .catch(err => console.error('Erro ao carregar pendentes:', err));
+  }, []);
 
  const handleApprove = async (id: number) => {
     try {
       await reivindicacoesApi.aprovar(id);
       carregar();  // recarrega a lista (o item aprovado sai dos pendentes)
-    } catch (err: any) {
-      alert(err.message || 'Erro ao aprovar');
+    } catch (err: unknown) {
+      alert((err instanceof Error && err.message) || 'Erro ao aprovar');
     }
   };
 
@@ -139,8 +137,8 @@ export function PendingClaims({ navigate }: Props) {
       setRejectOpen(false);
       setRejecting(null);
       carregar();  // recarrega
-    } catch (err: any) {
-      alert(err.message || 'Erro ao rejeitar');
+    } catch (err: unknown) {
+      alert((err instanceof Error && err.message) || 'Erro ao rejeitar');
     }
   };
 
@@ -230,13 +228,6 @@ export function PendingClaims({ navigate }: Props) {
             </AdminPanel>
           ))}
         </div>
-
-        {(approved.length > 0 || rejected.length > 0) && (
-          <div className="text-center text-xs text-[#A8A29E]">
-            {approved.length > 0 && `${approved.length} aprovada${approved.length > 1 ? 's' : ''} `}
-            {rejected.length > 0 && `${rejected.length} rejeitada${rejected.length > 1 ? 's' : ''} nesta sessão`}
-          </div>
-        )}
       </div>
 
       <RejectionModal

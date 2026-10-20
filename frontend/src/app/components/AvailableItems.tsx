@@ -1,4 +1,4 @@
-import { useState, useEffect} from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, Pencil, Trash2, AlertTriangle, Plus } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -8,8 +8,10 @@ import { AdminLayout } from './shared/AdminLayout';
 import {
   AdminPanel, CategoryBadge, adminBtnPrimary, adminInputClass, adminSearchInputClass, adminSelectClass,
 } from './shared/AdminChrome';
-import { itensApi, reivindicacoesApi, referenciasApi } from '../../lib/api';
+import { itensApi, referenciasApi, fotoMiniatura } from '../../lib/api';
+import type { FiltrosListagem, ItemTela, Pagina } from '../../lib/api';
 import type { Screen } from '../App';
+import type { Status } from './shared/data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Label } from './ui/label';
 
@@ -17,38 +19,61 @@ interface Props {
   navigate: (s: Screen) => void;
 }
 
+// Item como devolvido por itensApi.listar() (já traduzido pro formato da tela)
+interface ItemDisponivel {
+  id: number;
+  name: string;
+  category: string;
+  location: string;
+  date: string;
+  status: Status;
+  image: string;
+  description: string;
+  daysFound: number;
+}
+
+// Categoria de GET /api/categorias
+interface Categoria {
+  id: number;
+  nome: string;
+}
+
 function EditItemModal({ item, open, onClose, onSaved }: {
-  item: any | null; open: boolean; onClose: () => void; onSaved: () => void;
+  item: ItemDisponivel | null; open: boolean; onClose: () => void; onSaved: () => void;
 }) {
-  const [nome, setNome] = useState('');
-  const [descricao, setDescricao] = useState('');
+  const [nome, setNome] = useState(item?.name || '');
+  const [descricao, setDescricao] = useState(item?.description || '');
+  // categoria e ponto: o item traduzido tem nome, mas o backend quer ID.
+  // Por simplicidade, o usuário reescolhe (começa vazio).
   const [categoriaId, setCategoriaId] = useState('');
-  const [local, setLocal] = useState('');
+  const [local, setLocal] = useState(item?.location || '');
   const [pontoColetaId, setPontoColetaId] = useState('');
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
-  const [categorias, setCategorias] = useState<any[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
 
   useEffect(() => {
     referenciasApi.categorias().then(setCategorias).catch(console.error);
   }, []);
 
-  // Preenche com os dados atuais quando abre
-  useEffect(() => {
+  // Preenche com os dados atuais quando abre (ajuste de estado durante o
+  // render quando item/open mudam, em vez de sincronizar via efeito)
+  const [anterior, setAnterior] = useState({ item, open });
+  if (anterior.item !== item || anterior.open !== open) {
+    setAnterior({ item, open });
     if (item) {
       setNome(item.name || '');
       setDescricao(item.description || '');
       setLocal(item.location || '');
-      // categoria e ponto: o item traduzido tem nome, mas o backend quer ID.
-      // Por simplicidade, o usuário reescolhe (começa vazio).
       setCategoriaId('');
       setPontoColetaId('');
     }
-  }, [item, open]);
+  }
 
   if (!item) return null;
 
   async function salvar() {
+    if (!item) return;
     setErro('');
     if (!nome || !descricao || !categoriaId || !local || !pontoColetaId) {
       setErro('Preencha todos os campos');
@@ -65,8 +90,8 @@ function EditItemModal({ item, open, onClose, onSaved }: {
       });
       onSaved();
       onClose();
-    } catch (err: any) {
-      setErro(err.message || 'Erro ao salvar');
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao salvar');
     } finally {
       setSalvando(false);
     }
@@ -126,41 +151,142 @@ function EditItemModal({ item, open, onClose, onSaved }: {
   );
 }
 
+function DiscardItemModal({ item, onClose, onDiscarded }: {
+  item: ItemDisponivel | null; onClose: () => void; onDiscarded: () => void;
+}) {
+  const [motivo, setMotivo] = useState('');
+  const [erro, setErro] = useState('');
+  const [descartando, setDescartando] = useState(false);
+
+  // Limpa o formulário sempre que abre para outro item
+  const [anterior, setAnterior] = useState(item);
+  if (anterior !== item) {
+    setAnterior(item);
+    setMotivo('');
+    setErro('');
+  }
+
+  if (!item) return null;
+
+  async function confirmar() {
+    if (!item) return;
+    setErro('');
+    if (motivo.trim().length < 3) {
+      setErro('Informe o motivo do descarte');
+      return;
+    }
+    setDescartando(true);
+    try {
+      await itensApi.descartar(item.id, motivo.trim());
+      onDiscarded();
+      onClose();
+    } catch (err: unknown) {
+      setErro((err instanceof Error && err.message) || 'Erro ao descartar');
+    } finally {
+      setDescartando(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-md rounded-2xl border-[#E7E5E4]">
+        <DialogHeader>
+          <DialogTitle className="text-[#1C1917]">Descartar item</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <p className="text-sm text-[#78716C]">
+            O item <strong className="text-[#1C1917]">{item.name}</strong> sairá da listagem e irá para Finalizados.
+          </p>
+          {item.status === 'Pendente' && (
+            <p className="rounded-xl bg-[#FEF3C7] px-3 py-2 text-sm text-[#92400E]">
+              Este item tem uma reivindicação pendente. Ela será rejeitada e o responsável receberá um e-mail com o motivo.
+            </p>
+          )}
+          <div className="space-y-1.5">
+            <Label className="text-sm font-semibold text-[#1C1917]">Motivo *</Label>
+            <Input
+              className={adminInputClass}
+              value={motivo}
+              onChange={e => setMotivo(e.target.value)}
+              placeholder="Ex: Mais de 90 dias sem dono, doado"
+            />
+          </div>
+          {erro && <p className="rounded-xl bg-[#FEE2E2] px-3 py-2 text-sm text-[#C8102E]">{erro}</p>}
+        </div>
+        <div className="flex gap-3 border-t border-[#E7E5E4] pt-2">
+          <Button variant="outline" className="flex-1 rounded-xl border-[#E7E5E4]" onClick={onClose} disabled={descartando}>Cancelar</Button>
+          <Button className="flex-1 rounded-xl bg-[#C8102E] text-white hover:bg-[#A50D26]" onClick={confirmar} disabled={descartando}>
+            {descartando ? 'Descartando...' : 'Descartar'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function AvailableItems({ navigate }: Props) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
-  const [items, setItems] = useState<any[]>([]);
-  const [editing, setEditing] = useState<any | null>(null);
+  const [lista, setLista] = useState<(Pagina<ItemTela> & { chave: string }) | null>(null);
+  const [editing, setEditing] = useState<ItemDisponivel | null>(null);
   const [editOpen, setEditOpen] = useState(false);
-  
+  const [discarding, setDiscarding] = useState<ItemDisponivel | null>(null);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [buscaAplicada, setBuscaAplicada] = useState('');
+  // Sobe a cada edição/descarte para recarregar a lista
+  const [versao, setVersao] = useState(0);
+  const [carregandoMais, setCarregandoMais] = useState(false);
 
-  async function carregar() {
-    try {
-      const dados = await itensApi.listar();
-      setItems(dados);
-    } catch (err) {
-      console.error('Erro ao carregar itens:', err);
-    }
-  }
+  useEffect(() => {
+    referenciasApi.categorias().then(setCategorias).catch(console.error);
+  }, []);
 
-  useEffect(() => { carregar(); }, []);
+  // A busca só vai pro servidor quando a funcionária para de digitar
+  useEffect(() => {
+    const timer = window.setTimeout(() => setBuscaAplicada(search.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
-  async function descartar(id: number, nome: string) {
-    if (!confirm(`Descartar o item "${nome}"? Ele sairá da listagem.`)) return;
-    try {
-      await itensApi.descartar(id);
-      carregar();
-    } catch (err: any) {
-      alert(err.message || 'Erro ao descartar');
-    }
-  }
-
-  const filtered = items.filter(item => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || item.name.toLowerCase().includes(q) || item.location.toLowerCase().includes(q);
-    const matchCategory = category === 'all' || item.category === category;
-    return matchSearch && matchCategory;
+  const chave = JSON.stringify({
+    q: buscaAplicada || undefined,
+    categoriaId: category === 'all' ? undefined : Number(category),
   });
+
+  // Primeira página sempre que os filtros mudam (ou após editar/descartar).
+  // Enquanto a nova não chega, a lista anterior continua na tela.
+  useEffect(() => {
+    let ativo = true;
+    itensApi.listar(JSON.parse(chave) as FiltrosListagem)
+      .then(pagina => { if (ativo) setLista({ ...pagina, chave }); })
+      .catch(err => console.error('Erro ao carregar itens:', err));
+    return () => { ativo = false; };
+  }, [chave, versao]);
+
+  const carregar = useCallback(() => setVersao(v => v + 1), []);
+
+  function carregarMais() {
+    if (!lista || carregandoMais) return;
+    const { chave: chaveDaLista, pagina } = lista;
+    setCarregandoMais(true);
+    itensApi.listar({ ...(JSON.parse(chaveDaLista) as FiltrosListagem), pagina: pagina + 1 })
+      .then(proxima => setLista(atual => {
+        // Os filtros mudaram enquanto carregava: essa página não vale mais
+        if (!atual || atual.chave !== chaveDaLista) return atual;
+        const vistos = new Set(atual.itens.map(i => i.id));
+        return {
+          ...atual,
+          itens: [...atual.itens, ...proxima.itens.filter(i => !vistos.has(i.id))],
+          total: proxima.total,
+          pagina: proxima.pagina,
+          totalPaginas: proxima.totalPaginas,
+        };
+      }))
+      .catch(err => console.error('Erro ao carregar mais itens:', err))
+      .finally(() => setCarregandoMais(false));
+  }
+
+  const items: ItemDisponivel[] = lista?.itens ?? [];
+  const temMais = Boolean(lista && lista.pagina < lista.totalPaginas);
 
   return (
     <AdminLayout current="available-items" navigate={navigate}>
@@ -188,11 +314,9 @@ export function AvailableItems({ navigate }: Props) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas as categorias</SelectItem>
-              <SelectItem value="Vestuário">Vestuário</SelectItem>
-              <SelectItem value="Acessórios">Acessórios</SelectItem>
-              <SelectItem value="Material Escolar">Material Escolar</SelectItem>
-              <SelectItem value="Calçados">Calçados</SelectItem>
-              <SelectItem value="Outros">Outros</SelectItem>
+              {categorias.map(c => (
+                <SelectItem key={c.id} value={String(c.id)}>{c.nome}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select defaultValue="all">
@@ -212,13 +336,14 @@ export function AvailableItems({ navigate }: Props) {
         <AdminPanel className="overflow-hidden">
           {/* Lista em cards — mobile */}
           <div className="divide-y divide-[#E7E5E4] lg:hidden">
-            {filtered.map(item => (
+            {items.map(item => (
               <div
                 key={item.id}
                 className={`flex gap-3 p-4 ${item.daysFound > 0 ? 'bg-[#FEF3C7]/30' : ''}`}
               >
                 <img
-                  src={item.image}
+                  src={fotoMiniatura(item.image, 160)}
+                  loading="lazy"
                   alt={item.name}
                   className="size-14 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
                 />
@@ -246,7 +371,7 @@ export function AvailableItems({ navigate }: Props) {
                       <button
                         type="button"
                         className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
-                        onClick={() => descartar(item.id, item.name)}
+                        onClick={() => setDiscarding(item)}
                       >
                         <Trash2 className="size-3.5" />
                       </button>
@@ -277,7 +402,7 @@ export function AvailableItems({ navigate }: Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E7E5E4]">
-                {filtered.map(item => (
+                {items.map(item => (
                   <tr
                     key={item.id}
                     className={`transition-colors hover:bg-[#F5F3F0]/50 ${item.daysFound > 0 ? 'bg-[#FEF3C7]/30' : ''}`}
@@ -286,7 +411,8 @@ export function AvailableItems({ navigate }: Props) {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={item.image}
+                          src={fotoMiniatura(item.image, 160)}
+                          loading="lazy"
                           alt={item.name}
                           className="size-10 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
                         />
@@ -333,7 +459,7 @@ export function AvailableItems({ navigate }: Props) {
                         <button
                           type="button"
                           className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
-                          onClick={() => descartar(item.id, item.name)}
+                          onClick={() => setDiscarding(item)}
                         >
                           <Trash2 className="size-3.5" />
                         </button>
@@ -345,12 +471,21 @@ export function AvailableItems({ navigate }: Props) {
             </table>
           </div>
 
-          {filtered.length === 0 && (
+          {lista && items.length === 0 && (
             <div className="py-10 text-center text-sm text-[#A8A29E]">
               Nenhum item encontrado.
             </div>
           )}
         </AdminPanel>
+
+        {temMais && (
+          <div className="flex flex-col items-center gap-1.5">
+            <Button variant="outline" size="sm" className="rounded-xl border-[#E7E5E4]" onClick={carregarMais} disabled={carregandoMais}>
+              {carregandoMais ? 'Carregando...' : 'Carregar mais'}
+            </Button>
+            <p className="text-xs text-[#A8A29E]">Mostrando {items.length} de {lista?.total}</p>
+          </div>
+        )}
 
         {items.some(i => i.daysFound > 90) && (
           <div className="flex items-center gap-2 rounded-xl border border-[#FEF3C7] bg-[#FEF3C7]/50 px-4 py-2.5 text-xs text-[#92400E]">
@@ -365,6 +500,11 @@ export function AvailableItems({ navigate }: Props) {
         open={editOpen}
         onClose={() => setEditOpen(false)}
         onSaved={carregar}
+      />
+      <DiscardItemModal
+        item={discarding}
+        onClose={() => setDiscarding(null)}
+        onDiscarded={carregar}
       />
     </AdminLayout>
   );

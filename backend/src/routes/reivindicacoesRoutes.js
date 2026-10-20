@@ -7,13 +7,17 @@ import { reivindicacoesController } from "../controllers/reivindicacoesControlle
 import { authOpcional } from "../middlewares/authOpcionalMiddleware.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { apenasFuncionaria } from "../middlewares/roleMiddleware.js";
-import { limiteReivindicacao } from "../middlewares/rateLimitMiddleware.js";
+import {
+  limiteReivindicacao,
+  limiteReivindicacaoPorIp,
+} from "../middlewares/rateLimitMiddleware.js";
 
 const router = Router();
 
 // POST /api/reivindicacoes — público, com auth opcional
 router.post(
   "/",
+  limiteReivindicacaoPorIp,
   limiteReivindicacao,
   authOpcional,
   reivindicacoesController.criar,

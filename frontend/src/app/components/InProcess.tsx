@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { CheckCircle2, X, Clock, User, Mail, Phone, GraduationCap } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { CheckCircle2, X, User, Mail, Phone, GraduationCap } from 'lucide-react';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Label } from './ui/label';
@@ -80,26 +80,28 @@ export function InProcess({ navigate }: Props) {
   const [cancelling, setCancelling] = useState<Claim | null>(null);
   const [cancelOpen, setCancelOpen] = useState(false);
 
-  async function carregar() {
-    setLoading(true);
-    try {
-      const dados = await reivindicacoesApi.listarEmProcesso();
-      setClaims(dados);
-    } catch (err) {
-      console.error('Erro ao carregar em processo:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
+  // Busca a lista. Quem quiser mostrar o "Carregando..." de novo chama
+  // setLoading(true) antes (no handler), não aqui dentro.
+  const carregar = useCallback(() => {
+    return reivindicacoesApi.listarEmProcesso()
+      .then((dados: Claim[]) => setClaims(dados))
+      .catch(err => console.error('Erro ao carregar em processo:', err))
+      .finally(() => setLoading(false));
+  }, []);
 
-  useEffect(() => { carregar(); }, []);
+  useEffect(() => { carregar(); }, [carregar]);
+
+  const recarregar = () => {
+    setLoading(true);
+    carregar();
+  };
 
   const entregar = async (id: number) => {
     try {
       await reivindicacoesApi.confirmarEntrega(id);
-      carregar();
-    } catch (err: any) {
-      alert(err.message || 'Erro ao confirmar entrega');
+      recarregar();
+    } catch (err: unknown) {
+      alert((err instanceof Error && err.message) || 'Erro ao confirmar entrega');
     }
   };
 
@@ -110,9 +112,9 @@ export function InProcess({ navigate }: Props) {
     try {
       await reivindicacoesApi.cancelar(cancelling.id, motivo);
       setCancelOpen(false); setCancelling(null);
-      carregar();
-    } catch (err: any) {
-      alert(err.message || 'Erro ao cancelar');
+      recarregar();
+    } catch (err: unknown) {
+      alert((err instanceof Error && err.message) || 'Erro ao cancelar');
     }
   };
 

@@ -4,7 +4,7 @@ import type { Screen } from '../../App';
 import { LupaMarca } from './LupaMarca';
 import { cn } from '../ui/utils';
 
-export const AUTH_FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
+const AUTH_FONT = { fontFamily: 'Plus Jakarta Sans, sans-serif' };
 
 const inputClass =
   'w-full rounded-xl border border-[#E7E5E4] bg-[#FAFAF8] py-2.5 pl-10 text-sm text-[#1C1917] placeholder:text-[#C4BFBA] transition-all focus:border-[#C8102E] focus:outline-none focus:ring-2 focus:ring-[#C8102E]/20';
@@ -156,12 +156,14 @@ interface AuthFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   leftIcon: ReactNode;
   rightElement?: ReactNode;
+  error?: string;
 }
 
 export function AuthField({
   label,
   leftIcon,
   rightElement,
+  error,
   id,
   className,
   ...inputProps
@@ -179,14 +181,26 @@ export function AuthField({
         </div>
         <input
           id={id}
-          className={cn(inputClass, rightElement ? 'pr-10' : 'pr-4', className)}
+          className={cn(
+            inputClass,
+            rightElement ? 'pr-10' : 'pr-4',
+            error && 'border-[#FCA5A5]',
+            className,
+          )}
           style={AUTH_FONT}
+          aria-invalid={error ? true : undefined}
           {...inputProps}
         />
         {rightElement && (
           <div className="absolute top-1/2 right-3.5 -translate-y-1/2">{rightElement}</div>
         )}
       </div>
+      {error && (
+        <div className="mt-1.5 flex items-center gap-1.5 rounded-lg border border-[#FECDD3] bg-[#FFF1F2] px-3 py-1.5">
+          <AlertCircle size={12} strokeWidth={2} className="shrink-0 text-[#C8102E]" />
+          <span className="text-xs font-medium text-[#C8102E]">{error}</span>
+        </div>
+      )}
     </div>
   );
 }

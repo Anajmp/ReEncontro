@@ -19,7 +19,25 @@ function base(conteudo) {
   `;
 }
 
-export const emailTemplates = {
+// Escapa texto para HTML. Nome do requerente, do aluno e a sala vêm de um
+// formulário público: sem isso, qualquer pessoa conseguiria mandar HTML e
+// links próprios pelo remetente da escola (phishing).
+function escaparHtml(valor) {
+  return String(valor ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escaparCampos(dados = {}) {
+  return Object.fromEntries(
+    Object.entries(dados).map(([chave, valor]) => [chave, escaparHtml(valor)]),
+  );
+}
+
+const templates = {
   // Enviado ao criar a reivindicação (RF-005)
   reivindicacaoCriada({ nomeRequerente, descricaoItem, nomeAluno }) {
     return {
@@ -120,10 +138,35 @@ export const emailTemplates = {
     };
   },
 
-    // Aviso interno para a equipe quando chega uma nova reivindicação
-  novaReivindicacaoParaEquipe({ descricaoItem, nomeRequerente, nomeAluno, salaAluno, periodoAluno }) {
+  // Código de verificação de e-mail (sem link: só o número)
+  codigoVerificacao({ nome, codigo }) {
     return {
-      assunto: `Nova reivindicação: ${descricaoItem}`,
+      assunto: `${codigo} é o seu código de verificação — ReEncontro`,
+      html: base(`
+        <p>Olá, <strong>${nome}</strong>!</p>
+        <p>Use o código abaixo para confirmar o seu e-mail no ReEncontro:</p>
+        <p style="margin: 24px 0; text-align: center;">
+          <span style="display: inline-block; background: #F5F3F0; border: 2px solid ${cor};
+                       border-radius: 12px; padding: 16px 28px; font-size: 32px; font-weight: bold;
+                       letter-spacing: 10px; color: ${cor}; font-family: 'Courier New', monospace;">
+            ${codigo}
+          </span>
+        </p>
+        <p style="font-size: 13px; color: #78716C;">
+          Este código é válido por <strong>15 minutos</strong> e pode ser usado apenas uma vez.
+        </p>
+        <p style="font-size: 13px; color: #78716C;">
+          Se você não pediu este código, ignore este e-mail. Nunca compartilhe o código com ninguém.
+        </p>
+      `),
+    };
+  },
+
+    // Aviso interno para a equipe quando chega uma nova reivindicação
+  novaReivindicacaoParaEquipe({ descricaoItem, nomeRequerente, nomeAluno, salaAluno, periodoAluno }, bruto) {
+    return {
+      // O assunto é texto puro (não HTML): usa o valor original
+      assunto: `Nova reivindicação: ${bruto.descricaoItem}`,
       html: base(`
         <p>Uma nova reivindicação foi registrada e aguarda análise.</p>
         <div style="background: #F5F3F0; border-radius: 8px; padding: 14px; margin: 16px 0;">
@@ -140,3 +183,12 @@ export const emailTemplates = {
     };
   },
 };
+
+// Todo template recebe os campos já escapados. O segundo argumento traz os
+// valores originais, para os assuntos (texto puro, não HTML).
+export const emailTemplates = Object.fromEntries(
+  Object.entries(templates).map(([nome, montar]) => [
+    nome,
+    (dados) => montar(escaparCampos(dados), dados),
+  ]),
+);

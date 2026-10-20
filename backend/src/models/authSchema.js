@@ -2,6 +2,7 @@
 // Validação Zod dos dados de autenticação.
 // =====================================================================
 import { z } from "zod";
+import { telefoneOpcional } from "../utils/telefone.js";
 
 export const loginSchema = z.object({
   email: z.string().email("E-mail inválido"),
@@ -21,6 +22,6 @@ export const registroSchema = z.object({
   nome: z.string().min(2, "Nome muito curto").max(120),
   email: z.string().email("E-mail inválido"),
   senha: z.string().min(6, "A senha deve ter ao menos 6 caracteres"),
-  telefone: z.string().max(20).optional(),
+  telefone: telefoneOpcional,
   alunos: z.array(alunoSchema).min(1, "Cadastre ao menos um aluno"),
 });

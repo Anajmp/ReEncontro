@@ -4,16 +4,32 @@
 // do repository). Aqui ficam as regras e a orquestração.
 // =====================================================================
 import { itensRepository } from "../repositories/itensRepository.js";
+import { enviarEmail } from "../config/email.js";
+import { emailTemplates } from "../utils/emailTemplates.js";
+
+// Converte página/limite em offset e devolve a resposta paginada padrão
+async function paginar({ pagina = 1, limite = 24 }, buscar) {
+  const { itens, total } = await buscar((pagina - 1) * limite);
+  return {
+    itens,
+    total,
+    pagina,
+    limite,
+    totalPaginas: Math.ceil(total / limite),
+  };
+}
 
 export const itensService = {
-  // Lista itens disponíveis aplicando os filtros recebidos
-  async listarDisponiveis(filtros) {
-    return itensRepository.findDisponiveis(filtros);
+  // Lista uma página de itens disponíveis aplicando os filtros recebidos
+  async listarDisponiveis({ pagina, limite, ...filtros } = {}) {
+    return paginar({ pagina, limite }, (offset) =>
+      itensRepository.findDisponiveis({ ...filtros, limite, offset }),
+    );
   },
 
   // Busca um item; lança erro 404 se não existir
-  async buscarPorId(id) {
-    const item = await itensRepository.findById(id);
+  async buscarPorId(id, { incluirInternos = false } = {}) {
+    const item = await itensRepository.findById(id, { incluirInternos });
     if (!item) {
       throw { status: 404, mensagem: "Item não encontrado" };
     }
@@ -43,19 +59,41 @@ export const itensService = {
       });
     }
 
-    return itensRepository.findById(itemId);
+    return itensRepository.findById(itemId, { incluirInternos: true });
   },
 
   async descartar(id, funcionariaId, motivo) {
-    const ok = await itensRepository.descartar(id, funcionariaId, motivo);
-    if (!ok) {
-      throw {
-        status: 409,
-        mensagem:
-          "Item não pode ser descartado (não existe ou já está em processo/entregue)",
-      };
+    // Regra: motivo é obrigatório (RN-012)
+    if (!motivo || motivo.trim().length < 3) {
+      throw { status: 400, mensagem: "Informe o motivo do descarte" };
     }
-    return { id };
+
+    const resultado = await itensRepository.descartar(
+      id,
+      funcionariaId,
+      motivo.trim(),
+    );
+
+    // Avisa quem tinha reivindicação pendente de que ela foi encerrada
+    for (const reiv of resultado.reivindicacoesRejeitadas) {
+      const template = emailTemplates.reivindicacaoRejeitada({
+        nomeRequerente: reiv.nomeRequerente,
+        descricaoItem: resultado.descricaoItem,
+        motivo: `Item descartado: ${motivo.trim()}`,
+      });
+      enviarEmail({
+        para: reiv.emailRequerente,
+        assunto: template.assunto,
+        html: template.html,
+      }).catch((err) =>
+        console.error("Falha ao enviar e-mail de descarte:", err.message),
+      );
+    }
+
+    return {
+      id,
+      reivindicacoes_rejeitadas: resultado.reivindicacoesRejeitadas.length,
+    };
   },
 
   async editar(id, dados) {
@@ -75,11 +113,15 @@ export const itensService = {
     return { id };
   },
 
-  async listarFinalizados(status) {
-    // só aceita esses dois status (proteção)
-    if (!["entregue", "descartado"].includes(status)) {
+  async listarFinalizados({ status = "entregue", q, pagina, limite } = {}) {
+    // só aceita esses status (proteção); "todos" junta os dois
+    const statuses =
+      status === "todos" ? ["entregue", "descartado"] : [status];
+    if (!statuses.every((s) => ["entregue", "descartado"].includes(s))) {
       throw { status: 400, mensagem: "Status inválido" };
     }
-    return itensRepository.findFinalizados(status);
+    return paginar({ pagina, limite }, (offset) =>
+      itensRepository.findFinalizados({ statuses, q, limite, offset }),
+    );
   },
 };
