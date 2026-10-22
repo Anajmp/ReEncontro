@@ -49,7 +49,7 @@ export function ParentProfile({ navigate }: Props) {
         </section>
 
         <section className={`${CARD} lg:col-span-2`}>
-          <h2 className="mb-4 text-base font-bold text-[#1C1917]">Personagem</h2>
+          <h2 className="mb-4 text-base font-bold text-tinta">Personagem</h2>
           <AvatarPicker
             seedAtual={usuario?.avatar_seed || usuario?.email || ''}
             onSelecionar={salvarAvatar}

@@ -40,46 +40,112 @@
   --sidebar-accent-foreground: #C8102E;
   --sidebar-border: rgba(0, 0, 0, 0.08);
   --sidebar-ring: #C8102E;
+
+  /* Paleta do ReEncontro (usada pelas telas via classes text-tinta, bg-superficie…).
+     Todas as combinações de texto têm contraste ≥ 4.5:1 nos dois temas. */
+  --re-tinta: #1C1917;
+  --re-tinta-media: #57534E;
+  --re-tinta-suave: #6E6762;
+  --re-tinta-apagada: #D4CFC9;
+  --re-marca-texto: #C8102E;
+  --re-superficie: #FFFFFF;
+  --re-fundo: #F5F3F0;
+  --re-fundo-forte: #EDE9E4;
+  --re-campo: #FAFAF8;
+  --re-linha: #E7E5E4;
+  --re-contorno: rgba(0, 0, 0, 0.05);
+  --re-marca-clara: #FEE2E2;
+  --re-erro-fundo: #FFF1F2;
+  --re-erro-borda: #FECDD3;
+  --re-erro-borda-forte: #FCA5A5;
+  --re-alerta-fundo: #FEF3C7;
+  --re-alerta-borda: #FDE68A;
+  --re-alerta-texto: #92400E;
+  --re-sucesso-fundo: #DCFCE7;
+  --re-sucesso-borda: #BBF7D0;
+  --re-sucesso-texto: #15803D;
+  color-scheme: light;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+  --background: #141211;
+  --foreground: #F2EFEC;
+  --card: #1E1B19;
+  --card-foreground: #F2EFEC;
+  --popover: #1E1B19;
+  --popover-foreground: #F2EFEC;
+  --primary: #C8102E;
+  --primary-foreground: #ffffff;
+  --secondary: #2A2624;
+  --secondary-foreground: #F2EFEC;
+  --muted: #2A2624;
+  --muted-foreground: #B3ACA6;
+  --accent: #3F1219;
+  --accent-foreground: #FF8A9A;
+  --destructive: #C8102E;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: #3A3532;
+  --input-background: #181614;
+  --switch-background: #4A4440;
+  --ring: #FF8A9A;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --sidebar: #1E1B19;
+  --sidebar-foreground: #F2EFEC;
+  --sidebar-primary: #C8102E;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #3F1219;
+  --sidebar-accent-foreground: #FF8A9A;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #FF8A9A;
+
+  --re-tinta: #F2EFEC;
+  --re-tinta-media: #D6D3D1;
+  --re-tinta-suave: #B3ACA6;
+  --re-tinta-apagada: #57534E;
+  --re-marca-texto: #FF8A9A;
+  --re-superficie: #1E1B19;
+  --re-fundo: #141211;
+  --re-fundo-forte: #2A2624;
+  --re-campo: #181614;
+  --re-linha: #3A3532;
+  --re-contorno: rgba(255, 255, 255, 0.07);
+  --re-marca-clara: #3F1219;
+  --re-erro-fundo: #2B1014;
+  --re-erro-borda: #6B1D2A;
+  --re-erro-borda-forte: #B4384B;
+  --re-alerta-fundo: #2E240C;
+  --re-alerta-borda: #5C4410;
+  --re-alerta-texto: #FCD34D;
+  --re-sucesso-fundo: #0E2A19;
+  --re-sucesso-borda: #1F5134;
+  --re-sucesso-texto: #4ADE80;
+  color-scheme: dark;
 }
 
 @theme inline {
+  --color-tinta: var(--re-tinta);
+  --color-tinta-media: var(--re-tinta-media);
+  --color-tinta-suave: var(--re-tinta-suave);
+  --color-tinta-apagada: var(--re-tinta-apagada);
+  --color-marca-texto: var(--re-marca-texto);
+  --color-superficie: var(--re-superficie);
+  --color-fundo: var(--re-fundo);
+  --color-fundo-forte: var(--re-fundo-forte);
+  --color-campo: var(--re-campo);
+  --color-linha: var(--re-linha);
+  --color-contorno: var(--re-contorno);
+  --color-marca-clara: var(--re-marca-clara);
+  --color-erro-fundo: var(--re-erro-fundo);
+  --color-erro-borda: var(--re-erro-borda);
+  --color-erro-borda-forte: var(--re-erro-borda-forte);
+  --color-alerta-fundo: var(--re-alerta-fundo);
+  --color-alerta-borda: var(--re-alerta-borda);
+  --color-alerta-texto: var(--re-alerta-texto);
+  --color-sucesso-fundo: var(--re-sucesso-fundo);
+  --color-sucesso-borda: var(--re-sucesso-borda);
+  --color-sucesso-texto: var(--re-sucesso-texto);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -179,5 +245,24 @@
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
+  }
+
+  /* Foco sempre visível para quem navega pelo teclado (os campos de texto
+     já têm a borda + anel vermelhos próprios) */
+  :where(a, button, summary, [role='button'], [role='tab'], [tabindex]:not([tabindex='-1'])):focus-visible {
+    outline: 2px solid var(--re-marca-texto);
+    outline-offset: 2px;
+  }
+}
+
+/* Quem pede menos movimento no sistema não vê animações nem transições */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

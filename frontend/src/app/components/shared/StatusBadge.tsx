@@ -14,7 +14,7 @@ const styles: Record<Status, { color: string; bg: string; Icon: typeof Clock }> 
 };
 
 export function StatusBadge({ status, className }: { status: Status; className?: string }) {
-  const cfg = styles[status] ?? { color: '#78716C', bg: '#F5F5F4', Icon: Clock };
+  const cfg = styles[status] ?? { color: '#6E6762', bg: '#F5F5F4', Icon: Clock };
   const Icon = cfg.Icon;
   return (
     <span

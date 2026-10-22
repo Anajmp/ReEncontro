@@ -24,10 +24,10 @@ export function RotaProtegida({ children, role, apenasDiretora = false }: Props)
   // Sem isso, o usuário logado seria chutado pro login a cada F5.
   if (carregando) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F4F5F7]">
+      <div className="min-h-screen flex items-center justify-center bg-fundo">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-[#C8102E] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-500">Carregando…</p>
+          <p className="text-sm text-tinta-suave">Carregando…</p>
         </div>
       </div>
     );

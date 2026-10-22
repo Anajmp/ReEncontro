@@ -46,26 +46,29 @@ function CancelModal({ claim, open, onClose, onConfirm }: {
 
   return (
     <Dialog open={open} onOpenChange={() => { onClose(); setMotivo(''); setError(false); }}>
-      <DialogContent className="max-w-md rounded-2xl border-[#E7E5E4]">
+      <DialogContent className="max-w-md rounded-2xl border-linha">
         <DialogHeader>
-          <DialogTitle className="text-[#1C1917]">Cancelar reivindicação</DialogTitle>
-          <p className="mt-0.5 text-sm text-[#78716C]">
-            Item: <strong className="text-[#1C1917]">{claim.itemName}</strong>
+          <DialogTitle className="text-tinta">Cancelar reivindicação</DialogTitle>
+          <p className="mt-0.5 text-sm text-tinta-suave">
+            Item: <strong className="text-tinta">{claim.itemName}</strong>
           </p>
         </DialogHeader>
         <div className="py-2">
-          <Label htmlFor="cancel-reason" className="text-sm font-semibold text-[#1C1917]">Motivo <span className="text-[#C8102E]">*</span></Label>
+          <Label htmlFor="cancel-reason" className="text-sm font-semibold text-tinta">Motivo <span className="text-marca-texto">*</span></Label>
           <textarea
             id="cancel-reason"
             rows={4}
-            className={`mt-1.5 w-full resize-none rounded-xl border px-3 py-2 text-sm focus:border-[#C8102E] focus:outline-none focus:ring-2 focus:ring-[#C8102E]/20 ${error ? 'border-red-300 bg-[#FEE2E2]' : 'border-[#E7E5E4] bg-[#F5F3F0]'}`}
+            className={`mt-1.5 w-full resize-none rounded-xl border px-3 py-2 text-sm focus:border-[#C8102E] focus:outline-none focus:ring-2 focus:ring-[#C8102E]/20 ${error ? 'border-erro-borda-forte bg-marca-clara' : 'border-linha bg-fundo'}`}
             placeholder="Ex: Responsável não compareceu no prazo."
+            aria-required
+            aria-invalid={error || undefined}
+            aria-describedby={error ? 'cancel-reason-erro' : undefined}
             value={motivo}
             onChange={e => { setMotivo(e.target.value); setError(false); }}
           />
-          {error && <p className="text-xs text-red-600 mt-1">A justificativa é obrigatória.</p>}
+          {error && <p id="cancel-reason-erro" role="alert" className="text-xs text-marca-texto mt-1">A justificativa é obrigatória.</p>}
         </div>
-        <div className="flex gap-3 border-t border-[#E7E5E4] pt-2">
+        <div className="flex gap-3 border-t border-linha pt-2">
           <Button variant="outline" className={`flex-1 ${adminBtnOutline}`} onClick={() => { onClose(); setMotivo(''); setError(false); }}>Voltar</Button>
           <Button className={`flex-1 ${adminBtnPrimary}`} onClick={confirmar}>Confirmar cancelamento</Button>
         </div>
@@ -121,17 +124,17 @@ export function InProcess({ navigate }: Props) {
   return (
     <AdminLayout current="in-process" navigate={navigate}>
       <div className="space-y-5">
-        <div className="flex items-center gap-2 rounded-xl border border-[#FEF3C7] bg-[#FEF3C7]/50 px-4 py-3 text-sm text-[#92400E]">
+        <div className="flex items-center gap-2 rounded-xl border border-alerta-fundo bg-alerta-fundo/50 px-4 py-3 text-sm text-alerta-texto">
           <GraduationCap className="size-4 shrink-0" />
           Confira a ficha física do aluno e um documento com foto antes de confirmar a entrega.
         </div>
 
         {loading ? (
-          <p className="py-16 text-center text-[#78716C]">Carregando...</p>
+          <p className="py-16 text-center text-tinta-suave" role="status">Carregando...</p>
         ) : claims.length === 0 ? (
           <AdminPanel className="py-16 text-center">
-            <CheckCircle2 className="mx-auto mb-3 size-10 text-[#059669]" />
-            <p className="font-semibold text-[#1C1917]">Nenhum item aguardando retirada.</p>
+            <CheckCircle2 className="mx-auto mb-3 size-10 text-sucesso-texto" aria-hidden />
+            <h2 className="font-semibold text-tinta">Nenhum item aguardando retirada.</h2>
           </AdminPanel>
         ) : (
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -148,33 +151,33 @@ export function InProcess({ navigate }: Props) {
                 <div className="min-w-0 flex-1 p-4">
                   <div className="mb-3 flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="truncate font-bold text-[#1C1917]">{claim.itemName}</div>
-                      <div className="mt-0.5 text-xs text-[#A8A29E]">Reivindicado em {claim.date}</div>
+                      <h2 className="truncate text-base font-bold text-tinta">{claim.itemName}</h2>
+                      <div className="mt-0.5 text-xs text-tinta-suave">Reivindicado em {claim.date}</div>
                     </div>
                     <StatusBadge status={claim.status} />
                   </div>
                   <div className="mb-3 space-y-1.5">
-                    <div className="flex items-center gap-2 text-xs text-[#78716C]">
-                      <User className="size-3.5 shrink-0 text-[#A8A29E]" />
+                    <div className="flex items-center gap-2 text-xs text-tinta-suave">
+                      <User className="size-3.5 shrink-0 text-tinta-suave" />
                       <span className="truncate font-semibold">{claim.claimantName}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-[#78716C]">
-                      <Mail className="size-3.5 shrink-0 text-[#A8A29E]" />
+                    <div className="flex items-center gap-2 text-xs text-tinta-suave">
+                      <Mail className="size-3.5 shrink-0 text-tinta-suave" />
                       <span className="truncate">{claim.claimantEmail}</span>
                     </div>
                     {claim.claimantPhone && (
-                      <div className="flex items-center gap-2 text-xs text-[#78716C]">
-                        <Phone className="size-3.5 shrink-0 text-[#A8A29E]" />
+                      <div className="flex items-center gap-2 text-xs text-tinta-suave">
+                        <Phone className="size-3.5 shrink-0 text-tinta-suave" />
                         {claim.claimantPhone}
                       </div>
                     )}
                   </div>
 
-                  <div className="mb-3 rounded-xl bg-[#F5F3F0] px-3 py-2">
-                    <div className="flex items-center gap-2 text-xs text-[#78716C]">
-                      <GraduationCap className="size-3.5 shrink-0 text-[#A8A29E]" />
+                  <div className="mb-3 rounded-xl bg-fundo px-3 py-2">
+                    <div className="flex items-center gap-2 text-xs text-tinta-suave">
+                      <GraduationCap className="size-3.5 shrink-0 text-tinta-suave" />
                       <span className="truncate">
-                        <strong className="text-[#1C1917]">{claim.studentName}</strong> · {claim.studentRoom} · {claim.studentPeriod}
+                        <strong className="text-tinta">{claim.studentName}</strong> · {claim.studentRoom} · {claim.studentPeriod}
                       </span>
                     </div>
                   </div>
@@ -182,8 +185,9 @@ export function InProcess({ navigate }: Props) {
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Button
                       size="sm"
-                      className="w-full gap-1.5 rounded-xl bg-[#059669] font-semibold hover:bg-[#047857] sm:flex-1"
+                      className="w-full gap-1.5 rounded-xl bg-[#047857] font-semibold hover:bg-[#065F46] sm:flex-1"
                       onClick={() => entregar(claim.id)}
+                      aria-label={`Confirmar entrega: ${claim.itemName}`}
                     >
                       <CheckCircle2 className="size-3.5" />
                       Confirmar Entrega
@@ -193,6 +197,7 @@ export function InProcess({ navigate }: Props) {
                       variant="outline"
                       className={`w-full gap-1.5 sm:flex-1 ${adminBtnOutline}`}
                       onClick={() => abrirCancelar(claim)}
+                      aria-label={`Cancelar: ${claim.itemName}`}
                     >
                       <X className="size-3.5" />
                       Cancelar

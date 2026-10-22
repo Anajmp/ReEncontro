@@ -71,12 +71,12 @@ export function Lgpd({ navigate }: Props) {
         {/* Explicação */}
         <AdminPanel className="p-5">
           <div className="mb-4 flex items-start gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#FEE2E2]">
-              <ShieldAlert size={20} strokeWidth={1.7} className="text-[#C8102E]" />
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-marca-clara">
+              <ShieldAlert size={20} strokeWidth={1.7} className="text-marca-texto" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[#1C1917]">Exclusão de dados pessoais</h2>
-              <p className="mt-1 text-sm leading-relaxed text-[#78716C]">
+              <h2 className="text-base font-bold text-tinta">Exclusão de dados pessoais</h2>
+              <p className="mt-1 text-sm leading-relaxed text-tinta-suave">
                 Conforme o art. 18 da LGPD, o responsável pode solicitar a exclusão dos
                 seus dados pessoais. Os registros históricos de reivindicações são
                 preservados, mas todos os campos que identificam a pessoa são
@@ -84,7 +84,7 @@ export function Lgpd({ navigate }: Props) {
               </p>
             </div>
           </div>
-          <div className="flex items-start gap-2 rounded-xl border border-[#FEF3C7] bg-[#FEF3C7]/50 px-4 py-3 text-sm text-[#92400E]">
+          <div className="flex items-start gap-2 rounded-xl border border-alerta-fundo bg-alerta-fundo/50 px-4 py-3 text-sm text-alerta-texto">
             <AlertTriangle size={16} strokeWidth={1.8} className="mt-0.5 shrink-0" />
             <span>Esta ação é <strong>irreversível</strong>. Confirme a solicitação do titular antes de prosseguir.</span>
           </div>
@@ -92,9 +92,10 @@ export function Lgpd({ navigate }: Props) {
 
         {/* Busca */}
         <AdminPanel className="p-5">
-          <Label className="text-sm font-semibold text-[#1C1917]">E-mail do responsável</Label>
+          <Label htmlFor="lgpd-busca" className="text-sm font-semibold text-tinta">E-mail do responsável</Label>
           <div className="mt-1.5 flex gap-3">
             <Input
+              id="lgpd-busca"
               className={adminInputClass}
               type="email"
               placeholder="responsavel@email.com"
@@ -109,10 +110,10 @@ export function Lgpd({ navigate }: Props) {
           </div>
 
           {erro && (
-            <p className="mt-3 rounded-xl bg-[#FFF1F2] px-4 py-2.5 text-sm text-[#C8102E]">{erro}</p>
+            <p role="alert" className="mt-3 rounded-xl bg-erro-fundo px-4 py-2.5 text-sm text-marca-texto">{erro}</p>
           )}
           {sucesso && (
-            <div className="mt-3 flex items-center gap-2 rounded-xl border border-[#BBF7D0] bg-[#DCFCE7] px-4 py-3 text-sm text-[#15803D]">
+            <div role="status" className="mt-3 flex items-center gap-2 rounded-xl border border-sucesso-borda bg-sucesso-fundo px-4 py-3 text-sm text-sucesso-texto">
               <CheckCircle2 size={15} strokeWidth={2} />
               {sucesso}
             </div>
@@ -121,17 +122,18 @@ export function Lgpd({ navigate }: Props) {
 
         {/* Confirmação */}
         {encontrado && (
-          <AdminPanel className="border-[#FECDD3] p-5">
-            <h3 className="mb-3 text-sm font-bold text-[#1C1917]">Responsável encontrado</h3>
-            <div className="mb-5 rounded-xl bg-[#F5F3F0] px-4 py-3">
-              <p className="font-semibold text-[#1C1917]">{encontrado.nome}</p>
-              <p className="text-sm text-[#78716C]">{encontrado.email}</p>
+          <AdminPanel className="border-erro-borda p-5">
+            <h2 className="mb-3 text-sm font-bold text-tinta">Responsável encontrado</h2>
+            <div className="mb-5 rounded-xl bg-fundo px-4 py-3">
+              <p className="font-semibold text-tinta">{encontrado.nome}</p>
+              <p className="text-sm text-tinta-suave">{encontrado.email}</p>
             </div>
 
-            <Label className="text-sm font-semibold text-[#1C1917]">
+            <Label htmlFor="lgpd-confirmacao" className="text-sm font-semibold text-tinta">
               Digite o e-mail novamente para confirmar
             </Label>
             <Input
+              id="lgpd-confirmacao"
               className={`mt-1.5 ${adminInputClass}`}
               placeholder={encontrado.email}
               value={confirmacao}

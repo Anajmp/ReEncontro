@@ -23,7 +23,7 @@ function BackToLogin({ onClick }: { onClick: () => void }) {
       <button
         type="button"
         onClick={onClick}
-        className="flex items-center gap-1.5 text-sm font-semibold text-[#78716C] transition-colors hover:text-[#C8102E]"
+        className="flex items-center gap-1.5 text-sm font-semibold text-tinta-suave transition-colors hover:text-marca-texto"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
           <path d="M10 12 L6 8 L10 4" />
@@ -102,8 +102,8 @@ export function ResetPassword({ navigate }: Props) {
             <AuthEmblem>
               <Lock size={22} strokeWidth={1.7} color="#C8102E" />
             </AuthEmblem>
-            <h1 className="mb-1.5 text-2xl font-extrabold text-[#1C1917]">Esqueci minha senha</h1>
-            <p className="mb-7 text-sm leading-relaxed text-[#78716C]">
+            <h1 className="mb-1.5 text-2xl font-extrabold text-tinta">Esqueci minha senha</h1>
+            <p className="mb-7 text-sm leading-relaxed text-tinta-suave">
               Digite seu e-mail cadastrado e enviaremos um link para redefinir sua senha.
             </p>
             <form className="space-y-4" onSubmit={solicitar}>
@@ -118,7 +118,7 @@ export function ResetPassword({ navigate }: Props) {
                 onChange={(e) =>setEmail(e.target.value)}
               />
               {erro && (
-                <p className="rounded-xl bg-[#FFF1F2] px-4 py-2.5 text-sm text-[#C8102E]">{erro}</p>
+                <p role="alert" className="rounded-xl bg-erro-fundo px-4 py-2.5 text-sm text-marca-texto">{erro}</p>
               )}
               <AuthSubmitButton disabled={carregando}>
                 {carregando ? 'Enviando...' : 'Enviar link de redefinição'}
@@ -131,17 +131,17 @@ export function ResetPassword({ navigate }: Props) {
         {step === 'sent' && (
           <>
             <div className="py-4 text-center">
-              <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-[#DCFCE7]">
+              <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-sucesso-fundo">
                 <Check size={28} color="#16A34A" strokeWidth={2.5} />
               </div>
-              <h2 className="mb-2 text-xl font-extrabold text-[#1C1917]">E-mail enviado!</h2>
-              <p className="mb-1.5 text-sm leading-relaxed text-[#78716C]">
+              <h1 className="mb-2 text-xl font-extrabold text-tinta">E-mail enviado!</h1>
+              <p className="mb-1.5 text-sm leading-relaxed text-tinta-suave">
                 Se este e-mail estiver cadastrado, você receberá um link para redefinir a senha em:
               </p>
-              <p className="mb-5 truncate text-sm font-bold text-[#1C1917]">{email}</p>
-              <div className="rounded-xl border border-[#E7E5E4] bg-[#FAFAF8] px-4 py-3 text-xs leading-relaxed text-[#A8A29E]">
+              <p className="mb-5 truncate text-sm font-bold text-tinta">{email}</p>
+              <div className="rounded-xl border border-linha bg-campo px-4 py-3 text-xs leading-relaxed text-tinta-suave">
                 Verifique também a pasta de spam. O link expira em{' '}
-                <span className="font-semibold text-[#78716C]">1 hora</span>.
+                <span className="font-semibold text-tinta-suave">1 hora</span>.
               </div>
             </div>
             <BackToLogin onClick={() => navigate('login')} />
@@ -153,8 +153,8 @@ export function ResetPassword({ navigate }: Props) {
             <AuthEmblem>
               <Lock size={22} strokeWidth={1.7} color="#C8102E" />
             </AuthEmblem>
-            <h1 className="mb-1.5 text-2xl font-extrabold text-[#1C1917]">Nova senha</h1>
-            <p className="mb-7 text-sm leading-relaxed text-[#78716C]">
+            <h1 className="mb-1.5 text-2xl font-extrabold text-tinta">Nova senha</h1>
+            <p className="mb-7 text-sm leading-relaxed text-tinta-suave">
               Escolha uma nova senha segura para sua conta.
             </p>
             <form className="space-y-4" onSubmit={redefinir}>
@@ -162,13 +162,14 @@ export function ResetPassword({ navigate }: Props) {
                 label="Nova senha"
                 leftIcon={<Lock size={15} strokeWidth={1.6} />}
                 type={showPw ? 'text' : 'password'}
+                autoComplete="new-password"
                 placeholder="Mínimo 6 caracteres"
                 value={novaSenha}
                 onChange={(e) =>setNovaSenha(e.target.value)}
                 rightElement={
                   <button
                     type="button"
-                    className="text-[#A8A29E] transition-colors hover:text-[#78716C]"
+                    className="text-tinta-suave transition-colors hover:text-tinta"
                     onClick={() => setShowPw(!showPw)}
                     aria-label={showPw ? 'Ocultar senha' : 'Mostrar senha'}
                   >
@@ -180,12 +181,13 @@ export function ResetPassword({ navigate }: Props) {
                 label="Confirmar nova senha"
                 leftIcon={<Lock size={15} strokeWidth={1.6} />}
                 type="password"
+                autoComplete="new-password"
                 placeholder="Repita a nova senha"
                 value={confirmarSenha}
                 onChange={(e) =>setConfirmarSenha(e.target.value)}
               />
               {erro && (
-                <p className="rounded-xl bg-[#FFF1F2] px-4 py-2.5 text-sm text-[#C8102E]">{erro}</p>
+                <p role="alert" className="rounded-xl bg-erro-fundo px-4 py-2.5 text-sm text-marca-texto">{erro}</p>
               )}
               <AuthSubmitButton disabled={carregando}>
                 {carregando ? 'Redefinindo...' : 'Redefinir senha'}
@@ -197,11 +199,11 @@ export function ResetPassword({ navigate }: Props) {
 
         {step === 'done' && (
           <div className="py-4 text-center">
-            <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-[#DCFCE7]">
+            <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-sucesso-fundo">
               <Check size={28} color="#16A34A" strokeWidth={2.5} />
             </div>
-            <h2 className="mb-2 text-xl font-extrabold text-[#1C1917]">Senha redefinida!</h2>
-            <p className="mb-6 text-sm leading-relaxed text-[#78716C]">
+            <h1 className="mb-2 text-xl font-extrabold text-tinta">Senha redefinida!</h1>
+            <p className="mb-6 text-sm leading-relaxed text-tinta-suave">
               Sua senha foi atualizada com sucesso. Faça login para continuar.
             </p>
             <AuthSubmitButton type="button" onClick={() => navigate('login')}>

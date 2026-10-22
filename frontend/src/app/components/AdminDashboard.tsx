@@ -9,10 +9,11 @@ import { StatusBadge } from './shared/StatusBadge';
 import type { Screen } from '../App';
 import type { Status } from './shared/data';
 import {
-  MetricCard, CardHeader, CustomBarTooltip, AdminPanel,
+  MetricCard, CardHeader, CustomBarTooltip, AdminPanel, TabelaDoGrafico,
 } from './shared/AdminChrome';
 import { getCatConfig } from './shared/categorias';
 import { relatoriosApi } from '../../lib/api';
+import { ESTILO_TOOLTIP_GRAFICO, useCoresGrafico } from '../../lib/tema';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -59,6 +60,7 @@ export function AdminDashboard({ navigate }: Props) {
   const [dados, setDados] = useState<DadosDashboard | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
+  const cores = useCoresGrafico();
 
   useEffect(() => {
     relatoriosApi.dashboard()
@@ -71,8 +73,8 @@ export function AdminDashboard({ navigate }: Props) {
     return (
       <AdminLayout current="admin-dashboard" navigate={navigate}>
         <div className="mx-auto max-w-6xl">
-          <AdminPanel className={`py-16 text-center text-sm ${erro ? 'text-[#C8102E]' : 'text-[#A8A29E]'}`}>
-            {erro || 'Carregando dashboard...'}
+          <AdminPanel className={`py-16 text-center text-sm ${erro ? 'text-marca-texto' : 'text-tinta-suave'}`}>
+            <span role={erro ? 'alert' : 'status'}>{erro || 'Carregando dashboard...'}</span>
           </AdminPanel>
         </div>
       </AdminLayout>
@@ -125,7 +127,7 @@ export function AdminDashboard({ navigate }: Props) {
             }
             icon={<Clock size={18} color="#C8102E" strokeWidth={1.8} />}
             iconBg="#FEE2E2"
-            valueColor="#C8102E"
+            valueColor="var(--re-marca-texto)"
           />
           <MetricCard
             label="Entregues este mês"
@@ -147,26 +149,38 @@ export function AdminDashboard({ navigate }: Props) {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <AdminPanel className="p-5 lg:col-span-2">
             <CardHeader title="Itens por mês" />
-            <p className="-mt-3 mb-4 text-xs text-[#A8A29E]">Encontrados vs. entregues — últimos 6 meses</p>
+            <p className="-mt-3 mb-4 text-xs text-tinta-suave">Encontrados vs. entregues — últimos 6 meses</p>
+            <TabelaDoGrafico
+              titulo="Itens por mês: encontrados e entregues"
+              colunas={[
+                { chave: 'month', rotulo: 'Mês' },
+                { chave: 'encontrados', rotulo: 'Encontrados' },
+                { chave: 'entregues', rotulo: 'Entregues' },
+              ]}
+              linhas={monthlyData}
+            />
+            <div aria-hidden>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={monthlyData} barSize={18} barGap={4}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE8" vertical={false} />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A8A29E' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A8A29E' }} allowDecimals={false} width={32} />
-                <Tooltip content={<CustomBarTooltip />} cursor={{ fill: '#F5F3F0' }} />
-                <Bar dataKey="encontrados" fill="#E7E5E4" radius={[6, 6, 0, 0]} name="Encontrados" />
+                <CartesianGrid strokeDasharray="3 3" stroke={cores.grade} vertical={false} />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: cores.eixo }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: cores.eixo }} allowDecimals={false} width={32} />
+                <Tooltip content={<CustomBarTooltip />} cursor={{ fill: cores.cursor }} />
+                <Bar dataKey="encontrados" fill={cores.barraNeutra} radius={[6, 6, 0, 0]} name="Encontrados" />
                 <Bar dataKey="entregues" fill="#C8102E" radius={[6, 6, 0, 0]} name="Entregues" />
               </BarChart>
             </ResponsiveContainer>
+            </div>
           </AdminPanel>
 
           <AdminPanel className="p-5">
             <CardHeader title="Por categoria" />
-            <p className="-mt-3 mb-2 text-xs text-[#A8A29E]">Itens ainda não finalizados</p>
+            <p className="-mt-3 mb-2 text-xs text-tinta-suave">Itens ainda não finalizados</p>
             {categoryData.length === 0 ? (
-              <p className="py-16 text-center text-sm text-[#A8A29E]">Nenhum item em aberto.</p>
+              <p className="py-16 text-center text-sm text-tinta-suave">Nenhum item em aberto.</p>
             ) : (
               <>
+                <div aria-hidden>
                 <ResponsiveContainer width="100%" height={160}>
                   <PieChart>
                     <Pie
@@ -182,17 +196,18 @@ export function AdminDashboard({ navigate }: Props) {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #E7E5E4', fontSize: 12 }} />
+                    <Tooltip contentStyle={ESTILO_TOOLTIP_GRAFICO} />
                   </PieChart>
                 </ResponsiveContainer>
+                </div>
                 <div className="mt-3 space-y-2">
                   {categoryData.map(d => (
                     <div key={d.name} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <div className="size-2.5 rounded-sm" style={{ backgroundColor: d.color }} />
-                        <span className="text-[#78716C]">{d.name}</span>
+                        <div className="size-2.5 rounded-sm" style={{ backgroundColor: d.color }} aria-hidden />
+                        <span className="text-tinta-suave">{d.name}</span>
                       </div>
-                      <span className="font-semibold text-[#1C1917]">{d.value}</span>
+                      <span className="font-semibold text-tinta">{d.value}</span>
                     </div>
                   ))}
                 </div>
@@ -202,14 +217,15 @@ export function AdminDashboard({ navigate }: Props) {
         </div>
 
         <AdminPanel className="overflow-hidden">
-          <div className="border-b border-[#E7E5E4] px-5 py-4">
+          <div className="border-b border-linha px-5 py-4">
             <CardHeader
               title="Reivindicações recentes"
               action={
                 <button
                   type="button"
-                  className="text-xs font-semibold text-[#C8102E] transition-colors hover:text-[#A50D26]"
+                  className="text-xs font-semibold text-marca-texto transition-colors hover:text-marca-texto"
                   onClick={() => navigate('pending-claims')}
+                  aria-label="Ver todas as reivindicações pendentes"
                 >
                   Ver todas
                 </button>
@@ -217,25 +233,25 @@ export function AdminDashboard({ navigate }: Props) {
             />
           </div>
           {recentes.length === 0 ? (
-            <p className="px-5 py-10 text-center text-sm text-[#A8A29E]">
+            <p className="px-5 py-10 text-center text-sm text-tinta-suave">
               Nenhuma reivindicação em aberto.
             </p>
           ) : (
-            <div className="divide-y divide-[#E7E5E4]">
+            <div className="divide-y divide-linha">
               {recentes.map(claim => (
-                <div key={claim.id} className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-[#F5F3F0]/60">
+                <div key={claim.id} className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-fundo/60">
                   <img
                     src={claim.itemImage}
                     alt={claim.itemName}
-                    className="size-10 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
+                    className="size-10 shrink-0 rounded-xl object-cover bg-fundo"
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold text-[#1C1917]">{claim.itemName}</div>
-                    <div className="truncate text-xs text-[#78716C]">
+                    <h3 className="truncate text-sm font-semibold text-tinta">{claim.itemName}</h3>
+                    <div className="truncate text-xs text-tinta-suave">
                       {claim.claimantName} · {claim.studentName} ({claim.room})
                     </div>
                   </div>
-                  <div className="hidden shrink-0 text-xs text-[#A8A29E] sm:block">{claim.date}</div>
+                  <div className="hidden shrink-0 text-xs text-tinta-suave sm:block">{claim.date}</div>
                   <StatusBadge status={claim.status} />
                 </div>
               ))}

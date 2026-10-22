@@ -18,13 +18,13 @@ const PERMISSOES = ['Operação de itens', 'Relatórios', 'Gestão de funcionár
 
 function Credencial({ Icon, rotulo, children }: { Icon: ElementType; rotulo: string; children: ReactNode }) {
   return (
-    <div className="flex min-w-0 items-start gap-3 rounded-xl bg-[#FAFAF8] p-3.5">
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FEE2E2]">
-        <Icon size={15} strokeWidth={1.8} className="text-[#C8102E]" />
+    <div className="flex min-w-0 items-start gap-3 rounded-xl bg-campo p-3.5">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-marca-clara">
+        <Icon size={15} strokeWidth={1.8} className="text-marca-texto" />
       </div>
       <div className="min-w-0">
-        <p className="text-[11px] font-bold tracking-wider text-[#A8A29E] uppercase">{rotulo}</p>
-        <div className="mt-0.5 text-sm font-semibold text-[#1C1917]">{children}</div>
+        <p className="text-[11px] font-bold tracking-wider text-tinta-suave uppercase">{rotulo}</p>
+        <div className="mt-0.5 text-sm font-semibold text-tinta">{children}</div>
       </div>
     </div>
   );
@@ -52,16 +52,16 @@ export function AdminProfile({ navigate }: Props) {
     <AdminLayout current="admin-profile" navigate={navigate}>
       <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
         <section className={`${CARD} lg:col-span-2`}>
-          <h2 className="mb-4 text-base font-bold text-[#1C1917]">Credenciais de acesso</h2>
+          <h2 className="mb-4 text-base font-bold text-tinta">Credenciais de acesso</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <Credencial Icon={AtSign} rotulo="Login">
               <span className="block truncate">{usuario?.email ?? '—'}</span>
             </Credencial>
             <Credencial Icon={emailVerificado ? BadgeCheck : MailWarning} rotulo="E-mail">
               {emailVerificado ? (
-                <span className="text-[#15803D]">Verificado</span>
+                <span className="text-sucesso-texto">Verificado</span>
               ) : (
-                <span className="text-[#C8102E]">Não verificado</span>
+                <span className="text-marca-texto">Não verificado</span>
               )}
             </Credencial>
             <Credencial Icon={ShieldCheck} rotulo="Perfil de acesso">
@@ -71,7 +71,7 @@ export function AdminProfile({ navigate }: Props) {
               <span className="tracking-widest">••••••••</span>
             </Credencial>
           </div>
-          <p className="mt-4 text-xs text-[#78716C]">
+          <p className="mt-4 text-xs text-tinta-suave">
             Acesso completo: {PERMISSOES.join(' · ')}.
           </p>
         </section>
@@ -79,7 +79,7 @@ export function AdminProfile({ navigate }: Props) {
         <section className={CARD}>
           <FormDadosPessoais
             selo={
-              <span className="inline-flex rounded-full bg-[#FEE2E2] px-2 py-0.5 text-[10px] font-bold text-[#C8102E]">
+              <span className="inline-flex rounded-full bg-marca-clara px-2 py-0.5 text-[10px] font-bold text-marca-texto">
                 Diretora
               </span>
             }
@@ -91,8 +91,8 @@ export function AdminProfile({ navigate }: Props) {
         </section>
 
         <section className={`${CARD} lg:col-span-2`}>
-          <h2 className="mb-1 text-base font-bold text-[#1C1917]">Personagem</h2>
-          <p className="mb-4 text-sm text-[#78716C]">
+          <h2 className="mb-1 text-base font-bold text-tinta">Personagem</h2>
+          <p className="mb-4 text-sm text-tinta-suave">
             O primeiro é o personagem institucional. Ele aparece no menu, no cabeçalho e na gestão de funcionárias.
           </p>
           <AvatarPicker

@@ -246,7 +246,7 @@ export function LoadingScreen({ onFinish }: LoadingScreenProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-[#F5F3F0] px-4 transition-opacity ease-out ${
+      className={`fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-fundo px-4 transition-opacity ease-out ${
         saindo ? 'opacity-0' : 'opacity-100'
       }`}
       style={{ ...FONT, transitionDuration: `${SAIDA_MS}ms` }}
@@ -256,7 +256,7 @@ export function LoadingScreen({ onFinish }: LoadingScreenProps) {
       <div
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-[42%] h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full lg:h-[min(1000px,110vw)] lg:w-[min(1000px,110vw)]"
-        style={{ background: 'radial-gradient(circle, rgba(254,226,226,0.7) 0%, rgba(254,226,226,0.2) 40%, rgba(245,243,240,0) 70%)' }}
+        style={{ background: 'radial-gradient(circle, color-mix(in srgb, var(--re-marca-clara) 70%, transparent) 0%, color-mix(in srgb, var(--re-marca-clara) 20%, transparent) 40%, transparent 70%)' }}
       />
 
       {/* No celular a cena passa um pouco da tela (só as margens vazias do
@@ -297,7 +297,7 @@ export function LoadingScreen({ onFinish }: LoadingScreenProps) {
                   <o.Icon x={-13} y={-13} width={26} height={26} color={o.cor} strokeWidth={1.7} />
                 </g>
                 <g transform="translate(18 -18)">
-                  <circle r="8" fill="#047857" stroke="#F5F3F0" strokeWidth="2.5" />
+                  <circle r="8" fill="#047857" style={{ stroke: 'var(--re-fundo)' }} strokeWidth="2.5" />
                   <path d="M-3.4 0.2 L-1 2.6 L3.6 -2.2" stroke="white" strokeWidth="1.9" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                 </g>
               </g>
@@ -305,7 +305,7 @@ export function LoadingScreen({ onFinish }: LoadingScreenProps) {
           ))}
 
           {/* Vidro da lupa: fundo claro e tudo nítido, colorido e ampliado */}
-          <circle ref={vidroRef} r={RAIO_LENTE - 3} fill="white" fillOpacity="0.92" />
+          <circle ref={vidroRef} r={RAIO_LENTE - 3} style={{ fill: 'var(--re-superficie)' }} fillOpacity="0.92" />
           <g clipPath="url(#rl-recorte)">
             {OBJETOS.map(o => (
               <Objeto key={o.id} obj={o} cor={o.cor} fundo={o.fundo} escala={1.18} />
@@ -326,21 +326,21 @@ export function LoadingScreen({ onFinish }: LoadingScreenProps) {
           entrada ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
         }`}
       >
-        <h1 className="text-[1.7rem] font-extrabold tracking-tight text-[#1C1917] sm:text-[2rem] lg:text-[2.75rem]">
-          Re<span className="text-[#C8102E]">Encontro</span>
+        <h1 className="text-[1.7rem] font-extrabold tracking-tight text-tinta sm:text-[2rem] lg:text-[2.75rem]">
+          Re<span className="text-marca-texto">Encontro</span>
         </h1>
         <p
           key={status}
           aria-live="polite"
           className={`rl-status mt-2 min-h-[1.5rem] text-sm font-semibold lg:text-base ${
-            fase === 'buscando' ? 'text-[#78716C]' : 'text-[#C8102E]'
+            fase === 'buscando' ? 'text-tinta-suave' : 'text-marca-texto'
           }`}
         >
           {status}
         </p>
       </div>
 
-      <p className="pointer-events-none absolute right-0 bottom-8 left-0 text-center text-[11px] font-medium tracking-[0.18em] text-[#A8A29E] uppercase">
+      <p className="pointer-events-none absolute right-0 bottom-8 left-0 text-center text-[11px] font-medium tracking-[0.18em] text-tinta-suave uppercase">
         SESI Nova Odessa · Achados e perdidos
       </p>
 

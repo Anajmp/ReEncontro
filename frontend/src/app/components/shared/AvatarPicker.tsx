@@ -38,17 +38,17 @@ export function AvatarPicker({
         <img
           src={urlDoSeed(selecionado)}
           alt="Seu avatar"
-          className="size-20 rounded-2xl border border-[#E7E5E4] bg-white"
+          className="size-20 rounded-2xl border border-linha bg-superficie"
         />
         <div>
-          <p className="text-sm font-bold text-[#1C1917]">Seu personagem</p>
-          <p className="text-sm text-[#78716C]">Escolha um dos personagens abaixo.</p>
+          <p className="text-sm font-bold text-tinta">Seu personagem</p>
+          <p className="text-sm text-tinta-suave">Escolha um dos personagens abaixo.</p>
         </div>
       </div>
 
       {/* Grade de opções */}
-      <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
-        {opcoes.map(seed => {
+      <div className="grid grid-cols-4 gap-3 sm:grid-cols-6" role="group" aria-label="Personagens disponíveis">
+        {opcoes.map((seed, i) => {
           const ativo = seed === selecionado;
           return (
             <button
@@ -59,11 +59,12 @@ export function AvatarPicker({
               className={`relative overflow-hidden rounded-xl border-2 transition-all ${
                 ativo
                   ? 'border-[#C8102E] ring-2 ring-[#C8102E]/20'
-                  : 'border-[#E7E5E4] hover:border-[#C8102E]/40'
+                  : 'border-linha hover:border-[#C8102E]/40'
               }`}
-              aria-label="Escolher este personagem"
+              aria-label={`Personagem ${i + 1}`}
+              aria-pressed={ativo}
             >
-              <img src={urlDoSeed(seed)} alt="" className="size-full bg-white" />
+              <img src={urlDoSeed(seed)} alt="" className="size-full bg-superficie" />
               {ativo && (
                 <span className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-[#C8102E]">
                   <Check size={12} strokeWidth={3} className="text-white" />
@@ -79,7 +80,7 @@ export function AvatarPicker({
         type="button"
         onClick={() => setAleatorias(gerarSeeds(quantidade))}
         disabled={salvando}
-        className="mt-4 flex items-center gap-2 rounded-xl border border-[#E7E5E4] bg-white px-4 py-2 text-sm font-semibold text-[#78716C] transition-colors hover:border-[#C8102E]/40 hover:text-[#1C1917]"
+        className="mt-4 flex items-center gap-2 rounded-xl border border-linha bg-superficie px-4 py-2 text-sm font-semibold text-tinta-suave transition-colors hover:border-[#C8102E]/40 hover:text-tinta"
       >
         <RefreshCw size={14} strokeWidth={1.8} />
         Gerar outros personagens

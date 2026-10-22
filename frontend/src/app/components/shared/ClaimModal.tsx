@@ -167,18 +167,18 @@ export function ClaimModal({
   }
 
   const modalClass =
-    'max-w-lg rounded-3xl border-0 p-8 shadow-2xl [&_[data-slot=dialog-close]]:top-5 [&_[data-slot=dialog-close]]:right-5 [&_[data-slot=dialog-close]]:flex [&_[data-slot=dialog-close]]:size-8 [&_[data-slot=dialog-close]]:items-center [&_[data-slot=dialog-close]]:justify-center [&_[data-slot=dialog-close]]:rounded-full [&_[data-slot=dialog-close]]:bg-[#F5F3F0] [&_[data-slot=dialog-close]]:text-[#78716C] [&_[data-slot=dialog-close]]:opacity-100 hover:[&_[data-slot=dialog-close]]:bg-[#EDE9E4]';
+    'max-w-lg rounded-3xl border-0 p-8 shadow-2xl [&_[data-slot=dialog-close]]:top-5 [&_[data-slot=dialog-close]]:right-5 [&_[data-slot=dialog-close]]:flex [&_[data-slot=dialog-close]]:size-8 [&_[data-slot=dialog-close]]:items-center [&_[data-slot=dialog-close]]:justify-center [&_[data-slot=dialog-close]]:rounded-full [&_[data-slot=dialog-close]]:bg-fundo [&_[data-slot=dialog-close]]:text-tinta-suave [&_[data-slot=dialog-close]]:opacity-100 hover:[&_[data-slot=dialog-close]]:bg-fundo-forte';
 
   if (submitted) {
     return (
       <Dialog open={open} onOpenChange={fechar}>
         <DialogContent className={modalClass} style={FONT}>
           <div className="py-4 text-center">
-            <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-[#DCFCE7]">
-              <Check className="size-6 text-[#16A34A]" strokeWidth={2.5} />
+            <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-sucesso-fundo">
+              <Check className="size-6 text-sucesso-texto" strokeWidth={2.5} />
             </div>
-            <DialogTitle className="text-xl font-bold text-[#1C1917]">Reivindicação enviada</DialogTitle>
-            <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-[#6E6762]">
+            <DialogTitle className="text-xl font-bold text-tinta">Reivindicação enviada</DialogTitle>
+            <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-tinta-suave">
               Você receberá um e-mail em breve. Nossa equipe vai entrar em contato para confirmar a retirada.
             </p>
             <button
@@ -198,34 +198,34 @@ export function ClaimModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className={modalClass} style={FONT}>
         <DialogHeader className="pr-8 text-left">
-          <div className="mb-3 flex size-11 items-center justify-center rounded-2xl bg-[#FEE2E2]">
+          <div className="mb-3 flex size-11 items-center justify-center rounded-2xl bg-marca-clara">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#C8102E" strokeWidth="2" strokeLinecap="round" aria-hidden>
               <circle cx="10" cy="10" r="7" />
               <path d="M15.5 15.5 L20 20" />
             </svg>
           </div>
-          <DialogTitle className="text-xl font-bold tracking-tight text-[#1C1917]">Este item é meu</DialogTitle>
-          <p className="text-sm leading-relaxed text-[#6E6762]">
-            Reivindicando: <span className="font-semibold text-[#1C1917]">{item.name}</span>
+          <DialogTitle className="text-xl font-bold tracking-tight text-tinta">Este item é meu</DialogTitle>
+          <p className="text-sm leading-relaxed text-tinta-suave">
+            Reivindicando: <span className="font-semibold text-tinta">{item.name}</span>
           </p>
         </DialogHeader>
 
-        <div className="flex items-center gap-3 rounded-xl border border-black/[0.06] p-3" style={{ backgroundColor: `${cfg.bg}55` }}>
+        <div className="flex items-center gap-3 rounded-xl border border-contorno p-3" style={{ backgroundColor: `${cfg.bg}55` }}>
           <div className="flex size-10 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: cfg.bg, color: cfg.color }}>
             <CatIcon size={20} strokeWidth={1.6} />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-[#1C1917]">{item.name}</p>
-            <p className="text-xs text-[#6E6762]">{item.location} · {item.date}</p>
+            <p className="truncate text-sm font-semibold text-tinta">{item.name}</p>
+            <p className="text-xs text-tinta-suave">{item.location} · {item.date}</p>
           </div>
         </div>
 
         {!usuario && (
-          <div className="rounded-xl border border-amber-200/80 bg-amber-50 px-3.5 py-3 text-sm text-amber-900">
+          <div className="rounded-xl border border-alerta-borda bg-alerta-fundo px-3.5 py-3 text-sm text-alerta-texto">
             Quer acompanhar o status pelo site?{' '}
             <button
               type="button"
-              className="font-semibold text-[#C8102E] underline-offset-2 hover:underline"
+              className="font-semibold text-marca-texto underline-offset-2 hover:underline"
               onClick={onCadastrar}
             >
               Cadastre-se
@@ -237,17 +237,17 @@ export function ClaimModal({
         <div className="space-y-4 py-1">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="claim-name" className="font-semibold text-[#1C1917]">Nome completo *</Label>
-              <Input id="claim-name" autoComplete="name" aria-required placeholder="Seu nome completo" value={nome} onChange={e => setNome(e.target.value)} className="rounded-xl border-[#E7E5E4]" />
+              <Label htmlFor="claim-name" className="font-semibold text-tinta">Nome completo *</Label>
+              <Input id="claim-name" autoComplete="name" aria-required placeholder="Seu nome completo" value={nome} onChange={e => setNome(e.target.value)} className="rounded-xl border-linha" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="claim-email" className="font-semibold text-[#1C1917]">E-mail *</Label>
-              <Input id="claim-email" type="email" autoComplete="email" aria-required placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} className="rounded-xl border-[#E7E5E4]" />
+              <Label htmlFor="claim-email" className="font-semibold text-tinta">E-mail *</Label>
+              <Input id="claim-email" type="email" autoComplete="email" aria-required placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} className="rounded-xl border-linha" />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="claim-phone" className="font-semibold text-[#1C1917]">
-              Telefone <span className="font-normal text-[#6E6762]">(opcional)</span>
+            <Label htmlFor="claim-phone" className="font-semibold text-tinta">
+              Telefone <span className="font-normal text-tinta-suave">(opcional)</span>
             </Label>
             <Input
               id="claim-phone"
@@ -263,21 +263,21 @@ export function ClaimModal({
               onBlur={() => setTelefoneErro(validarTelefone(telefone) ?? '')}
               aria-invalid={Boolean(telefoneErro) || undefined}
               aria-describedby={telefoneErro ? 'claim-phone-erro' : undefined}
-              className={`rounded-xl ${telefoneErro ? 'border-[#FCA5A5]' : 'border-[#E7E5E4]'}`}
+              className={`rounded-xl ${telefoneErro ? 'border-erro-borda-forte' : 'border-linha'}`}
             />
             {telefoneErro && (
-              <div id="claim-phone-erro" role="alert" className="flex items-center gap-1.5 rounded-lg border border-[#FECDD3] bg-[#FFF1F2] px-3 py-1.5">
-                <AlertCircle size={12} strokeWidth={2} className="shrink-0 text-[#C8102E]" />
-                <span className="text-xs font-medium text-[#C8102E]">{telefoneErro}</span>
+              <div id="claim-phone-erro" role="alert" className="flex items-center gap-1.5 rounded-lg border border-erro-borda bg-erro-fundo px-3 py-1.5">
+                <AlertCircle size={12} strokeWidth={2} className="shrink-0 text-marca-texto" />
+                <span className="text-xs font-medium text-marca-texto">{telefoneErro}</span>
               </div>
             )}
           </div>
 
           {mostrarSeletor && (
             <div className="space-y-1.5">
-              <Label htmlFor="claim-aluno" className="font-semibold text-[#1C1917]">Qual aluno? *</Label>
+              <Label htmlFor="claim-aluno" className="font-semibold text-tinta">Qual aluno? *</Label>
               <Select value={alunoId} onValueChange={trocarAluno}>
-                <SelectTrigger id="claim-aluno" className="rounded-xl border-[#E7E5E4]">
+                <SelectTrigger id="claim-aluno" className="rounded-xl border-linha">
                   <SelectValue placeholder="Selecione o aluno" />
                 </SelectTrigger>
                 <SelectContent>
@@ -294,7 +294,7 @@ export function ClaimModal({
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="claim-student" className="font-semibold text-[#1C1917]">Nome do aluno *</Label>
+              <Label htmlFor="claim-student" className="font-semibold text-tinta">Nome do aluno *</Label>
               <Input
                 id="claim-student"
                 aria-required
@@ -302,11 +302,11 @@ export function ClaimModal({
                 value={nomeAluno}
                 onChange={e => setNomeAluno(e.target.value)}
                 disabled={alunoTravado}
-                className="rounded-xl border-[#E7E5E4] disabled:bg-[#F5F3F0]"
+                className="rounded-xl border-linha disabled:bg-fundo"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="claim-room" className="font-semibold text-[#1C1917]">Sala *</Label>
+              <Label htmlFor="claim-room" className="font-semibold text-tinta">Sala *</Label>
               <Input
                 id="claim-room"
                 aria-required
@@ -314,14 +314,14 @@ export function ClaimModal({
                 value={sala}
                 onChange={e => setSala(e.target.value)}
                 disabled={alunoTravado}
-                className="rounded-xl border-[#E7E5E4] disabled:bg-[#F5F3F0]"
+                className="rounded-xl border-linha disabled:bg-fundo"
               />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="claim-periodo" className="font-semibold text-[#1C1917]">Período *</Label>
+            <Label htmlFor="claim-periodo" className="font-semibold text-tinta">Período *</Label>
             <Select value={periodo} onValueChange={setPeriodo} disabled={alunoTravado}>
-              <SelectTrigger id="claim-periodo" aria-required className="rounded-xl border-[#E7E5E4] disabled:bg-[#F5F3F0]">
+              <SelectTrigger id="claim-periodo" aria-required className="rounded-xl border-linha disabled:bg-fundo">
                 <SelectValue placeholder="Selecione o período" />
               </SelectTrigger>
               <SelectContent>
@@ -333,12 +333,12 @@ export function ClaimModal({
           </div>
 
           {erro && (
-            <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{erro}</p>
+            <p role="alert" className="rounded-xl bg-erro-fundo px-3 py-2 text-sm text-marca-texto">{erro}</p>
           )}
         </div>
 
-        <div className="flex flex-col-reverse gap-2 border-t border-[#F5F3F0] pt-4 sm:flex-row sm:gap-3">
-          <Button variant="outline" className="flex-1 rounded-xl border-[#E7E5E4]" onClick={onClose} disabled={enviando}>
+        <div className="flex flex-col-reverse gap-2 border-t border-fundo pt-4 sm:flex-row sm:gap-3">
+          <Button variant="outline" className="flex-1 rounded-xl border-linha" onClick={onClose} disabled={enviando}>
             Cancelar
           </Button>
           <Button className="flex-1 rounded-xl bg-[#C8102E] hover:bg-[#A50D26] active:scale-[0.98]" onClick={enviar} disabled={enviando}>

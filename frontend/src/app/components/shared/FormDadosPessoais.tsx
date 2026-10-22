@@ -90,8 +90,8 @@ export function FormDadosPessoais({ selo }: Props) {
       <div className="mb-5 flex items-center gap-4">
         <UserAvatar usuario={usuario} size={56} />
         <div className="min-w-0">
-          <p className="truncate font-extrabold text-[#1C1917]">{nome || '—'}</p>
-          <p className="truncate text-sm text-[#78716C]">{email}</p>
+          <p className="truncate font-extrabold text-tinta">{nome || '—'}</p>
+          <p className="truncate text-sm text-tinta-suave">{email}</p>
           {selo && <div className="mt-1">{selo}</div>}
         </div>
       </div>
@@ -101,6 +101,7 @@ export function FormDadosPessoais({ selo }: Props) {
           label="Nome completo"
           leftIcon={<User size={15} strokeWidth={1.6} />}
           type="text"
+          autoComplete="name"
           value={nome}
           onChange={e => setNome(e.target.value)}
         />
@@ -108,22 +109,23 @@ export function FormDadosPessoais({ selo }: Props) {
           label="E-mail"
           leftIcon={<Mail size={15} strokeWidth={1.6} />}
           type="email"
+          autoComplete="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
         />
         {emailVerificado && !emailAlterado ? (
-          <p className="-mt-2 flex items-center gap-1.5 text-xs font-semibold text-[#15803D]">
+          <p className="-mt-2 flex items-center gap-1.5 text-xs font-semibold text-sucesso-texto">
             <BadgeCheck size={14} strokeWidth={2} /> E-mail verificado
           </p>
         ) : (
           <div className="-mt-2 space-y-2">
             {emailAlterado ? (
-              <p className="text-xs text-[#78716C]">
+              <p className="text-xs text-tinta-suave">
                 Salve o novo e-mail para poder verificá-lo.
               </p>
             ) : (
-              <div className="flex flex-col gap-2 rounded-xl border border-[#FECDD3] bg-[#FFF1F2] px-3.5 py-2.5 sm:flex-row sm:items-center sm:justify-between">
-                <span className="flex items-center gap-1.5 text-xs font-medium text-[#C8102E]">
+              <div className="flex flex-col gap-2 rounded-xl border border-erro-borda bg-erro-fundo px-3.5 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+                <span className="flex items-center gap-1.5 text-xs font-medium text-marca-texto">
                   <MailWarning size={14} strokeWidth={2} className="shrink-0" />
                   Seu e-mail ainda não foi verificado.
                 </span>
@@ -139,9 +141,9 @@ export function FormDadosPessoais({ selo }: Props) {
               </div>
             )}
             {erroVerificacao && (
-              <div className="flex items-center gap-1.5 rounded-lg border border-[#FECDD3] bg-[#FFF1F2] px-3 py-1.5">
-                <AlertCircle size={12} strokeWidth={2} className="shrink-0 text-[#C8102E]" />
-                <span className="text-xs font-medium text-[#C8102E]">{erroVerificacao}</span>
+              <div role="alert" className="flex items-center gap-1.5 rounded-lg border border-erro-borda bg-erro-fundo px-3 py-1.5">
+                <AlertCircle size={12} strokeWidth={2} className="shrink-0 text-marca-texto" />
+                <span className="text-xs font-medium text-marca-texto">{erroVerificacao}</span>
               </div>
             )}
           </div>
@@ -150,6 +152,7 @@ export function FormDadosPessoais({ selo }: Props) {
           label="Telefone"
           leftIcon={<Phone size={15} strokeWidth={1.6} />}
           type="tel"
+          autoComplete="tel"
           inputMode="numeric"
           placeholder="(19) 99999-9999"
           value={telefone}
@@ -164,7 +167,7 @@ export function FormDadosPessoais({ selo }: Props) {
 
         <div className="pt-1">
           {saved && (
-            <div className="mb-4 flex items-center gap-2 rounded-xl border border-[#BBF7D0] bg-[#DCFCE7] px-4 py-3 text-sm text-[#15803D]">
+            <div role="status" className="mb-4 flex items-center gap-2 rounded-xl border border-sucesso-borda bg-sucesso-fundo px-4 py-3 text-sm text-sucesso-texto">
               <CheckCircle size={15} strokeWidth={2} />
               Dados salvos com sucesso!
             </div>

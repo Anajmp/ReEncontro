@@ -1,4 +1,4 @@
-import { useEffect, useState, type ElementType, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ElementType, type ReactNode } from 'react';
 import {
   LayoutDashboard, PlusCircle, Archive, Clock, RefreshCw,
   CheckCircle2, BarChart2, Users, LogOut, Menu, X, ShieldAlert, Globe, UserRound,
@@ -9,7 +9,9 @@ import { LupaMarca } from './LupaMarca';
 import { ADMIN_FONT } from './estilos';
 import { PAGE_INFO } from './paginasAdmin';
 import { UserAvatar } from './UserAvatar';
+import { BotaoTema } from './BotaoTema';
 import { BannerIlustracao, PageBanner } from './PageBanner';
+import { CONTEUDO_ID } from '../../../lib/acessibilidade';
 
 type NavItem = { id: Screen; label: string; Icon: ElementType };
 type NavSecao = { titulo?: string; itens: NavItem[] };
@@ -71,10 +73,10 @@ function AdminLogo({ painel }: { painel: string }) {
     <div className="flex items-center gap-2.5">
       <LupaMarca size={32} />
       <div>
-        <p className="text-[1rem] leading-tight font-bold tracking-tight text-[#1C1917]">
-          Re<span className="text-[#C8102E]">Encontro</span>
+        <p className="text-[1rem] leading-tight font-bold tracking-tight text-tinta">
+          Re<span className="text-marca-texto">Encontro</span>
         </p>
-        <p className="-mt-0.5 text-[10px] leading-none font-medium text-[#78716C]">{painel}</p>
+        <p className="-mt-0.5 text-[10px] leading-none font-medium text-tinta-suave">{painel}</p>
       </div>
     </div>
   );
@@ -84,7 +86,7 @@ function SeloPerfil({ perfil, ehDiretora }: { perfil: Perfil; ehDiretora: boolea
   return (
     <span
       className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
-        ehDiretora ? 'bg-[#FEE2E2] text-[#C8102E]' : 'bg-[#F5F3F0] text-[#57534E]'
+        ehDiretora ? 'bg-marca-clara text-marca-texto' : 'bg-fundo text-tinta-media'
       }`}
     >
       {perfil.rotulo}
@@ -95,6 +97,9 @@ function SeloPerfil({ perfil, ehDiretora }: { perfil: Perfil; ehDiretora: boolea
 export function AdminLayout({ children, current, navigate }: Props) {
   const { usuario, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const botaoMenuRef = useRef<HTMLButtonElement>(null);
+  const botaoFecharRef = useRef<HTMLButtonElement>(null);
   const ehDiretora = Boolean(usuario?.is_diretora);
   const perfil: Perfil = ehDiretora ? PERFIS.diretora : PERFIS.inspetora;
   const info = PAGE_INFO[current] ?? { title: 'Admin', subtitle: '' };
@@ -122,9 +127,14 @@ export function AdminLayout({ children, current, navigate }: Props) {
     document.addEventListener('keydown', onKey);
     const original = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    // Teclado: o foco entra no menu ao abrir e volta ao botão ao fechar
+    botaoFecharRef.current?.focus();
+    const sidebar = sidebarRef.current;
+    const botaoMenu = botaoMenuRef.current;
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = original;
+      if (sidebar?.contains(document.activeElement)) botaoMenu?.focus();
     };
   }, [sidebarOpen]);
 
@@ -136,7 +146,7 @@ export function AdminLayout({ children, current, navigate }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F3F0]" style={ADMIN_FONT}>
+    <div className="min-h-screen bg-fundo" style={ADMIN_FONT}>
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-20 bg-black/30 lg:hidden"
@@ -146,28 +156,31 @@ export function AdminLayout({ children, current, navigate }: Props) {
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-30 flex h-full w-[270px] flex-col border-r border-[#E7E5E4] bg-white transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
+        ref={sidebarRef}
+        id="menu-admin"
+        className={`fixed top-0 left-0 z-30 flex h-full w-[270px] flex-col border-r border-linha bg-superficie transition-[transform,visibility] duration-300 ease-in-out ${
+          sidebarOpen ? 'visible translate-x-0' : 'invisible -translate-x-full'
+        } lg:visible lg:translate-x-0`}
         aria-label={perfil.painel}
       >
-        <div className="flex h-16 items-center justify-between border-b border-[#E7E5E4] px-5">
+        <div className="flex h-16 items-center justify-between border-b border-linha px-5">
           <AdminLogo painel={perfil.painel} />
           <button
+            ref={botaoFecharRef}
             type="button"
             onClick={fecharMenu}
-            className="flex size-7 items-center justify-center rounded-lg text-[#78716C] transition-colors hover:text-[#C8102E] lg:hidden"
+            className="flex size-7 items-center justify-center rounded-lg text-tinta-suave transition-colors hover:text-marca-texto lg:hidden"
             aria-label="Fechar menu"
           >
             <X size={16} strokeWidth={1.8} />
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-3">
+        <nav className="flex-1 overflow-y-auto px-3 py-3" aria-label="Menu principal">
           {perfil.secoes.map((secao, i) => (
             <div key={secao.titulo ?? i} className={i > 0 ? 'mt-4' : ''}>
               {secao.titulo && (
-                <p className="mb-1.5 px-3 text-[10px] font-bold tracking-wider text-[#A8A29E] uppercase">
+                <p className="mb-1.5 px-3 text-[10px] font-bold tracking-wider text-tinta-suave uppercase">
                   {secao.titulo}
                 </p>
               )}
@@ -180,17 +193,17 @@ export function AdminLayout({ children, current, navigate }: Props) {
                     onClick={() => irPara(id)}
                     aria-current={ativo ? 'page' : undefined}
                     className={`relative mb-0.5 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all duration-150 ${
-                      ativo ? 'bg-[#FEE2E2] text-[#C8102E]' : 'text-[#1C1917] hover:bg-[#F5F3F0]'
+                      ativo ? 'bg-marca-clara text-marca-texto' : 'text-tinta hover:bg-fundo'
                     }`}
                   >
                     <Icon
                       size={17}
                       strokeWidth={ativo ? 2 : 1.7}
-                      className={ativo ? 'text-[#C8102E]' : 'text-[#78716C]'}
+                      className={ativo ? 'text-marca-texto' : 'text-tinta-suave'}
                     />
                     <span className="flex-1">{label}</span>
                     {ativo && (
-                      <div className="absolute top-1/2 right-0 h-6 w-1 -translate-y-1/2 rounded-l-full bg-[#C8102E]" />
+                      <div className="absolute top-1/2 right-0 h-6 w-1 -translate-y-1/2 rounded-l-full bg-[#C8102E]" aria-hidden />
                     )}
                   </button>
                 );
@@ -199,17 +212,17 @@ export function AdminLayout({ children, current, navigate }: Props) {
           ))}
         </nav>
 
-        <div className="border-t border-[#E7E5E4] p-4">
+        <div className="border-t border-linha p-4">
           <div className="flex items-center gap-3">
             <UserAvatar usuario={usuario} size={38} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-[#1C1917]">{usuario?.nome ?? '—'}</p>
+              <p className="truncate text-sm font-semibold text-tinta">{usuario?.nome ?? '—'}</p>
               <SeloPerfil perfil={perfil} ehDiretora={ehDiretora} />
             </div>
             <button
               type="button"
               onClick={sair}
-              className="flex size-8 items-center justify-center rounded-lg text-[#A8A29E] transition-all hover:bg-[#FEE2E2] hover:text-[#C8102E]"
+              className="flex size-8 items-center justify-center rounded-lg text-tinta-suave transition-all hover:bg-marca-clara hover:text-marca-texto"
               title="Sair"
               aria-label="Sair"
             >
@@ -220,33 +233,37 @@ export function AdminLayout({ children, current, navigate }: Props) {
       </aside>
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:ml-[270px]">
-        <header className="sticky top-0 z-20 border-b border-[#E7E5E4] bg-white">
+        <header className="sticky top-0 z-20 border-b border-linha bg-superficie">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-8">
             <div className="flex min-w-0 items-center gap-3">
               <button
+                ref={botaoMenuRef}
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="flex size-9 items-center justify-center rounded-xl bg-[#F5F3F0] text-[#78716C] transition-colors hover:text-[#C8102E] lg:hidden"
+                aria-expanded={sidebarOpen}
+                aria-controls="menu-admin"
+                className="flex size-9 items-center justify-center rounded-xl bg-fundo text-tinta-suave transition-colors hover:text-marca-texto lg:hidden"
                 aria-label="Abrir menu"
               >
                 <Menu size={18} strokeWidth={1.8} />
               </button>
-              <p className="truncate text-sm text-[#78716C]">
+              <p className="truncate text-sm text-tinta-suave">
                 <span className="hidden sm:inline">{perfil.painel} · </span>
-                <span className="font-semibold text-[#1C1917]">{info.title}</span>
+                <span className="font-semibold text-tinta">{info.title}</span>
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-3">
+              <BotaoTema />
               <div className="hidden text-right sm:block">
-                <p className="max-w-[160px] truncate text-sm font-semibold text-[#1C1917]">{usuario?.nome ?? '—'}</p>
-                <p className="max-w-[160px] truncate text-xs text-[#78716C]">{usuario?.email ?? ''}</p>
+                <p className="max-w-[160px] truncate text-sm font-semibold text-tinta">{usuario?.nome ?? '—'}</p>
+                <p className="max-w-[160px] truncate text-xs text-tinta-suave">{usuario?.email ?? ''}</p>
               </div>
               <UserAvatar usuario={usuario} size={36} />
             </div>
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 overflow-x-hidden px-4 py-5 sm:px-8 sm:py-8">
+        <main id={CONTEUDO_ID} tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 overflow-x-hidden px-4 py-5 outline-none sm:px-8 sm:py-8">
           <PageBanner
             selo={perfil.painel}
             titulo={info.title}

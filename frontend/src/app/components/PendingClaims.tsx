@@ -59,33 +59,36 @@ function RejectionModal({
 
   return (
     <Dialog open={open} onOpenChange={() => { onClose(); setReason(''); setError(false); }}>
-      <DialogContent className="max-w-md rounded-2xl border-[#E7E5E4]">
+      <DialogContent className="max-w-md rounded-2xl border-linha">
         <DialogHeader>
-          <DialogTitle className="text-[#1C1917]">Rejeitar reivindicação</DialogTitle>
-          <p className="mt-0.5 text-sm text-[#78716C]">
-            Item: <strong className="text-[#1C1917]">{claim.itemName}</strong>
+          <DialogTitle className="text-tinta">Rejeitar reivindicação</DialogTitle>
+          <p className="mt-0.5 text-sm text-tinta-suave">
+            Item: <strong className="text-tinta">{claim.itemName}</strong>
           </p>
         </DialogHeader>
         <div className="py-2">
-          <Label htmlFor="rejection-reason" className="text-sm font-semibold text-[#1C1917]">
-            Justificativa <span className="text-[#C8102E]">*</span>
+          <Label htmlFor="rejection-reason" className="text-sm font-semibold text-tinta">
+            Justificativa <span className="text-marca-texto">*</span>
           </Label>
           <textarea
             id="rejection-reason"
             rows={4}
             className={`mt-1.5 w-full resize-none rounded-xl border px-3 py-2 text-sm transition-colors focus:border-[#C8102E] focus:outline-none focus:ring-2 focus:ring-[#C8102E]/20 ${
-              error ? 'border-red-300 bg-[#FEE2E2]' : 'border-[#E7E5E4] bg-[#F5F3F0]'
+              error ? 'border-erro-borda-forte bg-marca-clara' : 'border-linha bg-fundo'
             }`}
             placeholder="Descreva o motivo da rejeição. Esta mensagem será enviada ao responsável por e-mail."
+            aria-required
+            aria-invalid={error || undefined}
+            aria-describedby={error ? 'rejection-reason-erro' : undefined}
             value={reason}
             onChange={e => { setReason(e.target.value); setError(false); }}
           />
           {error && (
-            <p className="text-xs text-red-500 mt-1">A justificativa é obrigatória para rejeitar.</p>
+            <p id="rejection-reason-erro" role="alert" className="text-xs text-marca-texto mt-1">A justificativa é obrigatória para rejeitar.</p>
           )}
         </div>
-        <div className="mt-1 flex gap-3 border-t border-[#E7E5E4] pt-2">
-          <Button variant="outline" className="flex-1 rounded-xl border-[#E7E5E4]" onClick={onClose}>Cancelar</Button>
+        <div className="mt-1 flex gap-3 border-t border-linha pt-2">
+          <Button variant="outline" className="flex-1 rounded-xl border-linha" onClick={onClose}>Cancelar</Button>
           <Button className={`flex-1 ${adminBtnPrimary}`} onClick={handleConfirm}>
             Confirmar rejeição
           </Button>
@@ -147,15 +150,15 @@ export function PendingClaims({ navigate }: Props) {
   return (
     <AdminLayout current="pending-claims" navigate={navigate}>
       <div className="space-y-4">
-        <p className="text-sm text-[#78716C]">
+        <p className="text-sm text-tinta-suave" role="status">
           {visibleClaims.length} reivindicação{visibleClaims.length !== 1 ? 'ões' : ''} aguardando análise
         </p>
 
         {visibleClaims.length === 0 && (
           <AdminPanel className="py-16 text-center">
-            <Check className="mx-auto mb-3 size-10 text-[#059669]" />
-            <p className="font-semibold text-[#1C1917]">Tudo em dia!</p>
-            <p className="mt-1 text-sm text-[#78716C]">Não há reivindicações pendentes no momento.</p>
+            <Check className="mx-auto mb-3 size-10 text-sucesso-texto" aria-hidden />
+            <h2 className="font-semibold text-tinta">Tudo em dia!</h2>
+            <p className="mt-1 text-sm text-tinta-suave">Não há reivindicações pendentes no momento.</p>
           </AdminPanel>
         )}
 
@@ -173,33 +176,33 @@ export function PendingClaims({ navigate }: Props) {
                 <div className="min-w-0 flex-1 p-4">
                   <div className="mb-3 flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="truncate font-bold text-[#1C1917]">{claim.itemName}</div>
-                      <div className="mt-0.5 text-xs text-[#A8A29E]">Reivindicado em {claim.date}</div>
+                      <h2 className="truncate text-base font-bold text-tinta">{claim.itemName}</h2>
+                      <div className="mt-0.5 text-xs text-tinta-suave">Reivindicado em {claim.date}</div>
                     </div>
                     <StatusBadge status={claim.status} />
                   </div>
                   <div className="mb-3 space-y-1.5">
-                    <div className="flex items-center gap-2 text-xs text-[#78716C]">
-                      <User className="size-3.5 shrink-0 text-[#A8A29E]" />
+                    <div className="flex items-center gap-2 text-xs text-tinta-suave">
+                      <User className="size-3.5 shrink-0 text-tinta-suave" />
                       <span className="truncate font-semibold">{claim.claimantName}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-[#78716C]">
-                      <Mail className="size-3.5 shrink-0 text-[#A8A29E]" />
+                    <div className="flex items-center gap-2 text-xs text-tinta-suave">
+                      <Mail className="size-3.5 shrink-0 text-tinta-suave" />
                       <span className="truncate">{claim.claimantEmail}</span>
                     </div>
                     {claim.claimantPhone && (
-                      <div className="flex items-center gap-2 text-xs text-[#78716C]">
-                        <Phone className="size-3.5 shrink-0 text-[#A8A29E]" />
+                      <div className="flex items-center gap-2 text-xs text-tinta-suave">
+                        <Phone className="size-3.5 shrink-0 text-tinta-suave" />
                         {claim.claimantPhone}
                       </div>
                     )}
                   </div>
 
-                  <div className="mb-3 rounded-xl bg-[#F5F3F0] px-3 py-2">
-                    <div className="flex items-center gap-2 text-xs text-[#78716C]">
-                      <GraduationCap className="size-3.5 shrink-0 text-[#A8A29E]" />
+                  <div className="mb-3 rounded-xl bg-fundo px-3 py-2">
+                    <div className="flex items-center gap-2 text-xs text-tinta-suave">
+                      <GraduationCap className="size-3.5 shrink-0 text-tinta-suave" />
                       <span className="truncate">
-                        <strong className="text-[#1C1917]">{claim.studentName}</strong> · {claim.studentRoom} · {claim.studentPeriod}
+                        <strong className="text-tinta">{claim.studentName}</strong> · {claim.studentRoom} · {claim.studentPeriod}
                       </span>
                     </div>
                   </div>
@@ -207,8 +210,9 @@ export function PendingClaims({ navigate }: Props) {
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Button
                       size="sm"
-                      className="w-full gap-1.5 rounded-xl bg-[#059669] font-semibold hover:bg-[#047857] sm:flex-1"
+                      className="w-full gap-1.5 rounded-xl bg-[#047857] font-semibold hover:bg-[#065F46] sm:flex-1"
                       onClick={() => handleApprove(claim.id)}
+                      aria-label={`Aprovar: ${claim.itemName}`}
                     >
                       <Check className="size-3.5" />
                       Aprovar
@@ -216,8 +220,9 @@ export function PendingClaims({ navigate }: Props) {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="w-full flex-1 gap-1.5 rounded-xl border-[#FEE2E2] text-[#C8102E] hover:bg-[#FEE2E2] sm:flex-1"
+                      className="w-full flex-1 gap-1.5 rounded-xl border-marca-clara text-marca-texto hover:bg-marca-clara sm:flex-1"
                       onClick={() => handleReject(claim)}
+                      aria-label={`Rejeitar: ${claim.itemName}`}
                     >
                       <X className="size-3.5" />
                       Rejeitar

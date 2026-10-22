@@ -112,8 +112,8 @@ export function Register({ navigate }: Props) {
           <User size={22} strokeWidth={1.7} color="#C8102E" />
         </AuthEmblem>
 
-        <h1 className="mb-1.5 text-2xl font-extrabold text-[#1C1917]">Criar conta</h1>
-        <p className="mb-2 text-sm leading-relaxed text-[#78716C]">
+        <h1 className="mb-1.5 text-2xl font-extrabold text-tinta">Criar conta</h1>
+        <p className="mb-2 text-sm leading-relaxed text-tinta-suave">
           Cadastre-se para reivindicar itens encontrados no SESI Nova Odessa.
         </p>
 
@@ -173,7 +173,7 @@ export function Register({ navigate }: Props) {
               rightElement={
                 <button
                   type="button"
-                  className="text-[#A8A29E] transition-colors hover:text-[#78716C]"
+                  className="text-tinta-suave transition-colors hover:text-tinta"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                 >
@@ -193,7 +193,7 @@ export function Register({ navigate }: Props) {
               rightElement={
                 <button
                   type="button"
-                  className="text-[#A8A29E] transition-colors hover:text-[#78716C]"
+                  className="text-tinta-suave transition-colors hover:text-tinta"
                   onClick={() => setShowConfirmarSenha(!showConfirmarSenha)}
                   aria-label={showConfirmarSenha ? 'Ocultar senha' : 'Mostrar senha'}
                 >
@@ -206,13 +206,13 @@ export function Register({ navigate }: Props) {
           <SectionDivider label="Dados do aluno" />
 
           <div className="mb-5 flex items-center justify-between">
-            <p className="-mt-1 text-xs leading-relaxed text-[#A8A29E]">
+            <p className="-mt-1 text-xs leading-relaxed text-tinta-suave">
               Vincule o aluno da sua família para gerenciar reivindicações.
             </p>
             <button
               type="button"
               onClick={addStudent}
-              className="ml-3 inline-flex shrink-0 items-center gap-1 text-xs font-bold text-[#C8102E] hover:underline hover:underline-offset-2"
+              className="ml-3 inline-flex shrink-0 items-center gap-1 text-xs font-bold text-marca-texto hover:underline hover:underline-offset-2"
             >
               <Plus size={13} strokeWidth={2.2} />
               Adicionar
@@ -221,16 +221,21 @@ export function Register({ navigate }: Props) {
 
           <div className="space-y-4">
             {students.map((student, index) => (
-              <div key={student.id} className="space-y-4 rounded-2xl border border-[#E7E5E4] bg-[#FAFAF8] p-4">
+              <div
+                key={student.id}
+                role="group"
+                aria-labelledby={`aluno-${student.id}`}
+                className="space-y-4 rounded-2xl border border-linha bg-campo p-4"
+              >
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold tracking-widest text-[#78716C] uppercase">
+                  <span id={`aluno-${student.id}`} className="text-[11px] font-bold tracking-widest text-tinta-suave uppercase">
                     Aluno {index + 1}
                   </span>
                   {students.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeStudent(student.id)}
-                      className="text-[#A8A29E] transition-colors hover:text-[#C8102E]"
+                      className="text-tinta-suave transition-colors hover:text-marca-texto"
                       aria-label={`Remover aluno ${index + 1}`}
                     >
                       <Trash2 size={14} strokeWidth={1.8} />
@@ -257,16 +262,16 @@ export function Register({ navigate }: Props) {
                     onChange={e => updateStudent(student.id, 'room', e.target.value)}
                   />
                   <div>
-                    <label className="mb-1.5 block text-sm font-semibold text-[#1C1917]">Período</label>
+                    <label htmlFor={`periodo-${student.id}`} className="mb-1.5 block text-sm font-semibold text-tinta">Período</label>
                     <div className="relative">
-                      <div className="pointer-events-none absolute top-1/2 left-3.5 z-10 -translate-y-1/2 text-[#A8A29E]">
+                      <div className="pointer-events-none absolute top-1/2 left-3.5 z-10 -translate-y-1/2 text-tinta-suave" aria-hidden>
                         <Clock size={15} strokeWidth={1.6} />
                       </div>
                       <Select
                         value={student.period || undefined}
                         onValueChange={v => updateStudent(student.id, 'period', v)}
                       >
-                        <SelectTrigger className={`${authSelectTriggerClass} pl-10`}>
+                        <SelectTrigger id={`periodo-${student.id}`} className={`${authSelectTriggerClass} pl-10`}>
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                         <SelectContent>
@@ -289,11 +294,11 @@ export function Register({ navigate }: Props) {
           </AuthSubmitButton>
         </form>
 
-        <p className="mt-6 text-center text-sm text-[#78716C]">
+        <p className="mt-6 text-center text-sm text-tinta-suave">
           Já tem conta?{' '}
           <button
             type="button"
-            className="font-bold text-[#C8102E] underline-offset-2 transition-colors hover:underline"
+            className="font-bold text-marca-texto underline-offset-2 transition-colors hover:underline"
             onClick={playLoginTransition}
           >
             Entrar

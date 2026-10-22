@@ -99,23 +99,23 @@ function EditItemModal({ item, open, onClose, onSaved }: {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md rounded-2xl border-[#E7E5E4]">
+      <DialogContent className="max-w-md rounded-2xl border-linha">
         <DialogHeader>
-          <DialogTitle className="text-[#1C1917]">Editar item</DialogTitle>
+          <DialogTitle className="text-tinta">Editar item</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label className="text-sm font-semibold text-[#1C1917]">Nome do item *</Label>
-            <Input className={adminInputClass} value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Mochila azul" />
+            <Label htmlFor="editar-nome" className="text-sm font-semibold text-tinta">Nome do item *</Label>
+            <Input id="editar-nome" className={adminInputClass} value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Mochila azul" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-sm font-semibold text-[#1C1917]">Descrição *</Label>
-            <Input className={adminInputClass} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Descrição do item" />
+            <Label htmlFor="editar-descricao" className="text-sm font-semibold text-tinta">Descrição *</Label>
+            <Input id="editar-descricao" className={adminInputClass} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Descrição do item" />
           </div>
           <div className="space-y-1.5">
-            <Label>Categoria *</Label>
+            <Label htmlFor="editar-categoria">Categoria *</Label>
             <Select value={categoriaId} onValueChange={setCategoriaId}>
-              <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+              <SelectTrigger id="editar-categoria" className={adminSelectClass}><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
               <SelectContent>
                 {categorias.map(c => (
                   <SelectItem key={c.id} value={String(c.id)}>{c.nome}</SelectItem>
@@ -124,13 +124,13 @@ function EditItemModal({ item, open, onClose, onSaved }: {
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label>Local encontrado *</Label>
-            <Input className={adminInputClass} value={local} onChange={e => setLocal(e.target.value)} placeholder="Onde foi encontrado" />
+            <Label htmlFor="editar-local">Local encontrado *</Label>
+            <Input id="editar-local" className={adminInputClass} value={local} onChange={e => setLocal(e.target.value)} placeholder="Onde foi encontrado" />
           </div>
           <div className="space-y-1.5">
-            <Label>Ponto de coleta *</Label>
+            <Label htmlFor="editar-ponto">Ponto de coleta *</Label>
             <Select value={pontoColetaId} onValueChange={setPontoColetaId}>
-              <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione o ponto" /></SelectTrigger>
+              <SelectTrigger id="editar-ponto" className={adminSelectClass}><SelectValue placeholder="Selecione o ponto" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">Secretaria</SelectItem>
                 <SelectItem value="2">Sala das Inspetoras</SelectItem>
@@ -138,10 +138,10 @@ function EditItemModal({ item, open, onClose, onSaved }: {
               </SelectContent>
             </Select>
           </div>
-          {erro && <p className="rounded-xl bg-[#FEE2E2] px-3 py-2 text-sm text-[#C8102E]">{erro}</p>}
+          {erro && <p role="alert" className="rounded-xl bg-marca-clara px-3 py-2 text-sm text-marca-texto">{erro}</p>}
         </div>
-        <div className="flex gap-3 border-t border-[#E7E5E4] pt-2">
-          <Button variant="outline" className="flex-1 rounded-xl border-[#E7E5E4]" onClick={onClose} disabled={salvando}>Cancelar</Button>
+        <div className="flex gap-3 border-t border-linha pt-2">
+          <Button variant="outline" className="flex-1 rounded-xl border-linha" onClick={onClose} disabled={salvando}>Cancelar</Button>
           <Button className={`flex-1 ${adminBtnPrimary}`} onClick={salvar} disabled={salvando}>
             {salvando ? 'Salvando...' : 'Salvar'}
           </Button>
@@ -189,32 +189,33 @@ function DiscardItemModal({ item, onClose, onDiscarded }: {
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md rounded-2xl border-[#E7E5E4]">
+      <DialogContent className="max-w-md rounded-2xl border-linha">
         <DialogHeader>
-          <DialogTitle className="text-[#1C1917]">Descartar item</DialogTitle>
+          <DialogTitle className="text-tinta">Descartar item</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <p className="text-sm text-[#78716C]">
-            O item <strong className="text-[#1C1917]">{item.name}</strong> sairá da listagem e irá para Finalizados.
+          <p className="text-sm text-tinta-suave">
+            O item <strong className="text-tinta">{item.name}</strong> sairá da listagem e irá para Finalizados.
           </p>
           {item.status === 'Pendente' && (
-            <p className="rounded-xl bg-[#FEF3C7] px-3 py-2 text-sm text-[#92400E]">
+            <p className="rounded-xl bg-alerta-fundo px-3 py-2 text-sm text-alerta-texto">
               Este item tem uma reivindicação pendente. Ela será rejeitada e o responsável receberá um e-mail com o motivo.
             </p>
           )}
           <div className="space-y-1.5">
-            <Label className="text-sm font-semibold text-[#1C1917]">Motivo *</Label>
+            <Label htmlFor="descarte-motivo" className="text-sm font-semibold text-tinta">Motivo *</Label>
             <Input
+              id="descarte-motivo"
               className={adminInputClass}
               value={motivo}
               onChange={e => setMotivo(e.target.value)}
               placeholder="Ex: Mais de 90 dias sem dono, doado"
             />
           </div>
-          {erro && <p className="rounded-xl bg-[#FEE2E2] px-3 py-2 text-sm text-[#C8102E]">{erro}</p>}
+          {erro && <p role="alert" className="rounded-xl bg-marca-clara px-3 py-2 text-sm text-marca-texto">{erro}</p>}
         </div>
-        <div className="flex gap-3 border-t border-[#E7E5E4] pt-2">
-          <Button variant="outline" className="flex-1 rounded-xl border-[#E7E5E4]" onClick={onClose} disabled={descartando}>Cancelar</Button>
+        <div className="flex gap-3 border-t border-linha pt-2">
+          <Button variant="outline" className="flex-1 rounded-xl border-linha" onClick={onClose} disabled={descartando}>Cancelar</Button>
           <Button className="flex-1 rounded-xl bg-[#C8102E] text-white hover:bg-[#A50D26]" onClick={confirmar} disabled={descartando}>
             {descartando ? 'Descartando...' : 'Descartar'}
           </Button>
@@ -303,16 +304,17 @@ export function AvailableItems({ navigate }: Props) {
 
         <AdminPanel className="flex flex-wrap gap-3 p-4">
           <div className="relative min-w-[160px] flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A8A29E]" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-tinta-suave" />
             <Input
               className={adminSearchInputClass}
               placeholder="Buscar..."
+              aria-label="Buscar itens"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className={`w-48 ${adminSelectClass}`}>
+            <SelectTrigger className={`w-48 ${adminSelectClass}`} aria-label="Filtrar por categoria">
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
             <SelectContent>
@@ -335,43 +337,47 @@ export function AvailableItems({ navigate }: Props) {
 
         <AdminPanel className="overflow-hidden">
           {/* Lista em cards — mobile */}
-          <div className="divide-y divide-[#E7E5E4] lg:hidden">
+          <div className="divide-y divide-linha lg:hidden">
             {items.map(item => (
               <div
                 key={item.id}
-                className={`flex gap-3 p-4 ${item.daysFound > 0 ? 'bg-[#FEF3C7]/30' : ''}`}
+                className={`flex gap-3 p-4 ${item.daysFound > 0 ? 'bg-alerta-fundo/30' : ''}`}
               >
                 <img
                   src={fotoMiniatura(item.image, 160)}
                   loading="lazy"
                   alt={item.name}
-                  className="size-14 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
+                  className="size-14 shrink-0 rounded-xl object-cover bg-fundo"
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <p className="truncate font-semibold text-[#1C1917]">{item.name}</p>
+                        <p className="truncate font-semibold text-tinta">{item.name}</p>
                         {item.daysFound > 0 && (
-                          <span className="inline-flex shrink-0 items-center rounded-full bg-[#FEF3C7] px-1.5 py-0.5 text-[10px] font-bold text-[#D97706]">
+                          <span className="inline-flex shrink-0 items-center rounded-full bg-alerta-fundo px-1.5 py-0.5 text-[10px] font-bold text-alerta-texto">
                             +90 dias
                           </span>
                         )}
                       </div>
-                      <p className="mt-0.5 truncate text-xs text-[#A8A29E]">{item.location} · {item.date}</p>
+                      <p className="mt-0.5 truncate text-xs text-tinta-suave">{item.location} · {item.date}</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
                       <button
                         type="button"
-                        className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#F5F3F0] hover:text-[#1C1917]"
+                        className="rounded-lg p-1.5 text-tinta-suave transition-colors hover:bg-fundo hover:text-tinta"
                         onClick={() => { setEditing(item); setEditOpen(true); }}
+                        aria-label={`Editar ${item.name}`}
+                        title="Editar"
                       >
                         <Pencil className="size-3.5" />
                       </button>
                       <button
                         type="button"
-                        className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
+                        className="rounded-lg p-1.5 text-tinta-suave transition-colors hover:bg-marca-clara hover:text-marca-texto"
                         onClick={() => setDiscarding(item)}
+                        aria-label={`Descartar ${item.name}`}
+                        title="Descartar"
                       >
                         <Trash2 className="size-3.5" />
                       </button>
@@ -389,77 +395,82 @@ export function AvailableItems({ navigate }: Props) {
           {/* Tabela — desktop */}
           <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
+              <caption className="sr-only">Itens disponíveis</caption>
               <thead>
-                <tr className="border-b border-[#E7E5E4] bg-[#F5F3F0]/60">
-                  <th className="w-10 px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">#</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Item</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Categoria</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Local</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Data</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Dias</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Ações</th>
+                <tr className="border-b border-linha bg-fundo/60">
+                  <th className="w-10 px-4 py-3 text-left text-[11px] font-bold tracking-wide text-tinta-suave uppercase"><span aria-hidden>#</span><span className="sr-only">Código</span></th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Item</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Categoria</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Local</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Data</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Dias</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E7E5E4]">
+              <tbody className="divide-y divide-linha">
                 {items.map(item => (
                   <tr
                     key={item.id}
-                    className={`transition-colors hover:bg-[#F5F3F0]/50 ${item.daysFound > 0 ? 'bg-[#FEF3C7]/30' : ''}`}
+                    className={`transition-colors hover:bg-fundo/50 ${item.daysFound > 0 ? 'bg-alerta-fundo/30' : ''}`}
                   >
-                    <td className="px-4 py-3 text-xs text-[#A8A29E]">{item.id}</td>
+                    <td className="px-4 py-3 text-xs text-tinta-suave">{item.id}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img
                           src={fotoMiniatura(item.image, 160)}
                           loading="lazy"
                           alt={item.name}
-                          className="size-10 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
+                          className="size-10 shrink-0 rounded-xl object-cover bg-fundo"
                         />
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="max-w-[160px] truncate font-semibold text-[#1C1917]">{item.name}</span>
+                            <span className="max-w-[160px] truncate font-semibold text-tinta">{item.name}</span>
                             {item.daysFound > 0 && (
-                              <span className="inline-flex shrink-0 items-center rounded-full bg-[#FEF3C7] px-1.5 py-0.5 text-[10px] font-bold text-[#D97706]">
+                              <span className="inline-flex shrink-0 items-center rounded-full bg-alerta-fundo px-1.5 py-0.5 text-[10px] font-bold text-alerta-texto">
                                 +90 dias
                               </span>
                             )}
                           </div>
-                          <div className="max-w-[160px] truncate text-xs text-[#A8A29E]">{item.description.slice(0, 40)}…</div>
+                          <div className="max-w-[160px] truncate text-xs text-tinta-suave">{item.description.slice(0, 40)}…</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <CategoryBadge category={item.category} />
                     </td>
-                    <td className="px-4 py-3 text-xs text-[#78716C]">{item.location}</td>
-                    <td className="px-4 py-3 text-xs text-[#78716C]">{item.date}</td>
+                    <td className="px-4 py-3 text-xs text-tinta-suave">{item.location}</td>
+                    <td className="px-4 py-3 text-xs text-tinta-suave">{item.date}</td>
                     <td className="px-4 py-3">
                       <StatusBadge status={item.status} />
                     </td>
                     <td className="px-4 py-3">
                       {item.daysFound > 0 ? (
-                        <div className="flex items-center gap-1 text-[#D97706]">
-                          <AlertTriangle className="size-3" />
+                        <div className="flex items-center gap-1 text-alerta-texto">
+                          <AlertTriangle className="size-3" aria-label="Atenção:" />
                           <span className="text-xs font-semibold">{item.daysFound}d</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-[#A8A29E]">{item.daysFound}d</span>
+                        <span className="text-xs text-tinta-suave">{item.daysFound}d</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
-                          className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#F5F3F0] hover:text-[#1C1917]"
+                          className="rounded-lg p-1.5 text-tinta-suave transition-colors hover:bg-fundo hover:text-tinta"
                           onClick={() => { setEditing(item); setEditOpen(true); }}
+                          aria-label={`Editar ${item.name}`}
+                          title="Editar"
                         >
                           <Pencil className="size-3.5" />
                         </button>
                         <button
                           type="button"
-                          className="rounded-lg p-1.5 text-[#A8A29E] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
+                          className="rounded-lg p-1.5 text-tinta-suave transition-colors hover:bg-marca-clara hover:text-marca-texto"
                           onClick={() => setDiscarding(item)}
+                          aria-label={`Descartar ${item.name}`}
+                          title="Descartar"
                         >
                           <Trash2 className="size-3.5" />
                         </button>
@@ -472,7 +483,7 @@ export function AvailableItems({ navigate }: Props) {
           </div>
 
           {lista && items.length === 0 && (
-            <div className="py-10 text-center text-sm text-[#A8A29E]">
+            <div className="py-10 text-center text-sm text-tinta-suave" role="status">
               Nenhum item encontrado.
             </div>
           )}
@@ -480,15 +491,15 @@ export function AvailableItems({ navigate }: Props) {
 
         {temMais && (
           <div className="flex flex-col items-center gap-1.5">
-            <Button variant="outline" size="sm" className="rounded-xl border-[#E7E5E4]" onClick={carregarMais} disabled={carregandoMais}>
+            <Button variant="outline" size="sm" className="rounded-xl border-linha" onClick={carregarMais} disabled={carregandoMais}>
               {carregandoMais ? 'Carregando...' : 'Carregar mais'}
             </Button>
-            <p className="text-xs text-[#A8A29E]">Mostrando {items.length} de {lista?.total}</p>
+            <p className="text-xs text-tinta-suave">Mostrando {items.length} de {lista?.total}</p>
           </div>
         )}
 
         {items.some(i => i.daysFound > 90) && (
-          <div className="flex items-center gap-2 rounded-xl border border-[#FEF3C7] bg-[#FEF3C7]/50 px-4 py-2.5 text-xs text-[#92400E]">
+          <div className="flex items-center gap-2 rounded-xl border border-alerta-fundo bg-alerta-fundo/50 px-4 py-2.5 text-xs text-alerta-texto">
             <AlertTriangle className="size-3.5 shrink-0" />
             Itens destacados em amarelo estão há mais de 90 dias sem dono. Considere descartá-los conforme política escolar.
           </div>

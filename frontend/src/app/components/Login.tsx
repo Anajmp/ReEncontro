@@ -65,10 +65,10 @@ export function Login({ navigate }: Props) {
           </svg>
         </AuthEmblem>
 
-        <h1 className="mb-1.5 text-2xl font-extrabold text-[#1C1917]">
+        <h1 className="mb-1.5 text-2xl font-extrabold text-tinta">
           Bem-vindo de volta
         </h1>
-        <p className="mb-7 text-sm leading-relaxed text-[#78716C]">
+        <p className="mb-7 text-sm leading-relaxed text-tinta-suave">
           Entre para acompanhar suas reivindicações.
         </p>
 
@@ -97,13 +97,13 @@ export function Login({ navigate }: Props) {
             <div className="mb-1.5 flex items-center justify-between">
               <label
                 htmlFor="password"
-                className="text-sm font-semibold text-[#1C1917]"
+                className="text-sm font-semibold text-tinta"
               >
                 Senha
               </label>
               <button
                 type="button"
-                className="text-xs font-semibold text-[#C8102E] underline-offset-2 transition-colors hover:underline"
+                className="text-xs font-semibold text-marca-texto underline-offset-2 transition-colors hover:underline"
                 onClick={() => navigate("reset-password")}
               >
                 Esqueci a senha
@@ -120,7 +120,7 @@ export function Login({ navigate }: Props) {
               rightElement={
                 <button
                   type="button"
-                  className="text-[#A8A29E] transition-colors hover:text-[#78716C]"
+                  className="text-tinta-suave transition-colors hover:text-tinta"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 >
@@ -141,9 +141,9 @@ export function Login({ navigate }: Props) {
 
         {/* Separador */}
         <div className="my-5 flex items-center gap-3">
-          <div className="h-px flex-1 bg-[#E7E5E4]" />
-          <span className="text-xs font-medium text-[#A8A29E]">ou</span>
-          <div className="h-px flex-1 bg-[#E7E5E4]" />
+          <div className="h-px flex-1 bg-linha" />
+          <span className="text-xs font-medium text-tinta-suave">ou</span>
+          <div className="h-px flex-1 bg-linha" />
         </div>
 
         <BotaoGoogle
@@ -159,11 +159,11 @@ export function Login({ navigate }: Props) {
           onErro={(msg) => setErro(msg)}
         />
 
-        <p className="mt-7 text-center text-sm text-[#78716C]">
+        <p className="mt-7 text-center text-sm text-tinta-suave">
           Ainda não tem conta?{" "}
           <button
             type="button"
-            className="font-bold text-[#C8102E] underline-offset-2 transition-colors hover:underline"
+            className="font-bold text-marca-texto underline-offset-2 transition-colors hover:underline"
             onClick={playCadastroTransition}
           >
             Criar conta

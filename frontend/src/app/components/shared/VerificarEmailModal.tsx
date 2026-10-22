@@ -137,7 +137,7 @@ export function VerificarEmailModal({ open, email, expiraEm, onClose, onVerifica
   }
 
   const slotClass =
-    'h-12 w-10 rounded-xl border border-[#E7E5E4] bg-[#FAFAF8] text-xl font-bold text-[#1C1917] first:rounded-xl first:border-l last:rounded-xl sm:h-14 sm:w-12 sm:text-2xl data-[active=true]:border-[#C8102E] data-[active=true]:ring-[#C8102E]/20';
+    'h-12 w-10 rounded-xl border border-linha bg-campo text-xl font-bold text-tinta first:rounded-xl first:border-l last:rounded-xl sm:h-14 sm:w-12 sm:text-2xl data-[active=true]:border-[#C8102E] data-[active=true]:ring-[#C8102E]/20';
 
   return (
     <Dialog open={open} onOpenChange={aberto => !aberto && !sucesso && onClose()}>
@@ -146,31 +146,31 @@ export function VerificarEmailModal({ open, email, expiraEm, onClose, onVerifica
           e.preventDefault();
           inputRef.current?.focus();
         }}
-        className="w-[calc(100%-1.5rem)] max-w-md rounded-3xl border-0 p-6 shadow-2xl sm:p-8 [&_[data-slot=dialog-close]]:top-5 [&_[data-slot=dialog-close]]:right-5 [&_[data-slot=dialog-close]]:flex [&_[data-slot=dialog-close]]:size-8 [&_[data-slot=dialog-close]]:items-center [&_[data-slot=dialog-close]]:justify-center [&_[data-slot=dialog-close]]:rounded-full [&_[data-slot=dialog-close]]:bg-[#F5F3F0] [&_[data-slot=dialog-close]]:text-[#78716C] [&_[data-slot=dialog-close]]:opacity-100"
+        className="w-[calc(100%-1.5rem)] max-w-md rounded-3xl border-0 p-6 shadow-2xl sm:p-8 [&_[data-slot=dialog-close]]:top-5 [&_[data-slot=dialog-close]]:right-5 [&_[data-slot=dialog-close]]:flex [&_[data-slot=dialog-close]]:size-8 [&_[data-slot=dialog-close]]:items-center [&_[data-slot=dialog-close]]:justify-center [&_[data-slot=dialog-close]]:rounded-full [&_[data-slot=dialog-close]]:bg-fundo [&_[data-slot=dialog-close]]:text-tinta-suave [&_[data-slot=dialog-close]]:opacity-100"
         style={FONT}
       >
         {sucesso ? (
           <div className="py-6 text-center">
-            <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-[#DCFCE7]">
-              <CheckCircle className="size-7 text-[#16A34A]" strokeWidth={2.2} />
+            <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-sucesso-fundo">
+              <CheckCircle className="size-7 text-sucesso-texto" strokeWidth={2.2} />
             </div>
-            <DialogTitle className="text-xl font-bold text-[#1C1917]">E-mail verificado!</DialogTitle>
-            <DialogDescription className="mx-auto mt-2 max-w-xs text-sm text-[#78716C]">
-              Tudo certo com <span className="font-semibold text-[#1C1917]">{email}</span>.
+            <DialogTitle className="text-xl font-bold text-tinta">E-mail verificado!</DialogTitle>
+            <DialogDescription className="mx-auto mt-2 max-w-xs text-sm text-tinta-suave">
+              Tudo certo com <span className="font-semibold text-tinta">{email}</span>.
             </DialogDescription>
           </div>
         ) : (
           <>
             <DialogHeader className="pr-8 text-left">
-              <div className="mb-3 flex size-11 items-center justify-center rounded-2xl bg-[#FEE2E2]">
-                <MailCheck className="size-5 text-[#C8102E]" strokeWidth={2} />
+              <div className="mb-3 flex size-11 items-center justify-center rounded-2xl bg-marca-clara">
+                <MailCheck className="size-5 text-marca-texto" strokeWidth={2} />
               </div>
-              <DialogTitle className="text-xl font-bold tracking-tight text-[#1C1917]">
+              <DialogTitle className="text-xl font-bold tracking-tight text-tinta">
                 Digite o código
               </DialogTitle>
-              <DialogDescription className="text-sm leading-relaxed text-[#78716C]">
+              <DialogDescription className="text-sm leading-relaxed text-tinta-suave">
                 Enviamos um código de 6 dígitos para
-                <span className="my-0.5 block font-semibold [overflow-wrap:break-word] text-[#1C1917]">{email}</span>
+                <span className="my-0.5 block font-semibold [overflow-wrap:break-word] text-tinta">{email}</span>
                 Confira também a caixa de spam.
               </DialogDescription>
             </DialogHeader>
@@ -205,10 +205,12 @@ export function VerificarEmailModal({ open, email, expiraEm, onClose, onVerifica
               <div
                 className={cn(
                   'flex items-center gap-1.5 text-sm font-medium',
-                  expirouLocal ? 'text-[#C8102E]' : restante <= 60 ? 'text-[#D97706]' : 'text-[#78716C]',
+                  expirouLocal ? 'text-marca-texto' : restante <= 60 ? 'text-alerta-texto' : 'text-tinta-suave',
                 )}
-                aria-live="polite"
               >
+                <span className="sr-only" aria-live="polite">
+                  {verificando ? 'Verificando o código' : ''}
+                </span>
                 {verificando ? (
                   <>
                     <Loader2 className="size-4 animate-spin" /> Verificando…
@@ -223,21 +225,21 @@ export function VerificarEmailModal({ open, email, expiraEm, onClose, onVerifica
             </div>
 
             {erro && (
-              <div className="flex items-start gap-2 rounded-xl border border-[#FECDD3] bg-[#FFF1F2] px-3.5 py-2.5" role="alert">
-                <AlertCircle size={15} strokeWidth={2} className="mt-0.5 shrink-0 text-[#C8102E]" />
-                <span className="text-sm font-medium text-[#C8102E]">{erro}</span>
+              <div className="flex items-start gap-2 rounded-xl border border-erro-borda bg-erro-fundo px-3.5 py-2.5" role="alert">
+                <AlertCircle size={15} strokeWidth={2} className="mt-0.5 shrink-0 text-marca-texto" />
+                <span className="text-sm font-medium text-marca-texto">{erro}</span>
               </div>
             )}
             {!erro && expirouLocal && (
-              <div className="flex items-start gap-2 rounded-xl border border-[#FECDD3] bg-[#FFF1F2] px-3.5 py-2.5" role="alert">
-                <AlertCircle size={15} strokeWidth={2} className="mt-0.5 shrink-0 text-[#C8102E]" />
-                <span className="text-sm font-medium text-[#C8102E]">
+              <div className="flex items-start gap-2 rounded-xl border border-erro-borda bg-erro-fundo px-3.5 py-2.5" role="alert">
+                <AlertCircle size={15} strokeWidth={2} className="mt-0.5 shrink-0 text-marca-texto" />
+                <span className="text-sm font-medium text-marca-texto">
                   Este código expirou. Peça um novo código.
                 </span>
               </div>
             )}
             {aviso && !erro && (
-              <div className="flex items-start gap-2 rounded-xl border border-[#BBF7D0] bg-[#DCFCE7] px-3.5 py-2.5 text-sm text-[#15803D]">
+              <div role="status" className="flex items-start gap-2 rounded-xl border border-sucesso-borda bg-sucesso-fundo px-3.5 py-2.5 text-sm text-sucesso-texto">
                 <CheckCircle size={15} strokeWidth={2} className="mt-0.5 shrink-0" />
                 {aviso}
               </div>
@@ -247,7 +249,7 @@ export function VerificarEmailModal({ open, email, expiraEm, onClose, onVerifica
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-xl px-4 py-2.5 text-sm font-semibold text-[#78716C] transition-colors hover:bg-[#F5F3F0]"
+                className="rounded-xl px-4 py-2.5 text-sm font-semibold text-tinta-suave transition-colors hover:bg-fundo"
               >
                 Fazer depois
               </button>
@@ -259,7 +261,7 @@ export function VerificarEmailModal({ open, email, expiraEm, onClose, onVerifica
                   'flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all',
                   precisaNovoCodigo
                     ? 'bg-[#C8102E] text-white hover:bg-[#A50D26] disabled:bg-[#E7A3AE]'
-                    : 'border border-[#E7E5E4] text-[#1C1917] hover:border-[#C8102E]/40 hover:text-[#C8102E] disabled:text-[#A8A29E]',
+                    : 'border border-linha text-tinta hover:border-[#C8102E]/40 hover:text-marca-texto disabled:text-tinta-suave',
                   'disabled:cursor-not-allowed',
                 )}
               >

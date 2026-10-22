@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Screen } from '../../App';
 import { PARENT_FONT } from './estilos';
 import { SiteFooter, SiteHeader } from './SiteHeader';
+import { CONTEUDO_ID } from '../../../lib/acessibilidade';
 
 interface Props {
   children: ReactNode;
@@ -15,10 +16,10 @@ interface Props {
  */
 export function ParentLayout({ children, navigate }: Props) {
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden bg-[#F5F3F0]" style={PARENT_FONT}>
+    <div className="flex min-h-screen flex-col overflow-x-hidden bg-fundo" style={PARENT_FONT}>
       <SiteHeader navigate={navigate} />
 
-      <main className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-8 sm:py-8">
+      <main id={CONTEUDO_ID} tabIndex={-1} className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-4 py-5 outline-none sm:px-8 sm:py-8">
         {children}
       </main>
 

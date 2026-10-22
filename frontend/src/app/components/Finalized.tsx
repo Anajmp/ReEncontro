@@ -133,16 +133,17 @@ export function Finalized({ navigate }: Props) {
       <div className="space-y-4">
         <AdminPanel className="flex flex-wrap gap-3 p-4">
           <div className="relative min-w-[160px] flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A8A29E]" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-tinta-suave" />
             <Input
               className={adminSearchInputClass}
               placeholder="Buscar item..."
+              aria-label="Buscar item"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
           <Select value={statusFilter} onValueChange={trocarFiltro}>
-            <SelectTrigger className={`w-44 ${adminSelectClass}`}>
+            <SelectTrigger className={`w-44 ${adminSelectClass}`} aria-label="Filtrar por status">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -155,29 +156,30 @@ export function Finalized({ navigate }: Props) {
 
         <AdminPanel className="overflow-hidden">
           {/* Lista em cards — mobile */}
-          <div className="divide-y divide-[#E7E5E4] lg:hidden">
+          <div className="divide-y divide-linha lg:hidden">
             {itens.map(item => (
               <div key={item.id} className="flex gap-3 p-4">
                 <img
                   src={fotoMiniatura(item.image, 160)}
                   loading="lazy"
                   alt={item.name}
-                  className="size-14 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
+                  className="size-14 shrink-0 rounded-xl object-cover bg-fundo"
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="truncate font-semibold text-[#1C1917]">{item.name}</p>
-                      <p className="mt-0.5 truncate text-xs text-[#A8A29E]">{item.location}</p>
+                      <p className="truncate font-semibold text-tinta">{item.name}</p>
+                      <p className="mt-0.5 truncate text-xs text-tinta-suave">{item.location}</p>
                       {item.motivoDescarte && (
-                        <p className="mt-0.5 truncate text-xs text-[#C8102E]">Motivo: {item.motivoDescarte}</p>
+                        <p className="mt-0.5 truncate text-xs text-marca-texto">Motivo: {item.motivoDescarte}</p>
                       )}
                     </div>
                     {podeReverter(item) ? (
                       <button
                         type="button"
                         onClick={() => reverter(item.id, item.name)}
-                        className="flex shrink-0 items-center gap-1 text-xs text-[#78716C] transition-colors hover:text-[#C8102E]"
+                        aria-label={`Reverter a entrega de ${item.name}`}
+                        className="flex shrink-0 items-center gap-1 text-xs text-tinta-suave transition-colors hover:text-marca-texto"
                         title="Reverter para disponível (até 24h após a entrega)"
                       >
                         <RotateCcw className="size-3.5" />
@@ -189,7 +191,7 @@ export function Finalized({ navigate }: Props) {
                     <CategoryBadge category={item.category} />
                     <StatusBadge status={item.status} />
                   </div>
-                  <p className="mt-1.5 text-xs text-[#78716C]">
+                  <p className="mt-1.5 text-xs text-tinta-suave">
                     {item.finalizadoEm || '—'} · {item.finalizadoPor || '—'}
                   </p>
                 </div>
@@ -200,32 +202,33 @@ export function Finalized({ navigate }: Props) {
           {/* Tabela — desktop */}
           <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
+              <caption className="sr-only">Itens finalizados</caption>
               <thead>
-                <tr className="border-b border-[#E7E5E4] bg-[#F5F3F0]/60">
-                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Item</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Categoria</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Finalizado em</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Funcionária</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-bold tracking-wide text-[#78716C] uppercase">Reverter</th>
+                <tr className="border-b border-linha bg-fundo/60">
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Item</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Categoria</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Finalizado em</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Funcionária</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-bold tracking-wide text-tinta-suave uppercase">Reverter</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E7E5E4]">
+              <tbody className="divide-y divide-linha">
                 {itens.map(item => (
-                  <tr key={item.id} className="transition-colors hover:bg-[#F5F3F0]/50">
+                  <tr key={item.id} className="transition-colors hover:bg-fundo/50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img
                           src={fotoMiniatura(item.image, 160)}
                           loading="lazy"
                           alt={item.name}
-                          className="size-10 shrink-0 rounded-xl object-cover bg-[#F5F3F0]"
+                          className="size-10 shrink-0 rounded-xl object-cover bg-fundo"
                         />
                         <div>
-                          <div className="font-semibold text-[#1C1917]">{item.name}</div>
-                          <div className="text-xs text-[#A8A29E]">{item.location}</div>
+                          <div className="font-semibold text-tinta">{item.name}</div>
+                          <div className="text-xs text-tinta-suave">{item.location}</div>
                           {item.motivoDescarte && (
-                            <div className="mt-0.5 text-xs text-[#C8102E]">Motivo: {item.motivoDescarte}</div>
+                            <div className="mt-0.5 text-xs text-marca-texto">Motivo: {item.motivoDescarte}</div>
                           )}
                         </div>
                       </div>
@@ -236,21 +239,22 @@ export function Finalized({ navigate }: Props) {
                     <td className="px-4 py-3">
                       <StatusBadge status={item.status} />
                     </td>
-                    <td className="px-4 py-3 text-xs text-[#78716C]">{item.finalizadoEm || '—'}</td>
-                    <td className="px-4 py-3 text-xs text-[#78716C]">{item.finalizadoPor || '—'}</td>
+                    <td className="px-4 py-3 text-xs text-tinta-suave">{item.finalizadoEm || '—'}</td>
+                    <td className="px-4 py-3 text-xs text-tinta-suave">{item.finalizadoPor || '—'}</td>
                     <td className="px-4 py-3 text-right">
                       {podeReverter(item) ? (
                         <button
                           type="button"
                           onClick={() => reverter(item.id, item.name)}
-                          className="ml-auto flex items-center gap-1 text-xs text-[#78716C] transition-colors hover:text-[#C8102E]"
+                          aria-label={`Reverter a entrega de ${item.name}`}
+                          className="ml-auto flex items-center gap-1 text-xs text-tinta-suave transition-colors hover:text-marca-texto"
                           title="Reverter para disponível (até 24h após a entrega)"
                         >
                           <RotateCcw className="size-3.5" />
                           Reverter
                         </button>
                       ) : (
-                        <span className="text-xs text-[#D6D3D1]">—</span>
+                        <span className="text-xs text-tinta-suave"><span aria-hidden>—</span><span className="sr-only">Não é possível reverter</span></span>
                       )}
                     </td>
                   </tr>
@@ -260,9 +264,9 @@ export function Finalized({ navigate }: Props) {
           </div>
 
           {loading ? (
-            <div className="py-10 text-center text-sm text-[#A8A29E]">Carregando...</div>
+            <div className="py-10 text-center text-sm text-tinta-suave" role="status">Carregando...</div>
           ) : itens.length === 0 && (
-            <div className="py-10 text-center text-sm text-[#A8A29E]">
+            <div className="py-10 text-center text-sm text-tinta-suave" role="status">
               Nenhum item no histórico.
             </div>
           )}
@@ -274,11 +278,11 @@ export function Finalized({ navigate }: Props) {
               type="button"
               onClick={carregarMais}
               disabled={carregandoMais}
-              className="rounded-xl border border-[#E7E5E4] bg-white px-4 py-1.5 text-sm font-medium text-[#1C1917] transition-colors hover:text-[#C8102E] disabled:opacity-60"
+              className="rounded-xl border border-linha bg-superficie px-4 py-1.5 text-sm font-medium text-tinta transition-colors hover:text-marca-texto disabled:opacity-60"
             >
               {carregandoMais ? 'Carregando...' : 'Carregar mais'}
             </button>
-            <p className="text-xs text-[#A8A29E]">Mostrando {itens.length} de {lista?.total}</p>
+            <p className="text-xs text-tinta-suave">Mostrando {itens.length} de {lista?.total}</p>
           </div>
         )}
       </div>

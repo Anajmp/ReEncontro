@@ -117,14 +117,14 @@ export function RegisterItem({ navigate }: Props) {
     return (
       <AdminLayout current="register-item" navigate={navigate}>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="text-center">
-            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-[#D1FAE5]">
-              <svg className="size-8 text-[#059669]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="text-center" role="status">
+            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-sucesso-fundo">
+              <svg className="size-8 text-sucesso-texto" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="mb-1 text-xl font-bold text-[#1C1917]">Item cadastrado com sucesso!</h2>
-            <p className="mb-5 text-sm text-[#78716C]">O item já está disponível na listagem pública.</p>
+            <h2 className="mb-1 text-xl font-bold text-tinta">Item cadastrado com sucesso!</h2>
+            <p className="mb-5 text-sm text-tinta-suave">O item já está disponível na listagem pública.</p>
             <div className="flex justify-center gap-3">
               <Button variant="outline" className={adminBtnOutline} onClick={() => navigate('available-items')}>
                 Ver itens disponíveis
@@ -144,28 +144,38 @@ export function RegisterItem({ navigate }: Props) {
       {/* Mesma largura das demais páginas: fotos e informações lado a lado no desktop */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[2fr_3fr] lg:items-start">
         <AdminPanel className="p-5">
-          <h3 className="mb-3 text-base font-bold text-[#1C1917]">Fotos do item</h3>
+          <h2 className="mb-3 text-base font-bold text-tinta">Fotos do item</h2>
           <div
             className={cn(
               'cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-colors',
               isDragging
-                ? 'border-[#C8102E] bg-[#FEE2E2]/40'
-                : 'border-[#E7E5E4] hover:border-[#C8102E]/40 hover:bg-[#F5F3F0]',
+                ? 'border-[#C8102E] bg-marca-clara/40'
+                : 'border-linha hover:border-[#C8102E]/40 hover:bg-fundo',
             )}
             onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
+            role="button"
+            tabIndex={0}
           >
-            <Upload className="mx-auto mb-2 size-8 text-[#A8A29E]" strokeWidth={1.5} />
-            <p className="text-sm font-semibold text-[#78716C]">Arraste fotos aqui ou clique para selecionar</p>
-            <p className="mt-1 text-xs text-[#A8A29E]">PNG, JPG até 10MB · Máximo 5 fotos</p>
+            <Upload className="mx-auto mb-2 size-8 text-tinta-suave" strokeWidth={1.5} aria-hidden />
+            <p className="text-sm font-semibold text-tinta-suave">Arraste fotos aqui ou clique para selecionar</p>
+            <p className="mt-1 text-xs text-tinta-suave">PNG, JPG até 10MB · Máximo 5 fotos</p>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               multiple
               className="hidden"
+              tabIndex={-1}
+              aria-hidden
               onChange={handleFileChange}
             />
           </div>
@@ -173,12 +183,13 @@ export function RegisterItem({ navigate }: Props) {
           {photos.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-3">
               {photos.map(photo => (
-                <div key={photo.id} className="group relative size-20 overflow-hidden rounded-xl border border-[#E7E5E4]">
+                <div key={photo.id} className="group relative size-20 overflow-hidden rounded-xl border border-linha">
                   <img src={photo.url} alt={photo.name} className="size-full object-cover" />
                   <button
                     type="button"
-                    className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
+                    className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                     onClick={e => { e.stopPropagation(); removePhoto(photo.id); }}
+                    aria-label={`Remover foto ${photo.name}`}
                   >
                     <X className="size-4 text-white" />
                   </button>
@@ -187,8 +198,9 @@ export function RegisterItem({ navigate }: Props) {
               {photos.length < 5 && (
                 <button
                   type="button"
-                  className="flex size-20 items-center justify-center rounded-xl border-2 border-dashed border-[#E7E5E4] text-[#A8A29E] transition-colors hover:border-[#C8102E]/40 hover:text-[#78716C]"
+                  className="flex size-20 items-center justify-center rounded-xl border-2 border-dashed border-linha text-tinta-suave transition-colors hover:border-[#C8102E]/40 hover:text-tinta"
                   onClick={() => fileInputRef.current?.click()}
+                  aria-label="Adicionar mais fotos"
                 >
                   <ImagePlus className="size-5" />
                 </button>
@@ -198,21 +210,21 @@ export function RegisterItem({ navigate }: Props) {
         </AdminPanel>
 
         <AdminPanel className="p-5">
-          <h3 className="mb-4 text-base font-bold text-[#1C1917]">Informações do item</h3>
+          <h2 className="mb-4 text-base font-bold text-tinta">Informações do item</h2>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-sm font-semibold text-[#1C1917]">Nome do item *</Label>
-              <Input className={adminInputClass} placeholder="Ex: Mochila azul" value={nome} onChange={e => setNome(e.target.value)} />
+              <Label htmlFor="item-nome" className="text-sm font-semibold text-tinta">Nome do item *</Label>
+              <Input id="item-nome" className={adminInputClass} placeholder="Ex: Mochila azul" value={nome} onChange={e => setNome(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-sm font-semibold text-[#1C1917]">Descrição *</Label>
-              <Input className={adminInputClass} placeholder="Ex: Mochila azul marinho..." value={descricao} onChange={e => setDescricao(e.target.value)} />
+              <Label htmlFor="item-descricao" className="text-sm font-semibold text-tinta">Descrição *</Label>
+              <Input id="item-descricao" className={adminInputClass} placeholder="Ex: Mochila azul marinho..." value={descricao} onChange={e => setDescricao(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-sm font-semibold text-[#1C1917]">Categoria *</Label>
+                <Label htmlFor="item-categoria" className="text-sm font-semibold text-tinta">Categoria *</Label>
                 <Select value={categoriaId} onValueChange={setCategoriaId}>
-  <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione" /></SelectTrigger>
+  <SelectTrigger id="item-categoria" className={adminSelectClass}><SelectValue placeholder="Selecione" /></SelectTrigger>
   <SelectContent>
     {categorias.map(c => (
       <SelectItem key={c.id} value={String(c.id)}>{c.nome}</SelectItem>
@@ -221,15 +233,15 @@ export function RegisterItem({ navigate }: Props) {
 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm font-semibold text-[#1C1917]">Data encontrado *</Label>
-                <Input type="date" className={adminInputClass} value={dataEncontrado} onChange={e => setDataEncontrado(e.target.value)} />
+                <Label htmlFor="item-data" className="text-sm font-semibold text-tinta">Data encontrado *</Label>
+                <Input id="item-data" type="date" className={adminInputClass} value={dataEncontrado} onChange={e => setDataEncontrado(e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-sm font-semibold text-[#1C1917]">Local encontrado *</Label>
+                <Label htmlFor="item-local" className="text-sm font-semibold text-tinta">Local encontrado *</Label>
                 <Select value={local} onValueChange={setLocal}>
-  <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione" /></SelectTrigger>
+  <SelectTrigger id="item-local" className={adminSelectClass}><SelectValue placeholder="Selecione" /></SelectTrigger>
   <SelectContent>
     <SelectItem value="Pátio Principal">Pátio Principal</SelectItem>
     <SelectItem value="Refeitório">Refeitório</SelectItem>
@@ -244,9 +256,9 @@ export function RegisterItem({ navigate }: Props) {
 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm font-semibold text-[#1C1917]">Ponto de coleta *</Label>
+                <Label htmlFor="item-ponto" className="text-sm font-semibold text-tinta">Ponto de coleta *</Label>
                 <Select value={pontoColetaId} onValueChange={setPontoColetaId}>
-  <SelectTrigger className={adminSelectClass}><SelectValue placeholder="Selecione" /></SelectTrigger>
+  <SelectTrigger id="item-ponto" className={adminSelectClass}><SelectValue placeholder="Selecione" /></SelectTrigger>
   <SelectContent>
     {pontosColeta.map(p => (
       <SelectItem key={p.id} value={String(p.id)}>{p.nome}</SelectItem>
@@ -260,7 +272,7 @@ export function RegisterItem({ navigate }: Props) {
 
         <div className="space-y-3 lg:col-span-2">
           {erro && (
-            <p className="rounded-xl bg-[#FFF1F2] px-4 py-3 text-sm text-[#C8102E]">{erro}</p>
+            <p role="alert" className="rounded-xl bg-erro-fundo px-4 py-3 text-sm text-marca-texto">{erro}</p>
           )}
 
           <div className="flex justify-end gap-3">

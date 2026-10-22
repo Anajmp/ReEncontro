@@ -9,7 +9,7 @@ function BotaoMostrar({ visivel, onClick }: { visivel: boolean; onClick: () => v
     <button
       type="button"
       onClick={onClick}
-      className="text-[#A8A29E] transition-colors hover:text-[#78716C]"
+      className="rounded text-tinta-suave transition-colors hover:text-tinta"
       aria-label={visivel ? 'Ocultar senha' : 'Mostrar senha'}
     >
       {visivel ? <EyeOff size={15} strokeWidth={1.6} /> : <Eye size={15} strokeWidth={1.6} />}
@@ -53,12 +53,12 @@ export function FormAlterarSenha() {
   return (
     <>
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-[#FEE2E2]">
-          <Lock size={16} strokeWidth={1.7} className="text-[#C8102E]" />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-marca-clara">
+          <Lock size={16} strokeWidth={1.7} className="text-marca-texto" />
         </div>
         <div>
-          <h2 className="text-sm font-bold text-[#1C1917]">Alterar senha</h2>
-          <p className="text-xs text-[#A8A29E]">Escolha uma senha segura</p>
+          <h2 className="text-sm font-bold text-tinta">Alterar senha</h2>
+          <p className="text-xs text-tinta-suave">Escolha uma senha segura</p>
         </div>
       </div>
 
@@ -95,13 +95,13 @@ export function FormAlterarSenha() {
         />
 
         {passError && (
-          <div className="flex items-center gap-2 rounded-xl border border-[#FECDD3] bg-[#FFF1F2] px-4 py-3 text-sm text-[#C8102E]">
+          <div role="alert" className="flex items-center gap-2 rounded-xl border border-erro-borda bg-erro-fundo px-4 py-3 text-sm text-marca-texto">
             <AlertCircle size={14} strokeWidth={1.8} />
             {passError}
           </div>
         )}
         {passwordSaved && (
-          <div className="flex items-center gap-2 rounded-xl border border-[#BBF7D0] bg-[#DCFCE7] px-4 py-3 text-sm text-[#15803D]">
+          <div role="status" className="flex items-center gap-2 rounded-xl border border-sucesso-borda bg-sucesso-fundo px-4 py-3 text-sm text-sucesso-texto">
             <CheckCircle size={14} strokeWidth={2} />
             Senha alterada com sucesso!
           </div>

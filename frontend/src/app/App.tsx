@@ -1,4 +1,7 @@
-import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
+import { focarConteudo } from '../lib/acessibilidade';
+import { PularParaConteudo } from './components/shared/PularParaConteudo';
 import { PublicListing } from './components/PublicListing';
 import { ItemDetail } from './components/ItemDetail';
 import { Login } from './components/Login';
@@ -64,6 +67,29 @@ const screenToPath: Record<Screen, string> = {
   'lgpd': '/admin/privacidade'
 };
 
+// Título da aba do navegador (e o que o leitor de tela anuncia) em cada tela
+const tituloDaTela: Record<Screen, string> = {
+  'public-listing': 'Itens encontrados',
+  'item-detail': 'Detalhe do item',
+  'login': 'Entrar',
+  'register': 'Criar conta',
+  'reset-password': 'Redefinir senha',
+  'parent-dashboard': 'Minhas reivindicações',
+  'my-students': 'Meus alunos',
+  'parent-profile': 'Meu perfil',
+  'completar-cadastro': 'Meus alunos',
+  'admin-dashboard': 'Dashboard',
+  'register-item': 'Cadastrar item',
+  'available-items': 'Itens disponíveis',
+  'pending-claims': 'Reivindicações pendentes',
+  'in-process': 'Em processo',
+  'finalized': 'Finalizados',
+  'reports': 'Relatórios',
+  'staff-management': 'Gestão de funcionárias',
+  'admin-profile': 'Minha conta',
+  'lgpd': 'Privacidade (LGPD)',
+};
+
 // Hook que devolve a função navigate(screen) usando o React Router por baixo
 function useScreenNavigate() {
   const navigate = useNavigate();
@@ -73,11 +99,33 @@ function useScreenNavigate() {
   };
 }
 
+// Numa SPA a troca de rota não recarrega a página: sem isso o título da aba
+// nunca muda e o leitor de tela não percebe que a tela é outra
+function useTituloEFocoDaPagina() {
+  const { pathname } = useLocation();
+  const primeiraCarga = useRef(true);
+
+  useEffect(() => {
+    const tela = (Object.keys(screenToPath) as Screen[]).find(s => screenToPath[s] === pathname)
+      ?? (pathname.startsWith('/item/') ? 'item-detail' : undefined);
+    document.title = tela ? `${tituloDaTela[tela]} · ReEncontro` : 'ReEncontro';
+
+    // Na primeira carga o navegador já começa do topo da página
+    if (primeiraCarga.current) {
+      primeiraCarga.current = false;
+      return;
+    }
+    focarConteudo();
+  }, [pathname]);
+}
+
 export default function App() {
   const navigate = useScreenNavigate();
+  useTituloEFocoDaPagina();
 
   return (
     <LoginSplashProvider>
+      <PularParaConteudo />
       <div className="size-full relative min-h-screen">
         <Routes>
           <Route path="/" element={<PortaDeEntrada><PublicListing navigate={navigate} /></PortaDeEntrada>} />

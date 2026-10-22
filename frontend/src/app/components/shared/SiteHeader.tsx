@@ -13,6 +13,7 @@ import { logout } from "../../../lib/auth";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useLoginSplash } from "../LoginSplash";
 import { UserAvatar } from "./UserAvatar";
+import { BotaoTema } from "./BotaoTema";
 
 const FONT = { fontFamily: "Plus Jakarta Sans, sans-serif" };
 
@@ -48,12 +49,12 @@ export function SiteLogo() {
       </svg>
       <div className="min-w-0">
         <p
-          className="truncate text-[1.15rem] font-bold tracking-tight text-[#1C1917]"
+          className="truncate text-[1.15rem] font-bold tracking-tight text-tinta"
           style={FONT}
         >
-          Re<span className="text-[#C8102E]">Encontro</span>
+          Re<span className="text-marca-texto">Encontro</span>
         </p>
-        <p className="hidden truncate text-[11px] font-medium tracking-wide text-[#A8A29E] uppercase sm:block">
+        <p className="hidden truncate text-[11px] font-medium tracking-wide text-tinta-suave uppercase sm:block">
           SESI Nova Odessa
         </p>
       </div>
@@ -129,7 +130,7 @@ function AbasResponsavel({
               inline
                 ? "shrink-0 gap-2 px-3 text-sm"
                 : "min-w-0 flex-1 flex-col justify-center gap-1 px-1 py-2 text-[11px] sm:flex-row sm:gap-2 sm:py-3 sm:text-sm"
-            } ${ativo ? "text-[#C8102E]" : "text-[#78716C] hover:text-[#1C1917]"}`}
+            } ${ativo ? "text-marca-texto" : "text-tinta-suave hover:text-tinta"}`}
           >
             <Icon
               className="size-[18px] shrink-0"
@@ -138,7 +139,7 @@ function AbasResponsavel({
             />
             <span className="truncate">{label}</span>
             {ativo && (
-              <span className="absolute inset-x-2 bottom-0 h-[3px] rounded-t-full bg-[#C8102E]" />
+              <span className="absolute inset-x-2 bottom-0 h-[3px] rounded-t-full bg-[#C8102E]" aria-hidden />
             )}
           </button>
         );
@@ -158,14 +159,14 @@ export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
   const emailNaoVerificado = ehResponsavel && usuario?.email_verificado_em === null;
 
   return (
-    <header className="sticky top-0 z-20 border-b border-[#E7E5E4] bg-white">
+    <header className="sticky top-0 z-20 border-b border-linha bg-superficie">
       {/* Três colunas (1fr · auto · 1fr): as abas ficam no centro exato do header */}
       <div className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto] items-center gap-3 px-4 sm:px-8 lg:grid-cols-[1fr_auto_1fr]">
         <button
           type="button"
           onClick={() => navigate("public-listing")}
-          className="min-w-0 justify-self-start text-left transition-opacity hover:opacity-80"
-          aria-label="Ir para a listagem"
+          className="min-w-0 justify-self-start rounded-lg text-left transition-opacity hover:opacity-80"
+          aria-label="ReEncontro — ir para a listagem"
         >
           <SiteLogo />
         </button>
@@ -176,6 +177,7 @@ export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
 
         {usuario ? (
           <div className="flex shrink-0 items-center gap-2 justify-self-end">
+            <BotaoTema />
             <button
               type="button"
               onClick={() =>
@@ -185,23 +187,21 @@ export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
                     : "parent-profile",
                 )
               }
-              aria-label={
-                emailNaoVerificado
-                  ? "Seu perfil — e-mail não verificado. Verificar e-mail"
-                  : "Seu perfil"
-              }
+              aria-label={`${usuario.nome.split(" ")[0]} — seu perfil${
+                emailNaoVerificado ? ". E-mail não verificado: verificar e-mail" : ""
+              }`}
               title={emailNaoVerificado ? "Verificar e-mail" : undefined}
-              className="flex items-center gap-2.5 rounded-full border border-[#E7E5E4] bg-[#FAFAF8] py-1 pr-1 pl-1 text-sm font-semibold text-[#1C1917] shadow-sm transition-all hover:border-[#C8102E]/30 hover:bg-white hover:shadow sm:pr-4"
+              className="flex items-center gap-2.5 rounded-full border border-linha bg-campo py-1 pr-1 pl-1 text-sm font-semibold text-tinta shadow-sm transition-all hover:border-[#C8102E]/30 hover:bg-superficie hover:shadow sm:pr-4"
             >
               <span className="relative shrink-0">
                 <UserAvatar
                   usuario={usuario}
                   size={30}
-                  className="ring-2 ring-white"
+                  className="ring-2 ring-superficie"
                 />
                 {emailNaoVerificado && (
                   // No celular o texto some; o ponto vermelho mantém o aviso visível
-                  <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-[#C8102E] ring-2 ring-white sm:hidden" />
+                  <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-[#C8102E] ring-2 ring-superficie sm:hidden" />
                 )}
               </span>
               <span className="hidden min-w-0 flex-col items-start text-left leading-tight sm:flex">
@@ -210,7 +210,7 @@ export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
                 </span>
                 <span
                   className={`flex items-center gap-1 text-[11px] font-medium ${
-                    emailNaoVerificado ? "text-[#C8102E]" : "text-[#A8A29E]"
+                    emailNaoVerificado ? "text-marca-texto" : "text-tinta-suave"
                   }`}
                 >
                   <span className="max-w-[160px] truncate">{usuario.email}</span>
@@ -229,7 +229,7 @@ export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
                 // Recarrega já na listagem: nas áreas protegidas o reload cairia no login
                 window.location.assign("/");
               }}
-              className="flex size-9 items-center justify-center rounded-full text-[#A8A29E] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
+              className="flex size-9 items-center justify-center rounded-full text-tinta-suave transition-colors hover:bg-marca-clara hover:text-marca-texto"
               title="Sair"
               aria-label="Sair"
             >
@@ -237,18 +237,21 @@ export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
             </button>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={playLoginTransition}
-            className="flex items-center gap-2 justify-self-end rounded-full px-3.5 py-2 text-sm font-semibold text-[#78716C] transition-colors hover:bg-[#F5F3F0] hover:text-[#C8102E]"
-          >
-            <LogIn className="size-4" />
-            Entrar
-          </button>
+          <div className="flex shrink-0 items-center gap-1 justify-self-end">
+            <BotaoTema />
+            <button
+              type="button"
+              onClick={playLoginTransition}
+              className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold text-tinta-suave transition-colors hover:bg-fundo hover:text-marca-texto"
+            >
+              <LogIn className="size-4" />
+              Entrar
+            </button>
+          </div>
         )}
       </div>
       {ehResponsavel && (
-        <div className="border-t border-[#F5F3F0] lg:hidden">
+        <div className="border-t border-fundo lg:hidden">
           <AbasResponsavel navigate={navigate} />
         </div>
       )}
@@ -259,7 +262,7 @@ export function SiteHeader({ navigate }: { navigate: (s: Screen) => void }) {
 /** Rodapé compartilhado das páginas com o SiteHeader. */
 export function SiteFooter() {
   return (
-    <footer className="mx-auto mt-12 flex w-full max-w-6xl flex-col items-center justify-between gap-1.5 border-t border-[#E7E5E4] px-4 pt-5 pb-8 text-center text-xs text-[#A8A29E] sm:flex-row sm:px-8 sm:text-left">
+    <footer className="mx-auto mt-12 flex w-full max-w-6xl flex-col items-center justify-between gap-1.5 border-t border-linha px-4 pt-5 pb-8 text-center text-xs text-tinta-suave sm:flex-row sm:px-8 sm:text-left">
       <span className="font-medium">
         ReEncontro — Sistema de Achados e Perdidos · SESI Nova Odessa
       </span>

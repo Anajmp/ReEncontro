@@ -36,12 +36,12 @@ export function DemoNav({ current, navigate }: Props) {
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
       <div className="pointer-events-auto">
         {open && (
-          <div className="bg-white rounded-xl shadow-2xl border border-gray-200 p-4 mb-2 w-[700px] max-w-[calc(100vw-2rem)]">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3 text-center">Navegação de Demonstração — 18 Telas</div>
+          <div className="bg-superficie rounded-xl shadow-2xl border border-linha p-4 mb-2 w-[700px] max-w-[calc(100vw-2rem)]">
+            <div className="text-xs font-semibold text-tinta-suave uppercase tracking-widest mb-3 text-center">Navegação de Demonstração — 18 Telas</div>
             <div className="grid grid-cols-4 gap-4">
               {groups.map(group => (
                 <div key={group}>
-                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">{group}</div>
+                  <div className="text-xs font-semibold text-tinta-suave uppercase tracking-wide mb-1.5">{group}</div>
                   <div className="space-y-0.5">
                     {screens.filter(s => s.group === group).map(s => (
                       <button
@@ -50,7 +50,7 @@ export function DemoNav({ current, navigate }: Props) {
                         className={`w-full text-left text-xs px-2.5 py-1.5 rounded-md transition-colors ${
                           s.id === current
                             ? 'bg-[#C8102E] text-white font-medium'
-                            : 'text-gray-700 hover:bg-gray-100'
+                            : 'text-tinta-suave hover:bg-fundo'
                         }`}
                       >
                         {s.label}
@@ -67,7 +67,7 @@ export function DemoNav({ current, navigate }: Props) {
             onClick={() => setOpen(!open)}
             className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium hover:bg-gray-800 transition-colors"
           >
-            <span className="text-gray-400 text-xs">Tela atual:</span>
+            <span className="text-tinta-suave text-xs">Tela atual:</span>
             <span>{currentLabel}</span>
             {open ? <ChevronDown className="size-3.5" /> : <ChevronUp className="size-3.5" />}
           </button>

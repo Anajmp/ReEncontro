@@ -105,15 +105,15 @@ function StudentModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md rounded-3xl border-[#E7E5E4] p-8 sm:max-w-md">
-        <div className="mb-5 flex size-11 items-center justify-center rounded-2xl bg-[#FEE2E2]">
+      <DialogContent className="max-w-md rounded-3xl border-linha p-8 sm:max-w-md">
+        <div className="mb-5 flex size-11 items-center justify-center rounded-2xl bg-marca-clara">
           <GraduationCap size={20} strokeWidth={1.7} color="#C8102E" />
         </div>
         <DialogHeader className="text-left">
-          <DialogTitle className="text-xl font-extrabold text-[#1C1917]">
+          <DialogTitle className="text-xl font-extrabold text-tinta">
             {student ? 'Editar aluno' : 'Adicionar aluno'}
           </DialogTitle>
-          <DialogDescription className="text-sm leading-relaxed text-[#78716C]">
+          <DialogDescription className="text-sm leading-relaxed text-tinta-suave">
             Preencha os dados do aluno vinculado à sua conta.
           </DialogDescription>
         </DialogHeader>
@@ -135,26 +135,27 @@ function StudentModal({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSala(e.target.value)}
           />
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-[#1C1917]">Período</label>
+            <label htmlFor="aluno-periodo" className="mb-1.5 block text-sm font-semibold text-tinta">Período</label>
             <div className="relative">
-              <div className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[#A8A29E]">
+              <div className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-tinta-suave">
                 <Clock size={15} strokeWidth={1.6} />
               </div>
               <select
+                id="aluno-periodo"
                 value={periodo}
                 onChange={(e) => setPeriodo(e.target.value)}
-                className="w-full cursor-pointer appearance-none rounded-xl border border-[#E7E5E4] bg-[#FAFAF8] py-2.5 pr-9 pl-10 text-sm text-[#1C1917] transition-all focus:border-[#C8102E] focus:ring-2 focus:ring-[#C8102E]/20 focus:outline-none"
+                className="w-full cursor-pointer appearance-none rounded-xl border border-linha bg-campo py-2.5 pr-9 pl-10 text-sm text-tinta transition-all focus:border-[#C8102E] focus:ring-2 focus:ring-[#C8102E]/20 focus:outline-none"
               >
                 <option>Manhã</option>
                 <option>Tarde</option>
                 <option>Integral</option>
               </select>
-              <ChevronDown size={13} className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-[#A8A29E]" />
+              <ChevronDown size={13} className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-tinta-suave" aria-hidden />
             </div>
           </div>
 
           {erro && (
-            <p className="rounded-xl bg-[#FFF1F2] px-4 py-2.5 text-sm text-[#C8102E]">{erro}</p>
+            <p role="alert" className="rounded-xl bg-erro-fundo px-4 py-2.5 text-sm text-marca-texto">{erro}</p>
           )}
         </div>
         <div className="mt-3 flex gap-3">
@@ -162,7 +163,7 @@ function StudentModal({
             type="button"
             onClick={onClose}
             disabled={salvando}
-            className="flex-1 rounded-xl bg-[#F5F3F0] py-2.5 text-sm font-semibold text-[#78716C] transition-all hover:bg-[#EDE9E4]"
+            className="flex-1 rounded-xl bg-fundo py-2.5 text-sm font-semibold text-tinta-suave transition-all hover:bg-fundo-forte"
           >
             Cancelar
           </button>
@@ -194,7 +195,7 @@ const periodoColor: Record<string, string> = {
   Manhã: '#B45309',
   Tarde: '#1D4ED8',
   Noite: '#7C3AED',
-  Integral: '#059669',
+  Integral: '#047857',
 };
 
 export function ParentDashboard({ navigate, activeTab }: Props) {
@@ -248,7 +249,7 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
           </PageBanner>
 
           <div className={`mb-4 ${CARD}`}>
-            <div className="flex flex-nowrap gap-2" role="tablist" aria-label="Situação das reivindicações">
+            <div className="flex flex-nowrap gap-2" role="group" aria-label="Situação das reivindicações">
               {([
                 { key: 'claims', label: 'Em andamento', count: currentClaims.length },
                 { key: 'history', label: 'Histórico', count: historyClaims.length },
@@ -258,15 +259,14 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
                   <button
                     key={key}
                     type="button"
-                    role="tab"
-                    aria-selected={ativo}
+                    aria-pressed={ativo}
                     onClick={() => setClaimsSubTab(key)}
                     className={`flex items-center gap-2 ${chipClasses(ativo)}`}
                   >
                     {label}
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
-                        ativo ? 'bg-white/25 text-white' : 'bg-[#F5F3F0] text-[#78716C]'
+                        ativo ? 'bg-white/25 text-white' : 'bg-fundo text-tinta-suave'
                       }`}
                     >
                       {count}
@@ -277,7 +277,7 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
             </div>
           </div>
 
-          <p className="mb-5 text-sm text-[#78716C]">
+          <p className="mb-5 text-sm text-tinta-suave">
             {claimsList.length} {claimsList.length === 1 ? 'reivindicação' : 'reivindicações'}
           </p>
 
@@ -323,7 +323,7 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
             Cadastre os alunos da sua família para preencher as reivindicações mais rápido.
           </PageBanner>
 
-          <p className="mb-5 text-sm text-[#78716C]">
+          <p className="mb-5 text-sm text-tinta-suave">
             {myStudents.length} {myStudents.length === 1 ? 'aluno cadastrado' : 'alunos cadastrados'}
           </p>
 
@@ -332,15 +332,15 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
               {myStudents.map(student => (
                 <div
                   key={student.id}
-                  className="flex items-center gap-4 rounded-2xl border border-black/[0.05] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:p-5"
+                  className="flex items-center gap-4 rounded-2xl border border-contorno bg-superficie p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md sm:p-5"
                 >
-                  <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FEE2E2]">
-                    <span className="text-sm font-extrabold text-[#C8102E]">{studentInitials(student.name)}</span>
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-marca-clara" aria-hidden>
+                    <span className="text-sm font-extrabold text-marca-texto">{studentInitials(student.name)}</span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold text-[#1C1917]">{student.name}</p>
+                    <h3 className="truncate text-sm font-bold text-tinta">{student.name}</h3>
                     <div className="mt-1 flex flex-wrap items-center gap-2">
-                      <span className="flex items-center gap-1 text-xs text-[#78716C]">
+                      <span className="flex items-center gap-1 text-xs text-tinta-suave">
                         <GraduationCap size={11} strokeWidth={1.6} />
                         {student.room}
                       </span>
@@ -357,7 +357,7 @@ export function ParentDashboard({ navigate, activeTab }: Props) {
                   </div>
                   <button
                     type="button"
-                    className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#F5F3F0] text-[#78716C] transition-colors hover:bg-[#FEE2E2] hover:text-[#C8102E]"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-fundo text-tinta-suave transition-colors hover:bg-marca-clara hover:text-marca-texto"
                     aria-label={`Editar ${student.name}`}
                     onClick={() => { setEditingStudent(student); setModalOpen(true); }}
                   >

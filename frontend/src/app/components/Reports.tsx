@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { AdminLayout } from './shared/AdminLayout';
 import type { Screen } from '../App';
 import {
-  MetricCard, CardHeader, CustomBarTooltip, AdminPanel, adminSelectClass,
+  MetricCard, CardHeader, CustomBarTooltip, AdminPanel, TabelaDoGrafico, adminSelectClass,
 } from './shared/AdminChrome';
 import { getCatConfig } from './shared/categorias';
 import { relatoriosApi } from '../../lib/api';
+import { ESTILO_TOOLTIP_GRAFICO, useCoresGrafico } from '../../lib/tema';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -52,6 +53,7 @@ function formatarMes(mes: string): string {
 }
 
 export function Reports({ navigate }: Props) {
+  const cores = useCoresGrafico();
   const [dias, setDias] = useState('30');
   const [resultado, setResultado] = useState<Resultado | null>(null);
 
@@ -105,7 +107,7 @@ export function Reports({ navigate }: Props) {
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex items-center justify-end gap-3">
           <Select value={dias} onValueChange={setDias}>
-            <SelectTrigger className={`w-44 ${adminSelectClass}`}>
+            <SelectTrigger className={`w-44 ${adminSelectClass}`} aria-label="Período do relatório">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -119,8 +121,8 @@ export function Reports({ navigate }: Props) {
         </div>
 
         {carregando || erro ? (
-          <AdminPanel className={`py-16 text-center text-sm ${erro ? 'text-[#C8102E]' : 'text-[#A8A29E]'}`}>
-            {erro || 'Carregando relatórios...'}
+          <AdminPanel className={`py-16 text-center text-sm ${erro ? 'text-marca-texto' : 'text-tinta-suave'}`}>
+            <span role={erro ? 'alert' : 'status'}>{erro || 'Carregando relatórios...'}</span>
           </AdminPanel>
         ) : (
           <>
@@ -131,7 +133,7 @@ export function Reports({ navigate }: Props) {
                 context={`Últimos ${dias} dias`}
                 icon={<Package size={18} color="#78716C" strokeWidth={1.8} />}
                 iconBg="#F5F5F4"
-                valueColor="#1C1917"
+                valueColor="var(--re-tinta)"
               />
               <MetricCard
                 label="Entregues"
@@ -155,7 +157,7 @@ export function Reports({ navigate }: Props) {
                 context="Descartados no período"
                 icon={<Trash2 size={18} color="#78716C" strokeWidth={1.8} />}
                 iconBg="#F5F5F4"
-                valueColor="#78716C"
+                valueColor="var(--re-tinta-suave)"
               />
             </div>
 
@@ -163,33 +165,45 @@ export function Reports({ navigate }: Props) {
               <AdminPanel className="p-5 lg:col-span-2">
                 <CardHeader title="Itens por mês" />
                 {!temMovimentacao ? (
-                  <p className="py-16 text-center text-sm text-[#A8A29E]">
+                  <p className="py-16 text-center text-sm text-tinta-suave">
                     Nenhuma movimentação neste período.
                   </p>
                 ) : (
-                  <div className="h-52 w-full sm:h-60">
+                  <>
+                  <TabelaDoGrafico
+                    titulo="Itens por mês"
+                    colunas={[
+                      { chave: 'month', rotulo: 'Mês' },
+                      { chave: 'encontrados', rotulo: 'Encontrados' },
+                      { chave: 'entregues', rotulo: 'Devolvidos' },
+                      { chave: 'descartados', rotulo: 'Descartados' },
+                    ]}
+                    linhas={dadosMensais}
+                  />
+                  <div className="h-52 w-full sm:h-60" aria-hidden>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={dadosMensais} barSize={12} barGap={2}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE8" vertical={false} />
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#A8A29E' }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#A8A29E' }} allowDecimals={false} width={32} />
-                      <Tooltip content={<CustomBarTooltip />} cursor={{ fill: '#F5F3F0' }} />
-                      <Bar dataKey="encontrados" fill="#E7E5E4" radius={[4, 4, 0, 0]} name="Encontrados" />
+                      <CartesianGrid strokeDasharray="3 3" stroke={cores.grade} vertical={false} />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: cores.eixo }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: cores.eixo }} allowDecimals={false} width={32} />
+                      <Tooltip content={<CustomBarTooltip />} cursor={{ fill: cores.cursor }} />
+                      <Bar dataKey="encontrados" fill={cores.barraNeutra} radius={[4, 4, 0, 0]} name="Encontrados" />
                       <Bar dataKey="entregues" fill="#C8102E" radius={[4, 4, 0, 0]} name="Devolvidos" />
-                      <Bar dataKey="descartados" fill="#78716C" radius={[4, 4, 0, 0]} name="Descartados" />
+                      <Bar dataKey="descartados" fill={cores.descartados} radius={[4, 4, 0, 0]} name="Descartados" />
                     </BarChart>
                   </ResponsiveContainer>
                   </div>
+                  </>
                 )}
               </AdminPanel>
 
               <AdminPanel className="p-5">
                 <CardHeader title="Distribuição por status" />
                 {dadosStatus.length === 0 ? (
-                  <p className="py-16 text-center text-sm text-[#A8A29E]">Sem dados.</p>
+                  <p className="py-16 text-center text-sm text-tinta-suave">Sem dados.</p>
                 ) : (
                   <>
-                    <div className="mx-auto h-44 w-full max-w-[220px] sm:h-48">
+                    <div className="mx-auto h-44 w-full max-w-[220px] sm:h-48" aria-hidden>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -202,7 +216,7 @@ export function Reports({ navigate }: Props) {
                             <Cell key={`cell-${i}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #E7E5E4', fontSize: 12 }} />
+                        <Tooltip contentStyle={ESTILO_TOOLTIP_GRAFICO} />
                       </PieChart>
                     </ResponsiveContainer>
                     </div>
@@ -210,10 +224,10 @@ export function Reports({ navigate }: Props) {
                       {dadosStatus.map(d => (
                         <div key={d.name} className="flex items-center justify-between text-xs">
                           <div className="flex items-center gap-2">
-                            <div className="size-2.5 rounded-sm" style={{ backgroundColor: d.color }} />
-                            <span className="text-[#78716C]">{d.name}</span>
+                            <div className="size-2.5 rounded-sm" style={{ backgroundColor: d.color }} aria-hidden />
+                            <span className="text-tinta-suave">{d.name}</span>
                           </div>
-                          <span className="font-semibold text-[#1C1917]">{d.value}</span>
+                          <span className="font-semibold text-tinta">{d.value}</span>
                         </div>
                       ))}
                     </div>
@@ -225,21 +239,21 @@ export function Reports({ navigate }: Props) {
             <AdminPanel className="p-5">
               <CardHeader title="Itens cadastrados por categoria" />
               {dadosCategoria.length === 0 ? (
-                <p className="py-8 text-center text-sm text-[#A8A29E]">
+                <p className="py-8 text-center text-sm text-tinta-suave">
                   Nenhum item cadastrado neste período.
                 </p>
               ) : (
                 <div className="space-y-3">
                   {dadosCategoria.map(c => (
                     <div key={c.name} className="flex items-center gap-3 text-xs">
-                      <span className="w-32 shrink-0 truncate text-[#78716C]">{c.name}</span>
-                      <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-[#F5F3F0]">
+                      <span className="w-32 shrink-0 truncate text-tinta-suave">{c.name}</span>
+                      <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-fundo" aria-hidden>
                         <div
                           className="h-full rounded-full"
                           style={{ width: `${(c.value / maiorCategoria) * 100}%`, backgroundColor: c.color }}
                         />
                       </div>
-                      <span className="w-8 shrink-0 text-right font-semibold text-[#1C1917]">{c.value}</span>
+                      <span className="w-8 shrink-0 text-right font-semibold text-tinta">{c.value}</span>
                     </div>
                   ))}
                 </div>

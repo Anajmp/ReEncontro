@@ -31,7 +31,7 @@ export function UserAvatar({
       width={size}
       height={size}
       className={cn(
-        'shrink-0 border border-[#E7E5E4] bg-white object-cover',
+        'shrink-0 border border-linha bg-superficie object-cover',
         radius,
         className,
       )}
