@@ -38,6 +38,11 @@ jobs:
         working-directory: ./backend
         run: npm run lint
 
+      # --run executa uma vez e sai (sem ele o vitest fica em modo watch e trava o job)
+      - name: Testes
+        working-directory: ./backend
+        run: npm test -- --run
+
   frontend:
     name: Frontend — lint e build
     runs-on: ubuntu-latest
