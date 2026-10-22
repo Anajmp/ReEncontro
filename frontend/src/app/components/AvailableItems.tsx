@@ -227,6 +227,7 @@ function DiscardItemModal({ item, onClose, onDiscarded }: {
 export function AvailableItems({ navigate }: Props) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
+  const [dataFiltro, setDataFiltro] = useState('');
   const [lista, setLista] = useState<(Pagina<ItemTela> & { chave: string }) | null>(null);
   const [editing, setEditing] = useState<ItemDisponivel | null>(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -250,6 +251,8 @@ export function AvailableItems({ navigate }: Props) {
   const chave = JSON.stringify({
     q: buscaAplicada || undefined,
     categoriaId: category === 'all' ? undefined : Number(category),
+    dataInicio: dataFiltro || undefined,
+    dataFim: dataFiltro || undefined,
   });
 
   // Primeira página sempre que os filtros mudam (ou após editar/descartar).
@@ -319,18 +322,15 @@ export function AvailableItems({ navigate }: Props) {
               ))}
             </SelectContent>
           </Select>
-          <Select defaultValue="all">
-            <SelectTrigger className={`w-40 ${adminSelectClass}`}>
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os status</SelectItem>
-              <SelectItem value="disponivel">Disponível</SelectItem>
-              <SelectItem value="pendente">Pendente</SelectItem>
-              <SelectItem value="processo">Em Processo</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input type="date" className={`w-44 ${adminInputClass}`} />
+          {/* Sem filtro de status: a listagem só traz itens disponíveis (os
+              pendentes e em processo ficam nas telas de reivindicações) */}
+          <Input
+            type="date"
+            className={`w-44 ${adminInputClass}`}
+            value={dataFiltro}
+            onChange={e => setDataFiltro(e.target.value)}
+            aria-label="Filtrar por data em que o item foi encontrado"
+          />
         </AdminPanel>
 
         <AdminPanel className="overflow-hidden">

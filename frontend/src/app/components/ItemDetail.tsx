@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { itensApi } from '../../lib/api';
-import { ArrowLeft, MapPin, Calendar, Package, Building2, Check } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Package, Building2 } from 'lucide-react';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { StatusBadge } from './shared/StatusBadge';
+import { ClaimModal } from './shared/ClaimModal';
 import { SiteFooter, SiteHeader } from './shared/SiteHeader';
+import { useLoginSplash } from './LoginSplash';
 import type { Screen } from '../App';
 import type { Status } from './shared/data';
 
@@ -32,87 +30,13 @@ interface ItemDetalhe {
   collectionPoint: string;
 }
 
-function ClaimModal({ open, onClose, itemName }: { open: boolean; onClose: () => void; itemName: string }) {
-  const [submitted, setSubmitted] = useState(false);
-
-  if (submitted) {
-    return (
-      <Dialog open={open} onOpenChange={() => { onClose(); setSubmitted(false); }}>
-        <DialogContent className="max-w-md">
-          <div className="text-center py-6">
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Check className="size-6 text-green-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-1">Reivindicação enviada!</h3>
-            <p className="text-sm text-gray-500">Nossa equipe entrará em contato para confirmar a retirada em até 2 dias úteis.</p>
-            <Button className="mt-4 bg-[#C8102E] hover:bg-[#A00D24]" onClick={() => { onClose(); setSubmitted(false); }}>Fechar</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Este item é meu!</DialogTitle>
-          <p className="text-sm text-gray-500">Reivindicando: <strong className="text-gray-700">{itemName}</strong></p>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>Nome completo *</Label>
-              <Input placeholder="Seu nome completo" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>E-mail *</Label>
-              <Input type="email" placeholder="seu@email.com" />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Telefone <span className="text-gray-400 font-normal">(opcional)</span></Label>
-            <Input placeholder="(11) 99999-9999" />
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2 space-y-1.5">
-              <Label>Nome do aluno *</Label>
-              <Input placeholder="Nome completo do aluno" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Sala *</Label>
-              <Input placeholder="Ex: 5º A" />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Período *</Label>
-            <Select>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="manha">Manhã</SelectItem>
-                <SelectItem value="tarde">Tarde</SelectItem>
-                <SelectItem value="integral">Integral</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="flex gap-3 pt-2 border-t border-gray-100 mt-2">
-          <Button variant="outline" className="flex-1" onClick={onClose}>Cancelar</Button>
-          <Button className="flex-1 bg-[#C8102E] hover:bg-[#A00D24]" onClick={() => setSubmitted(true)}>
-            Enviar reivindicação
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 export function ItemDetail({ navigate }: Props) {
   const { id } = useParams();
   const [claimOpen, setClaimOpen] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
   const [item, setItem] = useState<ItemDetalhe | null>(null);
   const [loading, setLoading] = useState(true);
+  const { playCadastroTransition } = useLoginSplash();
 
   useEffect(() => {
     if (id) {
@@ -238,7 +162,15 @@ export function ItemDetail({ navigate }: Props) {
 
       <SiteFooter />
 
-      <ClaimModal open={claimOpen} onClose={() => setClaimOpen(false)} itemName={item.name} />
+      <ClaimModal
+        item={item}
+        open={claimOpen}
+        onClose={() => setClaimOpen(false)}
+        onCadastrar={e => {
+          setClaimOpen(false);
+          playCadastroTransition(e);
+        }}
+      />
     </div>
   );
 }
