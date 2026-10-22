@@ -1,10 +1,13 @@
-import { Search, RotateCcw } from 'lucide-react';
+import { Search, RotateCcw, CheckCircle2, Trash2, Archive } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { StatusBadge } from './shared/StatusBadge';
 import { AdminLayout } from './shared/AdminLayout';
-import { AdminPanel, CategoryBadge, adminSearchInputClass, adminSelectClass } from './shared/AdminChrome';
+import {
+  AdminPanel, CartoesEsqueleto, CategoryBadge, LinhasEsqueleto, adminSearchInputClass, adminSelectClass,
+} from './shared/AdminChrome';
+import { EstadoVazio } from './shared/PageBanner';
 import type { Screen } from '../App';
 import type { Status } from './shared/data';
 import { itensApi, reivindicacoesApi, fotoMiniatura } from '../../lib/api';
@@ -13,6 +16,25 @@ import type { Pagina } from '../../lib/api';
 interface Props {
   navigate: (s: Screen) => void;
 }
+
+// Estado vazio de cada filtro de status (e da busca sem resultado)
+const VAZIO_POR_STATUS: Record<string, { Icon: typeof Archive; titulo: string; texto: string }> = {
+  Entregue: {
+    Icon: CheckCircle2,
+    titulo: 'Nenhum item entregue',
+    texto: 'Quando uma entrega for confirmada em "Em Processo", o item aparece aqui.',
+  },
+  Descartado: {
+    Icon: Trash2,
+    titulo: 'Nenhum item descartado',
+    texto: 'Itens descartados em "Itens Disponíveis" aparecem aqui, com o motivo do descarte.',
+  },
+  all: {
+    Icon: Archive,
+    titulo: 'Nenhum item finalizado',
+    texto: 'Itens entregues aos responsáveis ou descartados aparecem aqui.',
+  },
+};
 
 // Item finalizado como devolvido por itensApi.listarFinalizados()
 interface ItemFinalizado {
@@ -79,9 +101,12 @@ export function Finalized({ navigate }: Props) {
 
   const carregar = useCallback(() => setVersao(v => v + 1), []);
 
-  // Mostra "Carregando..." enquanto a página do filtro atual não chega
+  // Mostra o esqueleto enquanto a página do filtro atual não chega (sem
+  // deixar na tela as linhas do filtro anterior)
   const loading = lista?.chave !== chave;
-  const itens = lista?.itens ?? [];
+  const itens = loading || !lista ? [] : lista.itens;
+  const vazio = !loading && itens.length === 0;
+  const estadoVazio = VAZIO_POR_STATUS[statusFilter] ?? VAZIO_POR_STATUS.all;
   const temMais = Boolean(lista && lista.pagina < lista.totalPaginas);
 
   function carregarMais() {
@@ -157,7 +182,7 @@ export function Finalized({ navigate }: Props) {
         <AdminPanel className="overflow-hidden">
           {/* Lista em cards — mobile */}
           <div className="divide-y divide-linha lg:hidden">
-            {itens.map(item => (
+            {loading ? <CartoesEsqueleto /> : itens.map(item => (
               <div key={item.id} className="flex gap-3 p-4">
                 <img
                   src={fotoMiniatura(item.image, 160)}
@@ -199,7 +224,8 @@ export function Finalized({ navigate }: Props) {
             ))}
           </div>
 
-          {/* Tabela — desktop */}
+          {/* Tabela — desktop (sem registros, dá lugar ao estado vazio) */}
+          {!vazio && (
           <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <caption className="sr-only">Itens finalizados</caption>
@@ -214,7 +240,7 @@ export function Finalized({ navigate }: Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-linha">
-                {itens.map(item => (
+                {loading ? <LinhasEsqueleto colunas={6} /> : itens.map(item => (
                   <tr key={item.id} className="transition-colors hover:bg-fundo/50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -262,14 +288,20 @@ export function Finalized({ navigate }: Props) {
               </tbody>
             </table>
           </div>
-
-          {loading ? (
-            <div className="py-10 text-center text-sm text-tinta-suave" role="status">Carregando...</div>
-          ) : itens.length === 0 && (
-            <div className="py-10 text-center text-sm text-tinta-suave" role="status">
-              Nenhum item no histórico.
-            </div>
           )}
+
+          <p className="sr-only" role="status">
+            {loading ? 'Carregando itens finalizados…' : `${lista?.total ?? 0} itens finalizados`}
+          </p>
+          {vazio && (buscaAplicada ? (
+            <EstadoVazio Icon={Search} titulo="Nenhum item encontrado">
+              Nenhum item finalizado corresponde a “{buscaAplicada}”. Tente outro termo.
+            </EstadoVazio>
+          ) : (
+            <EstadoVazio Icon={estadoVazio.Icon} titulo={estadoVazio.titulo}>
+              {estadoVazio.texto}
+            </EstadoVazio>
+          ))}
         </AdminPanel>
 
         {temMais && !loading && (

@@ -22,6 +22,7 @@ import { LoginSplashProvider } from './components/LoginSplashProvider';
 import { PortaDeEntrada } from './components/LoadingScreen';
 import { Lgpd } from './components/Lgpd';
 import { AdminProfile } from './components/AdminProfile';
+import { NotFound } from './components/NotFound';
 
 export type Screen =
   | 'public-listing'
@@ -108,7 +109,8 @@ function useTituloEFocoDaPagina() {
   useEffect(() => {
     const tela = (Object.keys(screenToPath) as Screen[]).find(s => screenToPath[s] === pathname)
       ?? (pathname.startsWith('/item/') ? 'item-detail' : undefined);
-    document.title = tela ? `${tituloDaTela[tela]} · ReEncontro` : 'ReEncontro';
+    // Endereço que não bate com nenhuma tela cai na página 404
+    document.title = `${tela ? tituloDaTela[tela] : 'Página não encontrada'} · ReEncontro`;
 
     // Na primeira carga o navegador já começa do topo da página
     if (primeiraCarga.current) {
@@ -147,7 +149,7 @@ export default function App() {
           <Route path="/admin/funcionarias" element={<RotaProtegida role="funcionaria" apenasDiretora><StaffManagement navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin/privacidade" element={<RotaProtegida role="funcionaria" apenasDiretora><Lgpd navigate={navigate} /></RotaProtegida>} />
           <Route path="/admin/pessoal" element={<RotaProtegida role="funcionaria" apenasDiretora><AdminProfile navigate={navigate} /></RotaProtegida>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound navigate={navigate} />} />
         </Routes>
 
       </div>

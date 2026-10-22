@@ -3,13 +3,15 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, CartesianGrid,
 } from 'recharts';
-import { Package, CheckCircle2, Trash2, TrendingUp } from 'lucide-react';
+import { Package, CheckCircle2, Trash2, TrendingUp, BarChart2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { AdminLayout } from './shared/AdminLayout';
 import type { Screen } from '../App';
 import {
-  MetricCard, CardHeader, CustomBarTooltip, AdminPanel, TabelaDoGrafico, adminSelectClass,
+  MetricCard, MetricCardEsqueleto, GraficoEsqueleto, CardHeader, CustomBarTooltip, AdminPanel,
+  TabelaDoGrafico, adminSelectClass,
 } from './shared/AdminChrome';
+import { EstadoVazio } from './shared/PageBanner';
 import { getCatConfig } from './shared/categorias';
 import { relatoriosApi } from '../../lib/api';
 import { ESTILO_TOOLTIP_GRAFICO, useCoresGrafico } from '../../lib/tema';
@@ -101,6 +103,8 @@ export function Reports({ navigate }: Props) {
   const entregues = dados?.total_entregues ?? 0;
   const descartados = dados?.total_descartados ?? 0;
   const taxa = dados?.taxa_devolucao ?? 0;
+  // Período sem nenhum registro: um aviso só, em vez de cartões zerados e gráficos vazios
+  const semDados = total === 0 && entregues === 0 && descartados === 0 && !temMovimentacao && dadosStatus.length === 0;
 
   return (
     <AdminLayout current="reports" navigate={navigate}>
@@ -120,9 +124,29 @@ export function Reports({ navigate }: Props) {
           </Select>
         </div>
 
-        {carregando || erro ? (
-          <AdminPanel className={`py-16 text-center text-sm ${erro ? 'text-marca-texto' : 'text-tinta-suave'}`}>
-            <span role={erro ? 'alert' : 'status'}>{erro || 'Carregando relatórios...'}</span>
+        {carregando ? (
+          // Mesmo desenho da tela pronta: 4 indicadores, 2 gráficos e a lista por categoria
+          <>
+            <p className="sr-only" role="status">Carregando relatórios…</p>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+              {[0, 1, 2, 3].map(i => <MetricCardEsqueleto key={i} />)}
+            </div>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <GraficoEsqueleto className="lg:col-span-2" />
+              <GraficoEsqueleto />
+            </div>
+            <GraficoEsqueleto altura="h-32" />
+          </>
+        ) : erro ? (
+          <AdminPanel className="py-16 text-center text-sm text-marca-texto">
+            <span role="alert">{erro}</span>
+          </AdminPanel>
+        ) : semDados ? (
+          <AdminPanel>
+            <EstadoVazio Icon={BarChart2} titulo="Nenhum dado neste período">
+              Nenhum item foi cadastrado, entregue ou descartado nos últimos {dias} dias.
+              Escolha um período maior no seletor acima.
+            </EstadoVazio>
           </AdminPanel>
         ) : (
           <>

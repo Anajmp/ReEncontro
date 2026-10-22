@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Power } from 'lucide-react';
+import { Plus, Pencil, Power, Users } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { AdminLayout } from './shared/AdminLayout';
 import {
-  AdminPanel, adminBtnPrimary, adminBtnOutline, adminInputClass, adminSelectClass,
+  AdminPanel, CartoesEsqueleto, LinhasEsqueleto, adminBtnPrimary, adminBtnOutline, adminInputClass, adminSelectClass,
 } from './shared/AdminChrome';
+import { BOTAO_PRIMARIO, EstadoVazio } from './shared/PageBanner';
 import { avatarDiretora, avatarFuncionaria } from '../../lib/avatar';
 import type { Screen } from '../App';
 import { usuariosApi } from '../../lib/api';
@@ -199,12 +200,18 @@ export function StaffManagement({ navigate }: Props) {
     }
   }
 
+  const vazio = !loading && staff.length === 0;
+
+  function abrirNova() {
+    setEditing(undefined);
+    setModalOpen(true);
+  }
+
   return (
     <AdminLayout current="staff-management" navigate={navigate}>
       <div className="space-y-5">
         <div className="flex items-center justify-end">
-          <Button size="sm" className={`gap-2 ${adminBtnPrimary}`}
-            onClick={() => { setEditing(undefined); setModalOpen(true); }}>
+          <Button size="sm" className={`gap-2 ${adminBtnPrimary}`} onClick={abrirNova}>
             <Plus className="size-4" />
             Adicionar funcionária
           </Button>
@@ -217,7 +224,7 @@ export function StaffManagement({ navigate }: Props) {
         <AdminPanel className="overflow-hidden">
           {/* Lista em cards — mobile */}
           <div className="divide-y divide-linha lg:hidden">
-            {staff.map(member => (
+            {loading ? <CartoesEsqueleto avatar /> : staff.map(member => (
               <div key={member.id} className="flex items-center gap-3 p-4">
                 <img
                   src={member.isDiretora ? avatarDiretora(member.avatarSeed) : avatarFuncionaria(member.avatarSeed || member.email || String(member.id))}
@@ -261,7 +268,8 @@ export function StaffManagement({ navigate }: Props) {
             ))}
           </div>
 
-          {/* Tabela — desktop */}
+          {/* Tabela — desktop (sem registros, dá lugar ao estado vazio) */}
+          {!vazio && (
           <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <caption className="sr-only">Funcionárias</caption>
@@ -276,7 +284,7 @@ export function StaffManagement({ navigate }: Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-linha">
-                {staff.map(member => {
+                {loading ? <LinhasEsqueleto colunas={6} avatar /> : staff.map(member => {
                   return (
                     <tr key={member.id} className="transition-colors hover:bg-fundo/50">
                       <td className="px-5 py-3.5">
@@ -329,11 +337,24 @@ export function StaffManagement({ navigate }: Props) {
               </tbody>
             </table>
           </div>
+          )}
 
-          {loading ? (
-            <div className="py-10 text-center text-sm text-tinta-suave" role="status">Carregando...</div>
-          ) : staff.length === 0 && (
-            <div className="py-10 text-center text-sm text-tinta-suave">Nenhuma funcionária cadastrada.</div>
+          <p className="sr-only" role="status">
+            {loading ? 'Carregando funcionárias…' : `${staff.length} funcionárias cadastradas`}
+          </p>
+          {vazio && (
+            <EstadoVazio
+              Icon={Users}
+              titulo="Nenhuma funcionária cadastrada"
+              acao={
+                <button type="button" onClick={abrirNova} className={BOTAO_PRIMARIO}>
+                  <Plus size={15} strokeWidth={2.2} aria-hidden />
+                  Adicionar funcionária
+                </button>
+              }
+            >
+              Cadastre as inspetoras para que elas possam registrar e entregar itens.
+            </EstadoVazio>
           )}
         </AdminPanel>
       </div>

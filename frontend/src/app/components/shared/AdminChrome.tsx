@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '../ui/utils';
+import { Skeleton } from '../ui/skeleton';
 import { ADMIN_FONT } from './estilos';
 import { getCatConfig } from './categorias';
 
@@ -168,6 +169,108 @@ export function TabelaDoGrafico({
         })}
       </tbody>
     </table>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Esqueletos de carregamento: usam o ui/skeleton com a cor de fundo do tema
+// e imitam a forma do conteúdo real, para o layout não pular quando os dados
+// chegam. São só visuais (aria-hidden): quem usa anuncia o "Carregando…".
+// ---------------------------------------------------------------------
+
+const OSSO = 'bg-fundo';
+
+/** Cartões da lista do celular (miniatura + nome + linha + selos). */
+export function CartoesEsqueleto({ quantidade = 4, avatar = false }: { quantidade?: number; avatar?: boolean }) {
+  return (
+    <div className="divide-y divide-linha" aria-hidden>
+      {Array.from({ length: quantidade }, (_, i) => (
+        <div key={i} className={cn('flex gap-3 p-4', avatar && 'items-center')}>
+          <Skeleton className={cn('shrink-0', OSSO, avatar ? 'size-10 rounded-full' : 'size-14 rounded-xl')} />
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className={cn('h-4 w-2/3', OSSO)} />
+            <Skeleton className={cn('h-3 w-1/2', OSSO)} />
+            <div className="flex gap-1.5 pt-0.5">
+              <Skeleton className={cn('h-5 w-20 rounded-full', OSSO)} />
+              <Skeleton className={cn('h-5 w-16 rounded-full', OSSO)} />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Linhas de tabela para pôr no <tbody> enquanto carrega (o cabeçalho real
+ * continua visível). A primeira coluna tem miniatura + duas linhas de texto.
+ */
+export function LinhasEsqueleto({
+  colunas,
+  quantidade = 5,
+  avatar = false,
+}: {
+  colunas: number;
+  quantidade?: number;
+  avatar?: boolean;
+}) {
+  return (
+    <>
+      {Array.from({ length: quantidade }, (_, i) => (
+        <tr key={i} aria-hidden>
+          <td className="px-4 py-3">
+            <div className="flex items-center gap-3">
+              <Skeleton className={cn('shrink-0', OSSO, avatar ? 'size-8 rounded-full' : 'size-10 rounded-xl')} />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className={cn('h-3.5 w-28', OSSO)} />
+                {!avatar && <Skeleton className={cn('h-3 w-20', OSSO)} />}
+              </div>
+            </div>
+          </td>
+          {Array.from({ length: colunas - 1 }, (_, j) => (
+            <td key={j} className="px-4 py-3">
+              <Skeleton
+                className={cn(
+                  'h-3.5',
+                  OSSO,
+                  j === colunas - 2 ? 'ml-auto w-14' : j % 2 === 0 ? 'w-20 rounded-full' : 'w-24',
+                )}
+              />
+            </td>
+          ))}
+        </tr>
+      ))}
+    </>
+  );
+}
+
+/** Mesmo contorno do MetricCard, com barras no lugar do texto. */
+export function MetricCardEsqueleto() {
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl border border-contorno bg-superficie p-5 shadow-sm" aria-hidden>
+      <div className="flex items-start justify-between">
+        <Skeleton className={cn('h-4 w-24', OSSO)} />
+        <Skeleton className={cn('size-10 rounded-xl', OSSO)} />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className={cn('h-9 w-16', OSSO)} />
+        <Skeleton className={cn('h-3 w-28', OSSO)} />
+      </div>
+    </div>
+  );
+}
+
+/** Bloco no formato de um gráfico (título + área), para os painéis de relatório. */
+export function GraficoEsqueleto({ altura = 'h-52 sm:h-60', className }: { altura?: string; className?: string }) {
+  return (
+    <div className={cn(adminPanelClass, 'p-5', className)} aria-hidden>
+      <Skeleton className={cn('mb-5 h-4 w-36', OSSO)} />
+      <div className={cn('flex items-end gap-3', altura)}>
+        {[45, 70, 35, 85, 55, 65].map((h, i) => (
+          <Skeleton key={i} className={cn('flex-1 rounded-t-md rounded-b-none', OSSO)} style={{ height: `${h}%` }} />
+        ))}
+      </div>
+    </div>
   );
 }
 
