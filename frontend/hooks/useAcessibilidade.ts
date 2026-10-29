@@ -32,7 +32,9 @@ function carregar(): Config {
         fonteLegivel: Boolean(salvo.fonteLegivel),
       }
     }
-  } catch {}
+  } catch {
+    // Usa a configuração padrão se não conseguir ler o localStorage.
+  }
 
   return PADRAO
 }
@@ -50,7 +52,9 @@ export function useAcessibilidade(){
 
     try {
       localStorage.setItem(CHAVE, JSON.stringify(config));
-    } catch {}
+    } catch {
+      // Mantém as configurações em memória se não conseguir salvá-las.
+    }
   }, [config]);
 
   const aumentarFonte = useCallback(

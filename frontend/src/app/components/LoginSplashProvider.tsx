@@ -28,10 +28,6 @@ const T_CHEGA = 520;     // lupa chega ao centro
 const T_FOCO = 820;      // fim do "foco" (brilho + faíscas)
 const T_FIM = 1320;      // lente engoliu a tela
 
-function prefersReducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
 interface Ponto { x: number; y: number }
 
 function centroDoClique(e: Origem): Ponto {
