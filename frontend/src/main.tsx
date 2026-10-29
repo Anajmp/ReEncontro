@@ -8,6 +8,9 @@ import App from "./app/App.tsx";
 import { CHAVE_TEMA } from "./lib/tema";
 import "./styles/index.css";
 import * as Sentry from '@sentry/react';
+import { PainelAcessibilidade } from "./app/components/shared/PainelAcessibilidade.tsx";
+import "@fontsource/atkinson-hyperlegible/400.css";
+import "@fontsource/atkinson-hyperlegible/700.css";
 
 if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
@@ -25,6 +28,7 @@ createRoot(document.getElementById("root")!).render(
         <AuthProvider>
           <App />
           <Toaster position="top-center" richColors />
+          <PainelAcessibilidade />
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

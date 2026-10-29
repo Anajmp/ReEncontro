@@ -58,19 +58,25 @@ export const itensRepository = {
     // nesses placeholders em algumas versões do MySQL 8
     const [rows] = await db.execute(
       `SELECT
-         i.id, i.nome, i.descricao, i.local_encontrado, i.data_encontrado, i.data_disponibilizacao, i.status,
-         c.nome AS categoria,
-         pc.nome AS ponto_coleta,
-         (SELECT url FROM item_fotos
-          WHERE item_id = i.id AND is_capa = TRUE LIMIT 1) AS foto_capa
-       FROM itens i
-       INNER JOIN categorias c     ON c.id  = i.categoria_id
-       INNER JOIN pontos_coleta pc ON pc.id = i.ponto_coleta_id
-       ${where}
-       ORDER BY ${ordenacao}
-       LIMIT ? OFFSET ?`,
-      [...params, String(limite), String(offset)],
-    );
+          i.id, 
+          i.nome, 
+          i.descricao, 
+          i.local_encontrado, 
+          i.data_encontrado, 
+          i.data_disponibilizacao, 
+          i.status,
+          c.nome AS categoria,
+          pc.nome AS ponto_coleta,
+          (SELECT url FROM item_fotos
+            WHERE item_id = i.id AND is_capa = TRUE LIMIT 1) AS foto_capa
+        FROM itens i
+        INNER JOIN categorias c     ON c.id  = i.categoria_id
+        INNER JOIN pontos_coleta pc ON pc.id = i.ponto_coleta_id
+        ${where}
+        ORDER BY ${ordenacao}
+        LIMIT ? OFFSET ?`,
+        [...params, String(limite), String(offset)],
+      );
 
     const [[{ total }]] = await db.execute(
       `SELECT COUNT(*) AS total FROM itens i ${where}`,

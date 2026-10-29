@@ -17,6 +17,8 @@ import {
   SectionDivider,
   authSelectTriggerClass,
 } from './shared/AuthChrome';
+import { ForcaSenha } from './shared/ForcaSenha';
+import { avaliarSenha } from '../../lib/senha';
 
 interface Props {
   navigate: (s: Screen) => void;
@@ -68,6 +70,12 @@ export function Register({ navigate }: Props) {
       setErro('Preencha todos os dados dos alunos');
       return;
     }
+
+    const { indice, dica } = avaliarSenha(senha);
+      if (indice < 2) {
+        setErro(`Escolha uma senha mais forte (mínimo: Médio). ${dica}`.trim());
+        return;
+  }
 
     setCarregando(true);
     try {
@@ -181,6 +189,8 @@ export function Register({ navigate }: Props) {
                 </button>
               }
             />
+
+            <ForcaSenha senha={senha} />
 
             <AuthField
               label="Confirmar senha"
