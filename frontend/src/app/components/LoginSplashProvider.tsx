@@ -28,10 +28,6 @@ const T_CHEGA = 520;     // lupa chega ao centro
 const T_FOCO = 820;      // fim do "foco" (brilho + faíscas)
 const T_FIM = 1320;      // lente engoliu a tela
 
-function prefersReducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
 interface Ponto { x: number; y: number }
 
 function centroDoClique(e: Origem): Ponto {
@@ -54,7 +50,7 @@ export function LoginSplashProvider({ children }: { children: ReactNode }) {
 
   const tocar = useCallback((destino: Destino, e?: Origem) => {
     if (tocando.current) return;
-    if (prefersReducedMotion()) {
+    if (deveReduzirMovimento()) {
       navigate(DESTINOS[destino].rota);
       return;
     }
@@ -95,6 +91,13 @@ const easeOutBack = (t: number) => {
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 const easeInCubic = (t: number) => t ** 3;
 const limitar = (t: number) => Math.min(1, Math.max(0, t));
+
+function deveReduzirMovimento() {
+  return (
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+    document.documentElement.classList.contains('alto-contraste')
+  );
+}
 
 function EntradaPelaLupa({
   destino, origem, aoTrocarRota, aoTerminar,

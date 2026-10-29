@@ -1,3 +1,97 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+
+html.fonte-legivel,
+html.fonte-legivel *{
+  font-family: 'Atkinson Hyperlegible', Verdana, Arial, sans-serif !important;
+}
+html.fonte-legivel{
+  letter-spacing: 0.02rem;
+  word-spacing: 0.08rem;
+}
+
+html.alto-contraste {
+  --ac-azul: #66b2ff;
+  --ac-foco: #00e5ff;
+}
+
+/* 1. Base: tudo preto e branco, exceto telas marcadas com data-splash */
+html.alto-contraste :where(body, body *:not(img):not(video):not(svg):not(path):not([data-splash]):not([data-splash] *)) {
+  background-color: #000 !important;
+  background-image: none !important;
+  color: #fff !important;
+  border-color: #fff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+html.alto-contraste a {
+  text-decoration: underline !important;
+}
+
+html.alto-contraste :is(input, textarea) {
+  border: 2px solid #fff !important;
+}
+html.alto-contraste ::placeholder {
+  color: #d0d0d0 !important;
+  opacity: 1 !important;
+}
+
+html.alto-contraste :is(button, [role='button'], button *, [role='button'] *, [role='combobox'], [role='combobox'] *) {
+  color: var(--ac-azul) !important;
+}
+
+html.alto-contraste :is(button, a, [role='button'])[class*='bg-[#C8102E]'],
+html.alto-contraste :is(button, a, [role='button'])[class*='bg-[#C8102E]'] * {
+  background-color: var(--ac-azul) !important;
+  color: #000 !important;
+}
+
+html.alto-contraste [aria-pressed='true'],
+html.alto-contraste [aria-pressed='true'] * {
+  background-color: var(--ac-azul) !important;
+  color: #000 !important;
+}
+
+html.alto-contraste :is([style*='background'], [class*='rounded-full'][class*='bg-']):not(button):not(a):not(input):not([data-forca-trilho]):not([data-forca-barra]):not([data-splash]):not([data-splash] *) {
+  outline: 1px solid #fff !important;
+}
+
+html.alto-contraste [class*='from-black'] {
+  background-color: transparent !important;
+}
+
+html.alto-contraste [data-forca-trilho] {
+  background-color: #9e9e9e !important;
+}
+html.alto-contraste [data-forca-barra] {
+  background-color: var(--ac-azul) !important;
+}
+
+html.alto-contraste :is(button:disabled, button:disabled *) {
+  background-color: #000 !important;
+  color: #bdbdbd !important;
+}
+html.alto-contraste button:disabled {
+  border: 2px dashed #bdbdbd !important;
+}
+
+/* 11. Enfeites da tela de carregamento: some o brilho decorativo e deixa os itens nítidos */
+html.alto-contraste [role='status'] > [aria-hidden='true'],
+html.alto-contraste [data-decorativo] {
+  display: none !important;
+}
+html.alto-contraste [data-perdidos] {
+  filter: none !important;
+  opacity: 1 !important;
+}
+html.alto-contraste [data-perdidos] svg {
+  stroke: #fff !important;
+}
+
+/* 12. Foco do teclado: SEMPRE por último, para vencer as demais */
+html.alto-contraste *:focus-visible {
+  outline: 3px solid var(--ac-foco) !important;
+  outline-offset: 2px;
+}

@@ -7,6 +7,7 @@
 // =====================================================================
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
+import fs from 'node:fs'
 
 dotenv.config();
 
@@ -38,7 +39,12 @@ class Database {
       // O banco grava DATETIME em UTC (NOW() no Aiven). Sem isso o driver lê
       // o valor como horário local e tudo fica 3h adiantado no Brasil.
       timezone: 'Z',
-      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+      ssl: process.env.DB_SSL === "true"
+  ? {
+      ca: fs.readFileSync(process.env.DB_SSL_CA, "utf8"),
+      rejectUnauthorized: true,
+    }
+  : undefined,
     });
 
     Database.#instancia = this;
